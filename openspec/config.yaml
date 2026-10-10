@@ -1,0 +1,48 @@
+schema: spec-driven
+
+context: |
+  Project: piano-guide. Static single-page web app that teaches beginners to play songs on the piano.
+  Stack: HTML, CSS, vanilla JS (ES modules), three.js 0.186.1 vendored locally. No build step, no package manager yet.
+  Views: short catalog landing page; per-song player (chord names, simplified score with note names and fingering,
+  3D keyboard lighting keys in time with an adjustable-tempo metronome, play/pause/loop/slow mode, lesson card).
+  Songs are JSON data files in the repo. Hosting: GitHub Pages. Docker: small nginx image serving the static site.
+  Rules: every dependency pinned in docs/STACK_TECNOLOGICO.md, no known-vulnerable versions, CI disabled before v1.
+  Artifacts in English.
+
+strict_tdd: false
+
+testing:
+  strict_tdd: false
+  note: "No test runner yet. Suggested: node --test (built-in, zero dependency) for pure data/timing logic modules."
+  projects:
+    - path: "."
+      stack: "static web (HTML/CSS/vanilla JS ES modules, three.js vendored)"
+      test_command: null
+      framework: null
+  layers:
+    unit: { available: false, tool: null, suggested: "node --test" }
+    integration: { available: false, tool: null }
+    e2e: { available: false, tool: null }
+  coverage: { available: false, command: null, suggested: "node --test --experimental-test-coverage" }
+  quality:
+    linter: { available: false, command: null }
+    type_checker: { available: false, command: null }
+    formatter: { available: false, command: null }
+
+rules:
+  proposal:
+    - Keep scope to one reviewable slice; note Docker and STACK_TECNOLOGICO.md impact.
+  specs:
+    - Use Given/When/Then scenarios; song JSON schema changes need a spec.
+  design:
+    - No build step; ES modules only; vendored three.js; keep timing/data logic in pure modules testable with node --test.
+  tasks:
+    - Forecast against the 400 changed-lines budget; delivery strategy auto-chain.
+    - Add a dependency task and a docs/STACK_TECNOLOGICO.md update in the same commit as any new dependency.
+  apply:
+    - No new dependency without informing the user (what, why, exact version, rejected alternative) and a vulnerability check.
+    - One commit per work unit with tests and docs alongside.
+  verify:
+    - Run node --test once it exists; otherwise report manual checks honestly.
+  archive:
+    - Merge delta specs into openspec/specs before archiving.
