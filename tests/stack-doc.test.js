@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 // Guard: the stack document must describe what the Dockerfile and the vendored files really are.
-const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
+// A checkout on Windows may give the files CRLF line endings (the Docker build copies them as they are).
+const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8").replaceAll("\r\n", "\n");
 const doc = read("docs/STACK_TECNOLOGICO.md");
 const dockerfile = read("Dockerfile");
 const core = read("assets/vendor/three.core.js");
