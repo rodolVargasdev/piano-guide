@@ -3,7 +3,7 @@
 // score, transport and audio keep working. Nothing here imports three.js statically: the
 // heavy modules load only after the page confirmed it can.
 import { fittedRange } from "../core/keyboard-layout.js";
-import { framePose } from "./camera.js";
+import { createCameraDirector } from "./camera-director.js";
 import { createKeyState, updateKeyState } from "./key-state.js";
 import { tierSettings, initialTier } from "../core/quality.js";
 import { createWatchdog } from "./quality.js";
@@ -22,7 +22,8 @@ export function nullScene() {
     highlightNotes() {},
     setReducedMotion() {},
     setQuality() {},
-    qualityInfo: () => ({ tier: "n/a", auto: true }),
+    qualityInfo: () => ({ tier: "n/a", auto: true, section: -1, tween: false }),
+    animating: () => false,
     render() {},
     resize() {},
     dispose() {},
@@ -70,6 +71,10 @@ export async function createScene(container, { timeline, loadThree = () => impor
     const watchdog = createWatchdog({ initial: first, onTier: applyTier });
 
     const aspect = () => (size.h > 0 ? size.w / size.h : 1.6);
+    let lastTick = 0;
+    // One framing per song section; the camera tweens between them (a single cut under reduced motion).
+    const director = createCameraDirector({ apply: (pose) => stage.applyPose(pose) });
+    const frameCamera = () => director.layout({ timeline: current, range: active, centerX: keyboard.centerX, width: keyboard.width, aspect: aspect() }, lastTick);
     let active = null; // the range the keyboard was built for
     function buildNotes() {
       if (notes) {
@@ -90,7 +95,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
       stage.scene.add(keyboard.group);
       stage.fitKeyboard(keyboard.width);
       keys.pressed.fill(0); // a new keyboard starts with every key up
-      stage.applyPose(framePose(keyboard.width, aspect()));
+      frameCamera();
       keyboard.highlight(outlined);
       buildNotes();
       buildMarkers();
@@ -129,15 +134,20 @@ export async function createScene(container, { timeline, loadThree = () => impor
       },
       setReducedMotion(on) {
         reduced = on === true;
+        director.setReducedMotion(reduced);
       },
+      /** True while the camera is moving between sections: a paused scene must keep asking for frames. */
+      animating: () => director.animating(),
       /** A tier name (high, medium, low, minimum) overrides the watchdog; "auto" hands control back to it. */
       setQuality(choice) {
         watchdog.choose(choice);
       },
       /** { tier, auto }: the tier in force and whether the watchdog is the one deciding (debug overlay). */
-      qualityInfo: () => ({ tier: watchdog.tier(), auto: watchdog.auto() }),
+      qualityInfo: () => ({ tier: watchdog.tier(), auto: watchdog.auto(), ...director.info() }),
       /** Draw the scene at `tick`; with `playing` false no key is lit by playback. */
       render(tick, playing = true) {
+        lastTick = tick;
+        director.at(tick, performance.now());
         const changed = updateKeyState(keys, current, tick, playing, handModes);
         for (let i = 0; i < changed.length; i += 1) keyboard.setPressed(changed[i], keys.pressed[changed[i]]);
         notes.update(tick);
@@ -151,7 +161,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
         if (!w || !h) return;
         size = { w, h };
         stage.setSize(w, h);
-        stage.applyPose(framePose(keyboard.width, w / h));
+        frameCamera();
       },
       dispose() {
         markers?.dispose();

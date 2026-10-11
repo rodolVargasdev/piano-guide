@@ -32,7 +32,7 @@ export function driftMs(prevSeconds, seconds) {
   return Math.max(0, (seconds - prevSeconds) * 1000);
 }
 
-const NOOP_VIEW = Object.freeze({ render() {}, dispose() {}, resize() {}, setRange() {}, setHandModes() {}, setTimeline() {}, highlightNotes() {}, qualityInfo: () => ({ tier: "n/a", auto: true }) });
+const NOOP_VIEW = Object.freeze({ render() {}, dispose() {}, resize() {}, setRange() {}, setHandModes() {}, setTimeline() {}, highlightNotes() {}, setReducedMotion() {}, animating: () => false, qualityInfo: () => ({ tier: "n/a", auto: true }) });
 
 // One audio object for the whole page: leaving the player suspends the context, returning resumes it.
 let sharedAudio = null;
@@ -70,9 +70,9 @@ function createDebugOverlay() {
       prevTs = ts;
       prevSeconds = pos.seconds;
       frames += 1;
-      if (frames % 10 === 0) {
+      if (frames % 10 === 0 || !playing) {
         const { avg, p95 } = frameStats(dts);
-        label.textContent = `drift max ${worst.toFixed(1)} ms | frame avg ${avg.toFixed(1)} p95 ${p95.toFixed(1)} ms | tier ${quality.tier}${quality.tier === "n/a" ? "" : quality.auto ? " (auto)" : " (manual)"}`;
+        label.textContent = `drift max ${worst.toFixed(1)} ms | frame avg ${avg.toFixed(1)} p95 ${p95.toFixed(1)} ms | tier ${quality.tier}${quality.tier === "n/a" ? "" : quality.auto ? " (auto)" : " (manual)"} | camera section ${quality.section ?? "n/a"}${quality.tween ? " moving" : ""}`;
         worst = 0;
       }
     },
@@ -128,7 +128,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
         if (ui.view !== "scene") score.render(pos.tick);
         if (ui.view !== "score") scene.render(pos.tick, engine.isPlaying());
         debug?.update(pos, ts, engine.isPlaying(), scene.qualityInfo());
-        if (engine.isPlaying()) requestFrame();
+        if (engine.isPlaying() || scene.animating()) requestFrame(); // a camera move runs on while paused
       }
       function requestFrame() {
         if (raf === null && !closed) raf = win.requestAnimationFrame(frame);
@@ -256,7 +256,12 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
       // The slot must be in the page before the score measures it.
       score = createScore(scoreSlot, { timeline, title: song.title, names: ui.names });
       const motion = win.matchMedia?.("(prefers-reduced-motion: reduce)");
-      const onMotion = () => score.setReducedMotion(motion.matches);
+      // Reduced motion follows the system setting live: the score steps per beat and the camera cuts instead of tweening.
+      const onMotion = () => {
+        score.setReducedMotion(motion.matches);
+        scene.setReducedMotion(motion.matches);
+        requestFrame();
+      };
       if (motion) {
         onMotion();
         motion.addEventListener("change", onMotion);
@@ -276,6 +281,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
           if (timeline !== built) created.setTimeline(timeline); // the level changed while the scene loaded
           const { hands, full } = practice.state(); // the panel may have changed while the scene loaded
           created.setHandModes(hands);
+          created.setReducedMotion(motion?.matches === true); // the preference may have been set before the scene arrived
           if (full) created.setRange(FULL_RANGE);
           scene = created;
         } catch {

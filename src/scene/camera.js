@@ -54,3 +54,56 @@ export function framePose(width, aspect, { fov = FOV_DEG, pitch = PITCH_DEG } = 
   const position = { x: 0, y: target.y - f.y * distance, z: target.z - f.z * distance };
   return { position, target, fov };
 }
+
+export const TWEEN_MS = 1400; // a section move takes this long (never under reduced motion)
+
+/** Index of the section holding `tick` (the last one past the end, the first before the start); -1 without sections. */
+export function sectionIndexAt(sections, tick) {
+  if (!sections || sections.length === 0) return -1;
+  let found = 0;
+  for (let i = 0; i < sections.length; i += 1) if (tick >= sections[i].startTick) found = i;
+  return found;
+}
+
+/**
+ * The lowest and highest MIDI key to keep in view for a section: the pitched notes that start inside it,
+ * padded by `pad` semitones and clamped to `range` ({ low, high }). Null when the section has no notes.
+ */
+export function sectionSpan(notes, section, range, pad = 3) {
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const n of notes) {
+    if (n.tick < section.startTick) continue;
+    if (n.tick >= section.endTick) break; // notes are sorted by tick
+    if (n.midi === null || !Number.isFinite(n.midi)) continue;
+    if (n.midi < lo) lo = n.midi;
+    if (n.midi > hi) hi = n.midi;
+  }
+  if (lo === Infinity) return null;
+  return { low: Math.max(range.low, lo - pad), high: Math.min(range.high, hi + pad) };
+}
+
+/** Pose that frames `width` white keys centered at world x `cx`: framePose, slid sideways. */
+export function focusPose(cx, width, aspect) {
+  const p = framePose(width, aspect);
+  p.position.x += cx;
+  p.target.x += cx;
+  return p;
+}
+
+/** 0 to 1 with zero slope at both ends: a move that eases in and out. */
+export function smoothstep(k) {
+  const c = Math.min(1, Math.max(0, k));
+  return c * c * (3 - 2 * c);
+}
+
+/** Write the pose between `a` and `b` at `k` (0 to 1, already eased) into `out` and return it; allocates nothing. */
+export function lerpPose(a, b, k, out) {
+  for (const part of ["position", "target"]) {
+    out[part].x = a[part].x + (b[part].x - a[part].x) * k;
+    out[part].y = a[part].y + (b[part].y - a[part].y) * k;
+    out[part].z = a[part].z + (b[part].z - a[part].z) * k;
+  }
+  out.fov = a.fov + (b.fov - a.fov) * k;
+  return out;
+}
