@@ -290,7 +290,7 @@ function onsetsOf(notes, hand) {
 test("Chopin validates, is transcribed and strict,", () => {
   const r = validateSong(chopin);
   assert.deepEqual(r.errors, []);
-  assert.deepEqual(r.warnings.map((w) => w.path), ["lesson.original"]);
+  assert.deepEqual(r.warnings.map((w) => w.path), ["lesson.beginner", "lesson.original"]);
   assert.equal(chopin.levels.original.transcribed, true);
   assert.equal(chopin.levels.original.strictBars, true);
   assert.equal(chopin.levels.original.notation, "engraved");
@@ -409,4 +409,66 @@ test("the IMSLP entry says it was not read, so it cannot pass as a verification"
   assert.equal(imslp.kind, "reference");
   assert.match(imslp.what, /could not be read/);
   assert.equal(chopin.confidence.find((c) => c.scope === "notes").level, "medium");
+});
+
+// ---- Chopin Beginner: the same melody, a simpler left hand, labelled notation ----
+const beginner = chopin.levels.beginner;
+const pairs = (notes, hand) => notes.filter((n) => n.hand === hand && !n.rest).map((n) => `${n.tick}:${n.pitch}`);
+const beats = [...Array(16).keys()].map((i) => PICKUP + i * 720);
+
+test("Chopin Beginner is labelled and strict, keeps E-flat major, and has no ornament, tie, grace or note shorter than an eighth", () => {
+  assert.equal(beginner.notation, "labelled");
+  assert.equal(beginner.strictBars, true);
+  assert.equal(beginner.transcribed, undefined, "it is a simplification, not a transcription");
+  assert.equal(beginner.analysis, undefined, "Beginner shows no analysis");
+  assert.ok(beginner.notes.every((n) => n.ornament === undefined && n.tie === undefined && n.grace === undefined && n.dur >= 240));
+  assert.deepEqual(Object.keys(chopin.levels), ["beginner", "original"]);
+  assert.deepEqual(chopin.key, { tonic: "Eb", mode: "major" });
+});
+
+test("the Beginner melody keeps the Original melody: every note is at the same tick and pitch, except one D5 that stands for the run of bar 4", () => {
+  const original = new Set(pairs(chopinNotes, "R"));
+  const extra = pairs(beginner.notes, "R").filter((p) => !original.has(p));
+  assert.deepEqual(extra, ["10080:D5"]);
+  const tied = chopinNotes.find((n) => n.tie);
+  assert.equal(beginner.notes.find((n) => n.tick === tied.tick && n.pitch === tied.pitch).dur, 960, "the tied G is one note of both lengths");
+});
+
+test("counter-proof: a changed melody note shows up as an extra pair", () => {
+  const bad = structuredClone(beginner.notes);
+  bad.find((n) => n.hand === "R" && n.pitch === "C6").pitch = "C5";
+  const original = new Set(pairs(chopinNotes, "R"));
+  assert.equal(pairs(bad, "R").filter((p) => !original.has(p)).length, 2);
+});
+
+test("the Beginner left hand is one bass eighth then the beat's last chord held for the rest of the beat, on all 16 beats", () => {
+  for (const [i, t] of beats.entries()) {
+    const bass = beginner.notes.filter((n) => n.hand === "L" && n.role === "bass" && n.tick === t);
+    const chord = beginner.notes.filter((n) => n.hand === "L" && n.role === "accompaniment" && n.tick === t + 240);
+    assert.equal(bass.length, 1, `beat ${i + 1} bass`);
+    assert.equal(bass[0].dur, 240);
+    assert.equal(bass[0].pitch, chopinNotes.find((n) => n.hand === "L" && n.role === "bass" && n.tick === t).pitch, `beat ${i + 1} bass is the Original bass`);
+    assert.ok(chord.length >= 2 && chord.every((n) => n.dur === 480), `beat ${i + 1} chord`);
+    const last = chopinNotes.filter((n) => n.hand === "L" && n.role === "accompaniment" && n.tick === t + 480).map((n) => n.pitch).sort();
+    assert.deepEqual(chord.map((n) => n.pitch).sort(), last, `beat ${i + 1} chord is the last Original chord of the beat`);
+  }
+});
+
+test("Beginner fingering: source fingers equal the Original ones; the only editorial right-hand fingers are C5 (bar 2), D5 and Eb5 (bar 4); every left-hand note has one", () => {
+  const right = beginner.notes.filter((n) => n.hand === "R" && !n.rest);
+  for (const n of right.filter((x) => x.fingeringSource === "source")) {
+    assert.equal(chopinNotes.find((o) => o.hand === "R" && o.tick === n.tick && o.pitch === n.pitch).finger, n.finger, `${n.tick} ${n.pitch}`);
+  }
+  assert.deepEqual(right.filter((n) => n.fingeringSource === "editorial").map((n) => `${n.tick}:${n.pitch}:${n.finger}`), ["3600:C5:1", "10080:D5:1", "10320:Eb5:2"]);
+  assert.ok(right.every((n) => n.finger >= 1 && n.finger <= 5));
+  const left = beginner.notes.filter((n) => n.hand === "L" && !n.rest);
+  assert.ok(left.every((n) => n.fingeringSource === "editorial" && n.finger >= 1 && n.finger <= 5));
+  assert.ok(left.filter((n) => n.role === "bass").every((n) => n.finger === 5));
+});
+
+test("the Beginner pedal is the Original pedal and the confidence entry calls the level an editorial simplification", () => {
+  assert.deepEqual(beginner.pedal, chopin.levels.original.pedal);
+  const c = chopin.confidence.find((x) => x.scope === "beginner");
+  assert.equal(c.level, "low");
+  assert.match(c.note, /Editorial simplification/);
 });

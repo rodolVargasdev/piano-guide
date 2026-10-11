@@ -16,7 +16,7 @@
       "composer": "Frédéric Chopin",
       "key": { "tonic": "Eb", "mode": "major" },
       "defaultBpm": 44,
-      "levels": ["original"]
+      "levels": ["beginner", "original"]
     }
   ]
 }
