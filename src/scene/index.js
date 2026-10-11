@@ -5,7 +5,8 @@
 import { fittedRange } from "../core/keyboard-layout.js";
 import { framePose } from "./camera.js";
 import { createKeyState, updateKeyState } from "./key-state.js";
-import { tierSettings } from "../core/quality.js";
+import { tierSettings, initialTier } from "../core/quality.js";
+import { createWatchdog } from "./quality.js";
 
 export const UNAVAILABLE_MESSAGE = "3D view unavailable on this device";
 
@@ -21,6 +22,7 @@ export function nullScene() {
     highlightNotes() {},
     setReducedMotion() {},
     setQuality() {},
+    qualityInfo: () => ({ tier: "n/a", auto: true }),
     render() {},
     resize() {},
     dispose() {},
@@ -56,6 +58,16 @@ export async function createScene(container, { timeline, loadThree = () => impor
     let outlined = []; // MIDI keys the lesson card asked to outline
     let reduced = false; // reduced motion: the shift rings stay steady
     let settings = tierSettings("high"); // the tier in force; a rebuild keeps it
+    // Medium on a small or touch device, High elsewhere; the watchdog moves it from there.
+    const first = initialTier({ hardwareConcurrency: globalThis.navigator?.hardwareConcurrency, coarsePointer: globalThis.matchMedia?.("(pointer: coarse)")?.matches });
+    settings = tierSettings(first);
+    function applyTier(tier) {
+      settings = tierSettings(tier);
+      stage.applyTier(settings);
+      keyboard.setGlow(settings.glow);
+      notes.setHorizonBars(settings.horizonBars);
+    }
+    const watchdog = createWatchdog({ initial: first, onTier: applyTier });
 
     const aspect = () => (size.h > 0 ? size.w / size.h : 1.6);
     let active = null; // the range the keyboard was built for
@@ -93,6 +105,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
       stage.scene.add(markers.group);
     }
     build();
+    stage.applyTier(settings); // the first tier of the session
 
     const scene = {
       available: true,
@@ -117,13 +130,12 @@ export async function createScene(container, { timeline, loadThree = () => impor
       setReducedMotion(on) {
         reduced = on === true;
       },
-      /** A tier name (high, medium, low, minimum); anything else, such as "auto", means High until the watchdog decides. */
-      setQuality(tier) {
-        settings = tierSettings(tier);
-        stage.applyTier(settings);
-        keyboard.setGlow(settings.glow);
-        notes.setHorizonBars(settings.horizonBars);
+      /** A tier name (high, medium, low, minimum) overrides the watchdog; "auto" hands control back to it. */
+      setQuality(choice) {
+        watchdog.choose(choice);
       },
+      /** { tier, auto }: the tier in force and whether the watchdog is the one deciding (debug overlay). */
+      qualityInfo: () => ({ tier: watchdog.tier(), auto: watchdog.auto() }),
       /** Draw the scene at `tick`; with `playing` false no key is lit by playback. */
       render(tick, playing = true) {
         const changed = updateKeyState(keys, current, tick, playing, handModes);
@@ -131,6 +143,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
         notes.update(tick);
         markers.update(tick, handModes, reduced);
         stage.render();
+        watchdog.frame(performance.now(), playing);
       },
       resize() {
         const w = container.clientWidth;

@@ -32,7 +32,7 @@ export function driftMs(prevSeconds, seconds) {
   return Math.max(0, (seconds - prevSeconds) * 1000);
 }
 
-const NOOP_VIEW = Object.freeze({ render() {}, dispose() {}, resize() {}, setRange() {}, setHandModes() {}, setTimeline() {}, highlightNotes() {} });
+const NOOP_VIEW = Object.freeze({ render() {}, dispose() {}, resize() {}, setRange() {}, setHandModes() {}, setTimeline() {}, highlightNotes() {}, qualityInfo: () => ({ tier: "n/a", auto: true }) });
 
 // One audio object for the whole page: leaving the player suspends the context, returning resumes it.
 let sharedAudio = null;
@@ -58,7 +58,7 @@ function createDebugOverlay() {
   const dts = [];
   return {
     element,
-    update(pos, ts, playing) {
+    update(pos, ts, playing, quality) {
       const dt = prevTs === null ? 0 : ts - prevTs;
       if (playing) {
         worst = Math.max(worst, driftMs(prevSeconds, pos.seconds));
@@ -72,7 +72,7 @@ function createDebugOverlay() {
       frames += 1;
       if (frames % 10 === 0) {
         const { avg, p95 } = frameStats(dts);
-        label.textContent = `drift max ${worst.toFixed(1)} ms | frame avg ${avg.toFixed(1)} p95 ${p95.toFixed(1)} ms | tier n/a`;
+        label.textContent = `drift max ${worst.toFixed(1)} ms | frame avg ${avg.toFixed(1)} p95 ${p95.toFixed(1)} ms | tier ${quality.tier}${quality.tier === "n/a" ? "" : quality.auto ? " (auto)" : " (manual)"}`;
         worst = 0;
       }
     },
@@ -127,7 +127,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
         transport.update(pos);
         if (ui.view !== "scene") score.render(pos.tick);
         if (ui.view !== "score") scene.render(pos.tick, engine.isPlaying());
-        debug?.update(pos, ts, engine.isPlaying());
+        debug?.update(pos, ts, engine.isPlaying(), scene.qualityInfo());
         if (engine.isPlaying()) requestFrame();
       }
       function requestFrame() {
