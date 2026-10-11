@@ -40,9 +40,10 @@ function showMessage(container, doc, text) {
 export async function createScene(container, { timeline, loadThree = () => import("three"), doc = document } = {}) {
   let stage = null;
   let keyboard = null;
+  let notes = null;
   try {
     await loadThree();
-    const [{ createStage }, { createKeyboard }] = await Promise.all([import("./stage.js"), import("./keyboard.js")]);
+    const [{ createStage }, { createKeyboard }, { createFallingNotes }] = await Promise.all([import("./stage.js"), import("./keyboard.js"), import("./falling-notes.js")]);
     stage = createStage(container);
     const keys = createKeyState();
     let current = timeline;
@@ -51,15 +52,26 @@ export async function createScene(container, { timeline, loadThree = () => impor
     let size = { w: 0, h: 0 };
 
     const aspect = () => (size.h > 0 ? size.w / size.h : 1.6);
+    let active = null; // the range the keyboard was built for
+    function buildNotes() {
+      if (notes) {
+        stage.scene.remove(notes.group);
+        notes.dispose();
+      }
+      notes = createFallingNotes({ timeline: current, keyboard, handModes, range: active });
+      stage.scene.add(notes.group);
+    }
     function build() {
       if (keyboard) {
         stage.scene.remove(keyboard.group);
         keyboard.dispose();
       }
-      keyboard = createKeyboard(range ?? fittedRange(current.notes));
+      active = range ?? fittedRange(current.notes);
+      keyboard = createKeyboard(active);
       stage.scene.add(keyboard.group);
       keys.pressed.fill(0); // a new keyboard starts with every key up
       stage.applyPose(framePose(keyboard.width, aspect()));
+      buildNotes();
     }
     build();
 
@@ -71,6 +83,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
       },
       setHandModes(modes) {
         handModes = modes ?? ALL_VISIBLE;
+        buildNotes();
       },
       /** An inclusive MIDI range { low, high }, or null for the range fitted to the level. */
       setRange(r) {
@@ -81,7 +94,9 @@ export async function createScene(container, { timeline, loadThree = () => impor
       setQuality() {},
       /** Draw the scene at `tick`; with `playing` false no key is lit by playback. */
       render(tick, playing = true) {
-        for (const midi of updateKeyState(keys, current, tick, playing, handModes)) keyboard.setPressed(midi, keys.pressed[midi]);
+        const changed = updateKeyState(keys, current, tick, playing, handModes);
+        for (let i = 0; i < changed.length; i += 1) keyboard.setPressed(changed[i], keys.pressed[changed[i]]);
+        notes.update(tick);
         stage.render();
       },
       resize() {
@@ -93,6 +108,8 @@ export async function createScene(container, { timeline, loadThree = () => impor
         stage.applyPose(framePose(keyboard.width, w / h));
       },
       dispose() {
+        notes?.dispose();
+        notes = null;
         keyboard?.dispose();
         keyboard = null;
         stage?.dispose();
@@ -102,6 +119,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
     scene.resize();
     return scene;
   } catch {
+    notes?.dispose();
     keyboard?.dispose();
     stage?.dispose();
     showMessage(container, doc, UNAVAILABLE_MESSAGE);

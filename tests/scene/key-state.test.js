@@ -78,3 +78,18 @@ test("missing hand modes behave as all visible", () => {
   updateKeyState(s, timeline, 0, true, undefined);
   assert.equal(s.pressed[60], HAND_R);
 });
+
+test("it agrees with core/timeline.activeAt at every tick of a dense sweep (the rule is duplicated for speed)", async () => {
+  const { activeAt } = await import("../../src/core/timeline.js");
+  const dense = { notes: [] };
+  for (let i = 0; i < 40; i += 1) dense.notes.push(note(i * 120, 100 + (i % 5) * 200, 40 + (i % 12), i % 2 ? "L" : "R"));
+  dense.notes.push({ tick: 600, dur: 300, midi: null, hand: "R", rest: true });
+  dense.notes.sort((a, b) => a.tick - b.tick);
+  const s = createKeyState();
+  for (let tick = 0; tick < 6000; tick += 7) {
+    updateKeyState(s, dense, tick, true, VISIBLE);
+    const expected = new Uint8Array(128);
+    for (const n of activeAt(dense, tick)) expected[n.midi] |= n.hand === "L" ? HAND_L : HAND_R;
+    assert.deepEqual(s.pressed, expected, `tick ${tick}`);
+  }
+});

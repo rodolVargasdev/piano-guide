@@ -32,7 +32,10 @@ function glowTexture() {
   return tex;
 }
 
-/** One keyboard for an inclusive MIDI range. Returns { group, width, setPressed, dispose }. */
+/**
+ * One keyboard for an inclusive MIDI range. Returns { group, width, centerX, keyWidth, hasKey,
+ * setPressed, dispose }; `centerX[midi]` and `keyWidth[midi]` place the falling notes over each key.
+ */
 export function createKeyboard(range) {
   const { whites, blacks, width } = layoutRange(range);
   const group = new THREE.Group();
@@ -41,6 +44,8 @@ export function createKeyboard(range) {
   // Top face at y = 0, back edge at z = 0, front edge at z = 1: scaling gives the real key.
   const keyGeometry = new THREE.BoxGeometry(1, 1, 1).translate(0, -0.5, 0.5);
   const slot = new Map(); // midi -> { black, i }
+  const centerX = new Float32Array(128); // world x of each key's center, for the note field
+  const drawnWidth = new Float32Array(128);
   const owned = [keyGeometry]; // everything to dispose
 
   const hand = { L: new THREE.Color(HAND_COLOR.L), R: new THREE.Color(HAND_COLOR.R) };
@@ -73,6 +78,8 @@ export function createKeyboard(range) {
       mesh.setMatrixAt(i, tmp.fromArray(rest, i * 16));
       mesh.setColorAt(i, colors[black ? "black" : "white"][0]);
       slot.set(k.midi, { black, i });
+      centerX[k.midi] = k.x + k.width / 2 - width / 2;
+      drawnWidth[k.midi] = w;
     });
     group.add(mesh);
     owned.push(mesh.material);
@@ -150,5 +157,5 @@ export function createKeyboard(range) {
     group.clear();
   }
 
-  return { group, width, setPressed, dispose };
+  return { group, width, centerX, keyWidth: drawnWidth, hasKey: (midi) => slot.has(midi), setPressed, dispose };
 }

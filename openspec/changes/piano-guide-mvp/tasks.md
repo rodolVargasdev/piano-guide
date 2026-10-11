@@ -138,7 +138,7 @@ Conventions for every task below: TDD mode is `strict_tdd: false`, tests land in
 
 ## Phase 12 (PR 12, S3): Falling notes and camera
 
-- [ ] 12.1 Create `src/scene/falling-notes.js`: one `InstancedMesh` placed once in tick space (`y = tick * unitsPerTick`, height from `dur`, hand color), per-frame update only of the parent group's `position.y`, two world-space clipping planes (key-top line and look-ahead horizon, 2 bars default), `frustumCulled = false`. Spec: `keyboard-scene` falling notes. Check: Browser 8790 with Cancer: notes fall to the key-top line at the moment the audio sounds.
+- [x] 12.1 Create `src/scene/falling-notes.js`: one `InstancedMesh` placed once in tick space (`y = tick * unitsPerTick`, height from `dur`, hand color), per-frame update only of the parent group's `position.y`, two world-space clipping planes (key-top line and look-ahead horizon, 2 bars default), `frustumCulled = false`. Spec: `keyboard-scene` falling notes. Check: Browser 8790 with Cancer: notes fall to the key-top line at the moment the audio sounds. Verified in headless Chrome with a real GPU (see PR 12a): notes reach the key-top line with the lit key.
 - [ ] 12.2 Create `src/scene/camera.js`: frame the active range (fitted or Full 88), static cut at load (section tweens arrive in PR 22). Check: toggling Full 88 reframes.
 - [ ] 12.3 Wire `scene.render(pos.tick)`, `setTimeline`, `setHandModes`, `setRange` in `src/ui/player.js`; key press state from `activeAt`. Zero per-frame allocations in the render path (check with the DevTools allocation timeline over 10 s). Check: `?debug=1` drift under 20 ms at 72 then 50 BPM; seek mid-note shows no stale key.
 - [ ] 12.4 Update `README.md` scene section (colors, range toggle). Check: read-through.
