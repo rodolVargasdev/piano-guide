@@ -51,6 +51,9 @@ export function renderInstruction(t, instr, lang) {
     sentences.push(t("step.one", { hand: t(`hand.${params.hand}`, undefined, lang), finger: t(`finger.${params.finger}`, undefined, lang), note: noteLabel(t, params.pitch, lang) }, lang));
   }
   if (params.count > 1) sentences.push(t("step.together", { count: params.count }, lang));
-  else if (instr.key === "step.move") sentences.push(t("step.thenPlay", { finger: t(`finger.${params.finger}`, undefined, lang), note: noteLabel(t, params.pitch, lang) }, lang));
+  else if (instr.key === "step.move") {
+    // When the key to press is the very key the thumb moved to, "Then thumb on G" would repeat the sentence before it.
+    sentences.push(params.pitch === params.thumb ? t("step.thenPress", undefined, lang) : t("step.thenPlay", { finger: t(`finger.${params.finger}`, undefined, lang), note: noteLabel(t, params.pitch, lang) }, lang));
+  }
   return sentences.join(" ");
 }

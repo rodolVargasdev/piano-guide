@@ -40,7 +40,7 @@ test("a leap out of the position flags the shift and the instruction says the ha
   assert.deepEqual(steps.map((s) => s.shift), [false, false, false, true, false]);
   assert.equal(steps[3].instruction.key, "step.move");
   assert.equal(steps[3].instruction.params.thumb, "C5");
-  assert.equal(renderInstruction(i18n.t, steps[3].instruction, "en"), "Move the right hand: thumb on C (Do). Then thumb on C (Do).");
+  assert.equal(renderInstruction(i18n.t, steps[3].instruction, "en"), "Move the right hand: thumb on C (Do). Then press that key.");
   assert.equal(steps[4].instruction.key, "step.one", "the step after a move is an ordinary step");
 });
 

@@ -42,8 +42,11 @@ test("a move names the hand, the new thumb key and the first finger to play", ()
   const moved = step([key("G4", 1)], { shift: true, anchorStep: 32, thumbPitch: "G4" });
   const instr = instructionFor(moved, prev);
   assert.equal(instr.key, "step.move");
-  assert.equal(render(instr, "en"), "Move the right hand: thumb on G (Sol). Then thumb on G (Sol).");
-  assert.equal(render(instr, "es"), "Mueva la mano derecha: pulgar en Sol (G). Luego, pulgar en Sol (G).");
+  assert.equal(render(instr, "en"), "Move the right hand: thumb on G (Sol). Then press that key.", "the key is the thumb's own: no repeated sentence");
+  assert.equal(render(instr, "es"), "Mueva la mano derecha: pulgar en Sol (G). Luego, presione esa tecla.");
+  // Counter-proof: when the key to press is another key, the second sentence names the finger and the key.
+  const other = step([key("B4", 3)], { shift: true, anchorStep: 32, thumbPitch: "G4" });
+  assert.equal(render(instructionFor(other, prev), "en"), "Move the right hand: thumb on G (Sol). Then middle finger on B (Si).");
   const leftPrev = step([key("C3", 5, "L")], { hand: "L", anchorStep: 24, thumbPitch: "G3" });
   const left = step([key("F3", 5, "L")], { hand: "L", shift: true, anchorStep: 27, thumbPitch: "C4" });
   assert.equal(render(instructionFor(left, leftPrev), "en"), "Move the left hand: thumb on C (Do). Then little finger on F (Fa).");

@@ -67,6 +67,7 @@ export const STRINGS = {
   "step.move": { en: "Move the {hand}: thumb on {thumb}.", es: "Mueva la {hand}: pulgar en {thumb}." },
   "step.fingerOn": { en: "{finger} on {note}", es: "{finger} en {note}" },
   "step.thenPlay": { en: "Then {finger} on {note}.", es: "Luego, {finger} en {note}." },
+  "step.thenPress": { en: "Then press that key.", es: "Luego, presione esa tecla." },
   "step.both": { en: "Both hands: {right} right, {left} left.", es: "Ambas manos: {right} con la derecha, {left} con la izquierda." },
 
   // input panel
