@@ -429,6 +429,29 @@ test("the three lines the lesson calls the lead-in: the melody enters at pp on F
   assert.match(entry.text, /F#5 A5 G5 F#5 C#5 B4 C#5 D5 A4/);
 });
 
+test("the repeat is written out: every note of bars 40 to 70 is a note of bars 1 to 31 moved by 39 bars, in both levels", { skip: !has(44) }, () => {
+  const SHIFT = tickOf(40);
+  const last = Math.min(BARS, 70);
+  for (const [id, notes] of [["original", original], ["beginner", beginner]]) {
+    const first = notes.filter((n) => n.tick < tickOf(last - 39 + 1));
+    const again = notes.filter((n) => n.tick >= SHIFT && n.tick < tickOf(last + 1)).map((n) => ({ ...n, tick: n.tick - SHIFT }));
+    assert.deepEqual(again, first, id);
+  }
+});
+
+test("counter-proof: the repeat comparison notices one changed note in the second pass", { skip: !has(44) }, () => {
+  const SHIFT = tickOf(40);
+  const copy = structuredClone(original);
+  const k = copy.findIndex((n) => n.tick >= SHIFT && n.pitch === "A5");
+  copy[k].pitch = "G5";
+  const first = copy.filter((n) => n.tick < tickOf(5));
+  const again = copy.filter((n) => n.tick >= SHIFT && n.tick < SHIFT + tickOf(5)).map((n) => ({ ...n, tick: n.tick - SHIFT }));
+  assert.deepEqual(again, first, "the first four bars still agree");
+  const all1 = copy.filter((n) => n.tick < tickOf(9));
+  const all2 = copy.filter((n) => n.tick >= SHIFT && n.tick < SHIFT + tickOf(9)).map((n) => ({ ...n, tick: n.tick - SHIFT }));
+  assert.notDeepEqual(all2, all1);
+});
+
 test("the analysis of bars 13 to 16 says the melody repeats bars 5 to 8, and the notes do", { skip: !has(16) }, () => {
   const melody = (from) => right(original).filter((n) => n.tick >= tickOf(from) && n.tick < tickOf(from + 4) && n.role === "melody").map((n) => [n.pitch, n.tick - tickOf(from), n.dur]);
   assert.deepEqual(melody(13), melody(5));
@@ -482,6 +505,38 @@ test("the climb of bars 27 and 28 reaches A5, the highest note of the melody in 
   assert.deepEqual(names(right(original).filter((n) => n.tick >= tickOf(27) && n.tick < tickOf(28))), ["E5", "F5", "G5"]);
   assert.equal(right(inBar(original, 28))[0].pitch, "A5");
   assert.equal(Math.max(...right(original).map((n) => midiOf(n.pitch))), midiOf("A5"));
+});
+
+test("the first ending (bars 32 to 39): bass E2 F#2 B1 E2 E2, chords Em F#m Bm A/E F#m7/E, melody G5 F#5 B4 A4 B4 and C#5 D5 E5 twice", { skip: !has(36) }, () => {
+  assert.deepEqual([32, 33, 34, 35, 36].map((b) => left(inBar(original, b)).find((n) => n.role === "bass").pitch), ["E2", "F#2", "B1", "E2", "E2"]);
+  assert.deepEqual([32, 33, 34, 35, 36].map((b) => chordAt(tickOf(b)).symbol), ["Em", "F#m", "Bm", "A/E", "F#m7/E"]);
+  assert.deepEqual(names(right(inBar(original, 32))).concat(names(right(inBar(original, 33)))), ["G5", "F#5"]);
+  assert.deepEqual(names(right(inBar(original, 34))), ["B4", "A4", "B4"]);
+  assert.deepEqual(names(right(inBar(original, 35))), ["C#5", "D5", "E5"]);
+  assert.deepEqual(names(right(inBar(original, 36))), ["C#5", "D5", "E5"]);
+});
+
+test("bar 37 is the busy bar: bass E2 held, B2 and E3 above it, two chords for the right hand (A3 D4, then B3 D4 G4) under a held F sharp 4", { skip: !has(37) }, () => {
+  const bar = inBar(original, 37);
+  const lh = left(bar);
+  assert.deepEqual(lh.filter((n) => n.voice === 2).map((n) => [n.pitch, n.tick, n.dur]), [["E2", tickOf(37), BAR]]);
+  assert.deepEqual(lh.filter((n) => n.voice === undefined).map((n) => [n.pitch, n.tick - tickOf(37), n.dur]), [["B2", 480, 480], ["E3", 960, 480]]);
+  const rh = right(bar);
+  assert.deepEqual(rh.filter((n) => n.voice === undefined).map((n) => [n.pitch, n.dur]), [["F#4", BAR]]);
+  const chords = rh.filter((n) => n.voice === 2);
+  assert.deepEqual(names(sorted(chords.filter((n) => n.tick === tickOf(37, 2)))), ["A3", "D4"]);
+  assert.deepEqual(names(sorted(chords.filter((n) => n.tick === tickOf(37, 3)))), ["B3", "D4", "G4"]);
+});
+
+test("bars 38 and 39 end the first ending: Am7 (C4 E4 A4 C5 over A2 G3, a minor chord with no C sharp) and a plain D major chord (D4 F#4 A4 D5 over D2 A2 D3)", { skip: !has(39) }, () => {
+  assert.deepEqual(names(sorted(right(inBar(original, 38)))), ["C4", "E4", "A4", "C5"]);
+  assert.deepEqual(names(sorted(left(inBar(original, 38)))), ["A2", "G3"]);
+  assert.deepEqual(names(sorted(right(inBar(original, 39)))), ["D4", "F#4", "A4", "D5"]);
+  assert.deepEqual(names(sorted(left(inBar(original, 39)))), ["D2", "A2", "D3"]);
+  assert.equal(chordAt(tickOf(38)).symbol, "Am7");
+  assert.equal(chordAt(tickOf(39)).symbol, "D");
+  assert.ok(right(inBar(original, 38)).every((n) => midiOf(n.pitch) % 12 !== 1), "no C sharp in bar 38");
+  assert.ok(right(inBar(original, 38)).every((n) => n.dur === BAR) && left(inBar(original, 38)).every((n) => n.dur === BAR));
 });
 
 test("the song file holds none of the typographic marks that betray machine-written text: no long dashes, middle dots, curly quotes, arrows, one-character ellipsis or hard spaces", () => {
