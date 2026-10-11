@@ -17,6 +17,7 @@ export function nullScene() {
     setTimeline() {},
     setHandModes() {},
     setRange() {},
+    highlightNotes() {},
     setReducedMotion() {},
     setQuality() {},
     render() {},
@@ -50,6 +51,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
     let range = null; // null means fitted to the level
     let handModes = ALL_VISIBLE;
     let size = { w: 0, h: 0 };
+    let outlined = []; // MIDI keys the lesson card asked to outline
 
     const aspect = () => (size.h > 0 ? size.w / size.h : 1.6);
     let active = null; // the range the keyboard was built for
@@ -71,6 +73,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
       stage.scene.add(keyboard.group);
       keys.pressed.fill(0); // a new keyboard starts with every key up
       stage.applyPose(framePose(keyboard.width, aspect()));
+      keyboard.highlight(outlined);
       buildNotes();
     }
     build();
@@ -89,6 +92,11 @@ export async function createScene(container, { timeline, loadThree = () => impor
       setRange(r) {
         range = r;
         build();
+      },
+      /** Outline these MIDI keys with a neutral color, whatever the playback does; [] clears it. Survives a rebuild. */
+      highlightNotes(midis) {
+        outlined = Array.isArray(midis) ? midis : [];
+        keyboard.highlight(outlined);
       },
       setReducedMotion() {},
       setQuality() {},

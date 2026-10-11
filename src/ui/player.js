@@ -31,7 +31,7 @@ export function driftMs(prevSeconds, seconds) {
   return Math.max(0, (seconds - prevSeconds) * 1000);
 }
 
-const NOOP_VIEW = Object.freeze({ render() {}, dispose() {}, resize() {}, setRange() {}, setHandModes() {}, setTimeline() {} });
+const NOOP_VIEW = Object.freeze({ render() {}, dispose() {}, resize() {}, setRange() {}, setHandModes() {}, setTimeline() {}, highlightNotes() {} });
 
 // One audio object for the whole page: leaving the player suspends the context, returning resumes it.
 let sharedAudio = null;

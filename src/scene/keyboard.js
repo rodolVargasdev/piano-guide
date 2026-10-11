@@ -14,7 +14,23 @@ import {
   BLACK_PRESS_ANGLE,
   HAND_COLOR,
   KEY_REST_COLOR,
+  HIGHLIGHT_COLOR,
 } from "./dims.js";
+import { diffHighlight } from "./key-state.js";
+
+// A thin frame drawn once on a canvas; the halo quads tint it with the highlight color.
+function frameTexture() {
+  const c = document.createElement("canvas");
+  c.width = 32;
+  c.height = 128;
+  const g = c.getContext("2d");
+  g.strokeStyle = "#fff";
+  g.lineWidth = 6;
+  g.strokeRect(3, 3, 26, 122);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
 
 // A soft round falloff drawn once on a canvas; the glow quads multiply it by the hand color.
 function glowTexture() {
@@ -34,7 +50,7 @@ function glowTexture() {
 
 /**
  * One keyboard for an inclusive MIDI range. Returns { group, width, centerX, keyWidth, hasKey,
- * setPressed, dispose }; `centerX[midi]` and `keyWidth[midi]` place the falling notes over each key.
+ * setPressed, highlight, dispose }; `centerX[midi]` and `keyWidth[midi]` place the falling notes over each key.
  */
 export function createKeyboard(range) {
   const { whites, blacks, width } = layoutRange(range);
@@ -121,6 +137,30 @@ export function createKeyboard(range) {
   group.add(glow);
   owned.push(glowGeometry, glowMat, glowTex);
 
+  // Halo: a flat outline per key for the lesson card, independent of playback (scaled to zero when off).
+  const haloTex = frameTexture();
+  const haloMat = new THREE.MeshBasicMaterial({ map: haloTex, color: HIGHLIGHT_COLOR, transparent: true, depthWrite: false, toneMapped: false });
+  const halo = new THREE.InstancedMesh(glowGeometry, haloMat, glowCount);
+  halo.frustumCulled = false;
+  halo.renderOrder = 2;
+  const haloOn = new Float32Array(glowCount * 16);
+  const haloOff = new Float32Array(glowCount * 16);
+  [...whites, ...blacks].forEach((k, gi) => {
+    const isB = gi >= whites.length;
+    dummy.rotation.set(0, 0, 0);
+    dummy.position.set(k.x + k.width / 2 - width / 2, (isB ? BLACK_TOP : WHITE_TOP) + 0.06, isB ? BLACK_LENGTH / 2 : WHITE_LENGTH / 2);
+    dummy.scale.set(isB ? k.width : k.width - KEY_GAP, 1, isB ? BLACK_LENGTH : WHITE_LENGTH);
+    dummy.updateMatrix();
+    dummy.matrix.toArray(haloOn, gi * 16);
+    dummy.scale.set(0, 0, 0);
+    dummy.updateMatrix();
+    dummy.matrix.toArray(haloOff, gi * 16);
+    halo.setMatrixAt(gi, tmp.fromArray(haloOff, gi * 16));
+  });
+  group.add(halo);
+  owned.push(haloMat, haloTex);
+  let lit = [];
+
   // Lacquered keybed and cheek blocks frame the keys (a plain dark body; reflections arrive later).
   const bodyMat = new THREE.MeshStandardMaterial({ color: "#0a0b0f", roughness: 0.4, metalness: 0.1 });
   const part = (w, h, d, x, y, z) => {
@@ -151,11 +191,20 @@ export function createKeyboard(range) {
     glow.instanceColor.needsUpdate = true;
   }
 
+  /** Outline exactly these MIDI keys (others are cleared); an empty array clears the outline. */
+  function highlight(midis) {
+    const d = diffHighlight(lit, midis, (m) => slot.has(m));
+    lit = d.lit;
+    for (const m of d.off) halo.setMatrixAt(slot.get(m).glow, tmp.fromArray(haloOff, slot.get(m).glow * 16));
+    for (const m of d.on) halo.setMatrixAt(slot.get(m).glow, tmp.fromArray(haloOn, slot.get(m).glow * 16));
+    halo.instanceMatrix.needsUpdate = true;
+  }
+
   function dispose() {
-    for (const m of [white.mesh, black.mesh, glow]) m.dispose();
+    for (const m of [white.mesh, black.mesh, glow, halo]) m.dispose();
     for (const o of owned) o.dispose();
     group.clear();
   }
 
-  return { group, width, centerX, keyWidth: drawnWidth, hasKey: (midi) => slot.has(midi), setPressed, dispose };
+  return { group, width, centerX, keyWidth: drawnWidth, hasKey: (midi) => slot.has(midi), setPressed, highlight, dispose };
 }

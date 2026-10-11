@@ -38,3 +38,14 @@ export function updateKeyState(state, timeline, tick, playing, handModes) {
   }
   return changed;
 }
+
+/**
+ * Which keys to switch off and on when the highlighted set changes from `lit` (an array of MIDI
+ * numbers) to `wanted`. Numbers that are not integers or that `hasKey` refuses (outside the drawn
+ * range) are dropped, duplicates collapse, and `wanted = []` clears everything.
+ * Returns { on, off, lit } where `lit` is the new set.
+ */
+export function diffHighlight(lit, wanted, hasKey = () => true) {
+  const next = [...new Set((wanted ?? []).filter((m) => Number.isInteger(m) && hasKey(m)))];
+  return { on: next.filter((m) => !lit.includes(m)), off: lit.filter((m) => !next.includes(m)), lit: next };
+}

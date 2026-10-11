@@ -12,7 +12,7 @@ function fakeDom() {
   return { container, doc };
 }
 
-const SCENE_METHODS = ["setTimeline", "setHandModes", "setRange", "setReducedMotion", "setQuality", "render", "resize", "dispose"];
+const SCENE_METHODS = ["setTimeline", "setHandModes", "setRange", "highlightNotes", "setReducedMotion", "setQuality", "render", "resize", "dispose"];
 
 test("nullScene has the scene interface, every method is a harmless no-op", () => {
   const s = nullScene();

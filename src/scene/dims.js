@@ -22,4 +22,6 @@ export const BACKGROUND = "#0b0d12";
 
 /** Hand colors: left blue, right orange. */
 export const HAND_COLOR = Object.freeze({ L: "#3b82f6", R: "#f59e0b" });
+/** The lesson card outlines chord keys in a color no hand uses. */
+export const HIGHLIGHT_COLOR = "#2dd4bf";
 export const KEY_REST_COLOR = Object.freeze({ white: "#efe9dd", black: "#16181e" });

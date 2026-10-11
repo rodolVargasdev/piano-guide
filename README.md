@@ -94,7 +94,8 @@ The panel under the transport drives `src/ui/practice-controller.js` (state, no 
 - Colors: right hand orange (`#f59e0b`), left hand blue (`#3b82f6`). Hand identity does not rely on color alone: left-hand bars carry long dark stripes, right-hand bars are plain (finger markers with hand shapes arrive in a later PR).
 - Keys depress about their back edge and light up in the hand color with a soft glow while their note sounds. A paused scene lights no key.
 - Falling notes sit in tick space: a bar's lower edge reaches the key-top line at the moment its note starts, and its height is proportional to its duration. Only the parent group moves each frame. Two clipping planes bound the look-ahead (2 bars).
-- Range: the keyboard fits the song (3 semitones of padding, snapped outward to C and B, at least 3 octaves); the camera frames it. With `?debug=1` a "Full 88" button shows all 88 keys and reframes; the regular control arrives with the practice panel.
+- Range: the keyboard fits the song (3 semitones of padding, snapped outward to C and B, at least 3 octaves); the camera frames it. The practice panel has a "Full 88" toggle that shows all 88 keys and reframes.
+- `highlightNotes(midis)` outlines keys in a neutral teal that no hand uses, whatever the playback does (the lesson card calls it for its chord chips); an empty array clears it, keys outside the drawn range are ignored and the outline survives a range or level rebuild.
 - No WebGL, or a failed three.js import: the scene slot shows "3D view unavailable on this device" and the transport and audio keep working.
 - One `WebGLRenderer` is shared by the whole page; leaving the player disposes the scene's own geometry, materials and textures.
 

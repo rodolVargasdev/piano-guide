@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createKeyState, updateKeyState, HAND_L, HAND_R } from "../../src/scene/key-state.js";
+import { createKeyState, updateKeyState, diffHighlight, HAND_L, HAND_R } from "../../src/scene/key-state.js";
 
 const note = (tick, dur, midi, hand) => ({ tick, dur, midi, hand });
 const timeline = { notes: [note(0, 480, 60, "R"), note(0, 960, 48, "L"), note(480, 480, 64, "R")] };
@@ -92,4 +92,24 @@ test("it agrees with core/timeline.activeAt at every tick of a dense sweep (the 
     for (const n of activeAt(dense, tick)) expected[n.midi] |= n.hand === "L" ? HAND_L : HAND_R;
     assert.deepEqual(s.pressed, expected, `tick ${tick}`);
   }
+});
+
+test("diffHighlight lights the new keys, releases the old ones and keeps the common ones", () => {
+  assert.deepEqual(diffHighlight([], [64, 68, 71]), { on: [64, 68, 71], off: [], lit: [64, 68, 71] });
+  assert.deepEqual(diffHighlight([64, 68, 71], [64, 69]), { on: [69], off: [68, 71], lit: [64, 69] });
+});
+
+test("diffHighlight with an empty set clears everything", () => {
+  assert.deepEqual(diffHighlight([64, 68], []), { on: [], off: [64, 68], lit: [] });
+  assert.deepEqual(diffHighlight([64], undefined), { on: [], off: [64], lit: [] });
+});
+
+test("diffHighlight drops duplicates, non-integers and keys outside the drawn range", () => {
+  const inRange = (m) => m >= 48 && m <= 72;
+  assert.deepEqual(diffHighlight([], [60, 60, 61.5, "62", 30, 90, 64], inRange).lit, [60, 64]);
+});
+
+test("counter-proof: without the range filter a key outside the keyboard would stay lit forever", () => {
+  assert.deepEqual(diffHighlight([], [30]).lit, [30], "an unfiltered call keeps it");
+  assert.deepEqual(diffHighlight([], [30], (m) => m >= 48).lit, [], "the filter drops it");
 });
