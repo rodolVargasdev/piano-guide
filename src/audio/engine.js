@@ -8,7 +8,7 @@
 
 import { makeAnchor, tickAt, timeAt, windowEvents, songTickOf } from "../core/schedule.js";
 import { beatGrid, barBeatOf, ticksPerBar, ticksPerBeatUnit, ticksPerSecond, ticksToSeconds } from "../core/timing.js";
-import { clampBpm, effectiveBpm, passesBetween, audibleNotes } from "../core/practice.js";
+import { clampBpm, effectiveBpm, passesBetween, schedulableNotes } from "../core/practice.js";
 import { createAudio } from "./context.js";
 import { createSynth } from "./synth.js";
 import { createMetronome } from "./metronome.js";
@@ -27,7 +27,7 @@ export function createEngine({
 } = {}) {
   let tl = null; // resolved timeline from core/timeline
   let grid = []; // metronome beats as pseudo-notes
-  let audible = []; // notes of hands that are not muted
+  let audible = []; // schedulable notes: hands not muted, and none at all for a silent (private) timeline
   let loop = null; // { startTick, endTick } on the song timeline
   let handModes = { L: { muted: false, hidden: false }, R: { muted: false, hidden: false } };
   let lookahead = LOOKAHEAD_S;
@@ -131,7 +131,7 @@ export function createEngine({
 
   /** Start every audible note that began before `origin` and is still sounding, cut at the loop end. */
   function sustain(now) {
-    for (const n of audible) {
+    for (const n of schedulableNotes(tl, handModes)) {
       const end = Math.min(n.tick + n.dur, loop ? loop.endTick : Infinity);
       if (n.midi === null || n.tick >= origin || end <= origin) continue;
       synth.playNote({ midi: n.midi, vel: n.vel ?? 0.7, when: now, dur: (end - origin) / anchor.tps, pedal: pedalAt(n.tick + n.dur) });
@@ -146,8 +146,12 @@ export function createEngine({
     click.cancelPending(now);
   }
 
+  /** True unless the timeline is explicitly public (`silent === false`): the fail-closed silent rule. */
+  const silentNow = () => Boolean(tl) && tl.silent !== false;
+
+  /** Starts the transport and returns { silent }: a silent song runs the clock but schedules no note. */
   function play() {
-    if (!tl || playing) return;
+    if (!tl || playing) return { silent: silentNow() };
     const ctx = audio.ensure(); // inside the user gesture, so autoplay policy lets it run
     if (!synth) {
       synth = makeSynth(ctx);
@@ -162,6 +166,7 @@ export function createEngine({
     playing = true;
     emit("state", { state: "playing" });
     pump();
+    return { silent: silentNow() };
   }
 
   function pause() {
@@ -206,7 +211,7 @@ export function createEngine({
       tl = timeline;
       if (userBpm === null) userBpm = clampBpm(tl.tempo.bpm);
       grid = beatGrid(tl.meter, tl.pickupTicks, tl.tempo.beatUnit, 0, tl.lengthTicks).map((g) => ({ tick: g.tick, dur: 1, accent: g.accent }));
-      audible = audibleNotes(tl.notes, handModes);
+      audible = schedulableNotes(tl, handModes);
       heldTick = place(keep);
       if (playing) retime(heldTick, { releaseSounding: true, catchUp: true });
     },
@@ -238,7 +243,7 @@ export function createEngine({
       const old = handModes;
       handModes = { L: { ...old.L, ...modes.L }, R: { ...old.R, ...modes.R } };
       if (!tl) return;
-      audible = audibleNotes(tl.notes, handModes);
+      audible = schedulableNotes(tl, handModes);
       const newlyMuted = ["L", "R"].some((h) => handModes[h].muted && !old[h].muted);
       if (playing) retime(tickNow(false), { releaseSounding: newlyMuted });
     },
@@ -262,6 +267,9 @@ export function createEngine({
     },
 
     isPlaying: () => playing,
+
+    /** True when the loaded timeline is silent (private, or not explicitly public); false with no timeline. */
+    isSilent: () => silentNow(),
 
     /** Subscribe to "state" ({ state }), "loop-pass" and "ended". Returns an unsubscribe function. */
     on(name, fn) {
