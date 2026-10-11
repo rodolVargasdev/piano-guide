@@ -36,6 +36,7 @@ export function resolveLevel(song, levelId) {
     sections: song.sections ?? [],
     pedal: level.pedal ?? [],
     analysis: level.analysis ?? [],
+    key: song.key,
     range: notes.some((n) => n.midi !== null) ? { low, high } : null,
     shifts,
   };
