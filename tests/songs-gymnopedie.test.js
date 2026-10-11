@@ -539,6 +539,34 @@ test("bars 38 and 39 end the first ending: Am7 (C4 E4 A4 C5 over A2 G3, a minor 
   assert.ok(right(inBar(original, 38)).every((n) => n.dur === BAR) && left(inBar(original, 38)).every((n) => n.dur === BAR));
 });
 
+test("the second ending (bars 71 to 78) has no sharp anywhere: every note is a white key, all inside D Dorian", { skip: !has(78) }, () => {
+  const second = heads(original).filter((n) => n.tick >= tickOf(71));
+  assert.ok(second.length > 30);
+  assert.ok(second.every((n) => !n.pitch.includes("#")), "no sharp");
+  const classes = new Set(second.map((n) => midiOf(n.pitch) % 12));
+  assert.deepEqual([...classes].sort((a, b) => a - b), [0, 2, 4, 5, 7, 9, 11]);
+});
+
+test("bar 76 repeats the bass line and chords of bar 37 with F natural 4 instead of F sharp 4, and bar 78 ends the piece on D minor (F natural) where bar 39 closed on D major", { skip: !has(78) }, () => {
+  const shape = (bar, first) => {
+    const b = inBar(original, bar);
+    return {
+      lh: left(b).map((n) => [n.pitch, n.tick - tickOf(first), n.dur, n.voice ?? 1]),
+      chords: right(b).filter((n) => n.voice === 2).map((n) => [n.pitch, n.tick - tickOf(first), n.dur]),
+      melody: right(b).filter((n) => n.voice === undefined).map((n) => n.pitch),
+    };
+  };
+  const a = shape(37, 37), c = shape(76, 76);
+  assert.deepEqual(c.lh, a.lh);
+  assert.deepEqual(c.chords, a.chords);
+  assert.deepEqual([a.melody, c.melody], [["F#4"], ["F4"]]);
+  assert.deepEqual(names(sorted(right(inBar(original, 78)))), ["D4", "F4", "A4", "D5"]);
+  assert.deepEqual(names(sorted(left(inBar(original, 78)))), ["D2", "A2", "D3"]);
+  assert.equal(chordAt(tickOf(78)).symbol, "Dm");
+  assert.equal(chordAt(tickOf(76)).symbol, "Bm7b5/E");
+  assert.equal(song.lengthTicks, tickOf(79));
+});
+
 test("the song file holds none of the typographic marks that betray machine-written text: no long dashes, middle dots, curly quotes, arrows, one-character ellipsis or hard spaces", () => {
   const banned = /[\u2012-\u2015\u00b7\u2022\u2018\u2019\u201c\u201d\u2026\u2190-\u21ff\u00a0]/;
   assert.equal(banned.test(text), false);
