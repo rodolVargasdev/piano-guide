@@ -41,6 +41,18 @@ test("resolveLevel on a level without pitched notes has a null range", () => {
   assert.equal(resolveLevel(song, "beginner").range, null);
 });
 
+test("resolveLevel stamps silent: false for a public song and true for a private one", () => {
+  assert.equal(resolveLevel(validSong(), "beginner").silent, false);
+  assert.equal(resolveLevel(mutated((s) => void (s.visibility = "private")), "beginner").silent, true);
+  assert.equal(resolveLevel(mutated((s) => void (s.visibility = "public")), "beginner").silent, false);
+});
+
+test("resolveLevel passes the level learn block along, or null when the level has none", () => {
+  const learn = { phrases: [{ id: "p1", startTick: 0, endTick: 1920 }], transposeTo: ["G"] };
+  assert.deepEqual(resolveLevel(mutated((s) => void (s.levels.beginner.learn = learn)), "beginner").learn, learn);
+  assert.equal(resolveLevel(validSong(), "beginner").learn, null);
+});
+
 test("activeAt: start inclusive, end exclusive, rests never active", () => {
   const tl = { notes: resolved([n(0, "C4"), n(480, "E4"), { tick: 0, dur: 480, hand: "L", rest: true }]) };
   assert.deepEqual(activeAt(tl, 0).map((x) => x.pitch), ["C4"]);

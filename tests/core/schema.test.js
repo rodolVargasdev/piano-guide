@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validateSong, validateIndex } from "../../src/core/schema.js";
+import { validateSong, validateIndex, visibilityMismatch } from "../../src/core/schema.js";
 import { validSong, mutated, notesOf } from "../fixtures/helpers.js";
 
 const hasError = (result, path, rule) => result.errors.some((e) => e.path === path && (rule === undefined || e.rule === rule));
@@ -322,4 +322,87 @@ test("validateIndex rejects a non-index document", () => {
   for (const doc of [null, [], {}, { songs: "x" }, { songs: [null] }]) {
     assert.equal(validateIndex(doc).ok, false, JSON.stringify(doc));
   }
+});
+
+// Learn-mode rules: R12 visibility, R13 LocalizedText, R14 learn block, R5 for private user-submitted songs.
+// Same shape as MALFORMED: each case fails on its own rule and passes once that rule is disabled.
+const withLearn = (s, learn) => void (s.levels.beginner.learn = learn);
+const phrase = (id, startTick, endTick, extra = {}) => ({ id, startTick, endTick, ...extra });
+const capture = { url: "https://example.org/capture", what: "One capture", accessed: "2026-10-10", kind: "user-submitted" };
+const privateScore = (s) => {
+  s.visibility = "private";
+  s.sources.push(capture, { url: "https://www.mutopiaproject.org/x", what: "Score", accessed: "2026-10-10", kind: "public-domain-score" });
+  s.levels.beginner.transcribed = true;
+};
+const LP = "levels.beginner.learn.phrases";
+
+const MALFORMED_LEARN = [
+  { name: "R12 unknown visibility value", rule: "R12", path: "visibility", mutate: (s) => void (s.visibility = "secret") },
+  { name: "R13 hint without Spanish", rule: "R13", path: `${LP}[0].hint.es`, mutate: (s) => withLearn(s, { phrases: [phrase("p1", 0, 1920, { hint: { en: "Start slowly." } })] }) },
+  { name: "R13 level label with an empty English text", rule: "R13", path: "levels.beginner.label.en", mutate: (s) => void (s.levels.beginner.label = { en: " ", es: "Principiante" }) },
+  { name: "R13 lesson summary without English", rule: "R13", path: "lesson.beginner.summary.en", mutate: (s) => void (s.lesson.beginner.summary = { es: "Dos acordes." }) },
+  {
+    name: "R13 analysis title without Spanish",
+    rule: "R13",
+    path: "levels.beginner.analysis[0].title.es",
+    mutate: (s) => void (s.levels.beginner.analysis = [{ tick: 0, kind: "harmony", title: { en: "Tonic" }, text: "Home chord." }]),
+  },
+  { name: "R14 overlapping phrases", rule: "R14", path: `${LP}[1]`, mutate: (s) => withLearn(s, { phrases: [phrase("p1", 0, 2000), phrase("p2", 1920, 3840)] }) },
+  { name: "R14 phrases out of order", rule: "R14", path: `${LP}[1]`, mutate: (s) => withLearn(s, { phrases: [phrase("p1", 1920, 3840), phrase("p2", 0, 1920)] }) },
+  { name: "R14 phrase outside the song", rule: "R14", path: `${LP}[0]`, mutate: (s) => withLearn(s, { phrases: [phrase("p1", 0, 4000)] }) },
+  { name: "R14 duplicate phrase id", rule: "R14", path: `${LP}[1].id`, mutate: (s) => withLearn(s, { phrases: [phrase("p1", 0, 1920), phrase("p1", 1920, 3840)] }) },
+  { name: "R14 hint with two sentences", rule: "R14", path: `${LP}[0].hint`, mutate: (s) => withLearn(s, { phrases: [phrase("p1", 0, 1920, { hint: "Go slowly. Then faster." })] }) },
+  { name: "R14 transposeTo equals the song tonic", rule: "R14", path: "levels.beginner.learn.transposeTo[0]", mutate: (s) => withLearn(s, { transposeTo: ["C"] }) },
+  { name: "R14 transposeTo is the same pitch class as the tonic", rule: "R14", path: "levels.beginner.learn.transposeTo[0]", mutate: (s) => withLearn(s, { transposeTo: ["B#"] }) },
+  { name: "R14 transposeTo is not a tonic name", rule: "R14", path: "levels.beginner.learn.transposeTo[0]", mutate: (s) => withLearn(s, { transposeTo: ["H"] }) },
+  { name: "R5 private song with a user-submitted source marked transcribed", rule: "R5", path: "levels.beginner.transcribed", mutate: privateScore },
+];
+
+for (const c of MALFORMED_LEARN) {
+  test(`learn-mode rule is rejected with its path: ${c.name}`, () => {
+    const r = validateSong(mutated(c.mutate));
+    assert.ok(hasError(r, c.path, c.rule), `expected ${c.rule} at ${c.path}, got ${JSON.stringify(r.errors)}`);
+  });
+
+  test(`counter-proof: the same input passes once ${c.rule} is disabled (${c.name})`, () => {
+    assert.deepEqual(validateSong(mutated(c.mutate), { disabledRules: [c.rule] }).errors, []);
+  });
+}
+
+test("R13 names the missing language; a complete LocalizedText and plain strings pass", () => {
+  const bad = validateSong(mutated((s) => withLearn(s, { phrases: [phrase("p1", 0, 1920, { hint: { en: "Start slowly." } })] })));
+  assert.match(bad.errors.find((e) => e.rule === "R13").message, /es text is missing/);
+  const good = mutated((s) => {
+    const hint = { en: "Start slowly.", es: "Empiece despacio." };
+    withLearn(s, { phrases: [phrase("p1", 0, 1920, { title: { en: "Opening", es: "Inicio" }, hint }), phrase("p2", 1920, 3840, { hint: "Keep the beat." })], transposeTo: ["G"] });
+    s.levels.beginner.label = { en: "Beginner", es: "Principiante" };
+  });
+  assert.deepEqual(validateSong(good), { ok: true, errors: [], warnings: [] });
+});
+
+test("R14 accepts adjacent phrases, and a level without a learn block stays valid", () => {
+  assert.equal(validateSong(mutated((s) => withLearn(s, { phrases: [phrase("p1", 0, 1920), phrase("p2", 1920, 3840)] }))).ok, true);
+  assert.equal(validateSong(validSong()).ok, true);
+});
+
+test("R5 still fails a private song whose only source is user-submitted and transcribed", () => {
+  const r = validateSong(
+    mutated((s) => {
+      s.visibility = "private";
+      s.sources = [capture];
+      s.levels.beginner.transcribed = true;
+    }),
+  );
+  assert.ok(hasError(r, "levels.beginner.transcribed", "R5"));
+});
+
+test("validateIndex checks visibility values and visibilityMismatch compares the entry with the file", () => {
+  assert.equal(validateIndex({ songs: [{ ...entry(), visibility: "private" }] }).ok, true);
+  assert.ok(hasError(validateIndex({ songs: [{ ...entry(), visibility: "secret" }] }), "songs[0].visibility", "I1"));
+  const priv = mutated((s) => void (s.visibility = "private"));
+  assert.equal(visibilityMismatch(entry(), validSong()), null, "no claim, no mismatch");
+  assert.equal(visibilityMismatch({ ...entry(), visibility: "public" }, validSong()), null);
+  assert.equal(visibilityMismatch({ ...entry(), visibility: "private" }, priv), null);
+  assert.match(visibilityMismatch({ ...entry(), visibility: "private" }, validSong()), /example-song.*private.*public/);
+  assert.match(visibilityMismatch({ ...entry(), visibility: "public" }, priv), /public.*private/);
 });

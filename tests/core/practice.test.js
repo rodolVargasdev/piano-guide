@@ -15,6 +15,7 @@ import {
   audibleNotes,
   mergeTies,
   visibleNotes,
+  schedulableNotes,
 } from "../../src/core/practice.js";
 
 const M44 = { num: 4, den: 4 };
@@ -182,4 +183,18 @@ test("counter-proof: without the tie flag, or on another pitch or hand, nothing 
   assert.equal(mergeTies([tn(0, 240, "C5", 72), tn(240, 240, "C5", 72)]).length, 2, "no flag");
   assert.equal(mergeTies([tn(0, 240, "C5", 72, { tie: true }), tn(240, 240, "D5", 74)]).length, 2, "other pitch");
   assert.equal(mergeTies([tn(0, 240, "C5", 72, { tie: true }), { ...tn(240, 240, "C5", 72), hand: "L" }]).length, 2, "other hand");
+});
+
+test("schedulableNotes fails closed: a timeline without `silent` or with silent true schedules nothing", () => {
+  assert.deepEqual(schedulableNotes({ notes: NOTES }, undefined), [], "field missing");
+  assert.deepEqual(schedulableNotes({ notes: NOTES, silent: true }, undefined), []);
+  assert.deepEqual(schedulableNotes({ notes: NOTES, silent: undefined }, undefined), []);
+  assert.deepEqual(schedulableNotes({ notes: NOTES, silent: "false" }, undefined), [], "only the boolean false opens the gate");
+  assert.deepEqual(schedulableNotes(null, undefined), []);
+});
+
+test("counter-proof: silent false schedules the audible notes and still honors muted hands", () => {
+  assert.equal(schedulableNotes({ notes: NOTES, silent: false }, undefined).length, 2);
+  const muted = { L: { muted: true }, R: { muted: false } };
+  assert.deepEqual(schedulableNotes({ notes: NOTES, silent: false }, muted).map((n) => n.hand), ["R"]);
 });

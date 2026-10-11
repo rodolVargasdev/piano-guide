@@ -1,10 +1,13 @@
 // Pure timeline queries over a resolved level. No DOM, no Web Audio.
 import { parsePitch } from "./pitch.js";
+import { isSilent } from "./visibility.js";
 
 /**
  * Resolved timeline of one level: every note gets its `midi`, notes are sorted
  * (tick, then midi, then hand), and the song-wide fields views need are copied
  * so no consumer has to carry the whole song.
+ * `silent` is true for a private song: the engine schedules no note of a timeline unless
+ * `silent === false` (core/practice `schedulableNotes`). `learn` is the level's learn block or null.
  * `range` is the lowest and highest MIDI of pitched notes, or null without notes.
  * `shifts` is the set of note indexes flagged by shiftHints for either hand.
  * Throws RangeError for a level the song does not have.
@@ -40,6 +43,8 @@ export function resolveLevel(song, levelId) {
     key: song.key,
     range: notes.some((n) => n.midi !== null) ? { low, high } : null,
     shifts,
+    silent: isSilent(song),
+    learn: level.learn ?? null,
   };
 }
 
