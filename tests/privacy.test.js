@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { declaresPrivate, ignoresPrivateFolder, privatePathsIn, privateRefsInIndex, trackedPaths } from "./privacy-guards.js";
+import { declaresPrivate, dockerfilePrivateCopies, dockerignoresPrivateFolder, ignoresPrivateFolder, nginxHidesSources, privatePathsIn, privateRefsInIndex, trackedPaths } from "./privacy-guards.js";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const read = (rel) => readFileSync(join(repoRoot, rel), "utf8");
@@ -65,4 +65,26 @@ test("without a .git directory the tracked-path check is skipped with a reason, 
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// ---- the Docker image never holds the private folder ---------------------------------------------------------
+test(".dockerignore lists the private folder, and the Dockerfile has no COPY or ADD that names it", () => {
+  assert.equal(dockerignoresPrivateFolder(read(".dockerignore")), true);
+  assert.deepEqual(dockerfilePrivateCopies(read("Dockerfile")), []);
+});
+
+test("counter-proof: an ignore file without the entry, or a Dockerfile that copies the folder, fails the guards", () => {
+  assert.equal(dockerignoresPrivateFolder(".git\ntools\n"), false);
+  assert.equal(dockerignoresPrivateFolder("songs-private-old\n# songs-private\n"), false);
+  assert.equal(dockerignoresPrivateFolder("songs-private\r\n"), true);
+  assert.equal(dockerignoresPrivateFolder("/songs-private/\n"), true);
+  const bad = "FROM nginx\nCOPY songs/ /usr/share/nginx/html/songs/\nCOPY songs-private/ /usr/share/nginx/html/songs-private/\nADD songs-private /x\n# COPY songs-private never\n";
+  assert.equal(dockerfilePrivateCopies(bad).length, 2);
+  assert.deepEqual(dockerfilePrivateCopies("COPY songs/ ./songs/\nCOPY assets/ ./assets/\n"), []);
+});
+
+test("nginx answers 404 for the private sources folder, and the guard notices when it does not", () => {
+  assert.equal(nginxHidesSources(read("nginx.conf")), true);
+  assert.equal(nginxHidesSources("location ^~ /songs-private/ { expires -1; }"), false);
+  assert.equal(nginxHidesSources("location ^~ /songs-private/sources/ { expires -1; }"), false);
 });

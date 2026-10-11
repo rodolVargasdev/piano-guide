@@ -35,3 +35,18 @@ export function trackedPaths(repoRoot) {
   if (r.error || r.status !== 0) return { skipped: `git ls-files could not run (${r.error?.code ?? `exit ${r.status}`})` };
   return { paths: r.stdout.split("\0").filter(Boolean) };
 }
+
+/** True when a .dockerignore text has a line for the private folder, with or without a slash on either side. */
+export function dockerignoresPrivateFolder(text) {
+  return text.split(/\r?\n/).some((line) => line.trim().replace(/^\//, "").replace(/\/$/, "") === "songs-private");
+}
+
+/** The COPY or ADD lines of a Dockerfile text that name the private folder (must be empty). */
+export function dockerfilePrivateCopies(text) {
+  return text.split(/\r?\n/).filter((line) => /^\s*(COPY|ADD)\b/i.test(line) && line.includes("songs-private"));
+}
+
+/** True when an nginx config text answers 404 for the private sources folder. */
+export function nginxHidesSources(text) {
+  return /location\s+\^~\s+\/songs-private\/sources\/\s*\{\s*return\s+404;\s*\}/.test(text);
+}
