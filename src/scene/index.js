@@ -42,9 +42,10 @@ export async function createScene(container, { timeline, loadThree = () => impor
   let stage = null;
   let keyboard = null;
   let notes = null;
+  let markers = null;
   try {
     await loadThree();
-    const [{ createStage }, { createKeyboard }, { createFallingNotes }] = await Promise.all([import("./stage.js"), import("./keyboard.js"), import("./falling-notes.js")]);
+    const [{ createStage }, { createKeyboard }, { createFallingNotes }, { createMarkers }] = await Promise.all([import("./stage.js"), import("./keyboard.js"), import("./falling-notes.js"), import("./markers.js")]);
     stage = createStage(container);
     const keys = createKeyState();
     let current = timeline;
@@ -52,6 +53,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
     let handModes = ALL_VISIBLE;
     let size = { w: 0, h: 0 };
     let outlined = []; // MIDI keys the lesson card asked to outline
+    let reduced = false; // reduced motion: the shift rings stay steady
 
     const aspect = () => (size.h > 0 ? size.w / size.h : 1.6);
     let active = null; // the range the keyboard was built for
@@ -75,6 +77,16 @@ export async function createScene(container, { timeline, loadThree = () => impor
       stage.applyPose(framePose(keyboard.width, aspect()));
       keyboard.highlight(outlined);
       buildNotes();
+      buildMarkers();
+    }
+    // Finger markers follow the keyboard and the timeline; they are drawn last.
+    function buildMarkers() {
+      if (markers) {
+        stage.scene.remove(markers.group);
+        markers.dispose();
+      }
+      markers = createMarkers({ timeline: current, keyboard });
+      stage.scene.add(markers.group);
     }
     build();
 
@@ -98,13 +110,16 @@ export async function createScene(container, { timeline, loadThree = () => impor
         outlined = Array.isArray(midis) ? midis : [];
         keyboard?.highlight(outlined);
       },
-      setReducedMotion() {},
+      setReducedMotion(on) {
+        reduced = on === true;
+      },
       setQuality() {},
       /** Draw the scene at `tick`; with `playing` false no key is lit by playback. */
       render(tick, playing = true) {
         const changed = updateKeyState(keys, current, tick, playing, handModes);
         for (let i = 0; i < changed.length; i += 1) keyboard.setPressed(changed[i], keys.pressed[changed[i]]);
         notes.update(tick);
+        markers.update(tick, handModes, reduced);
         stage.render();
       },
       resize() {
@@ -116,6 +131,8 @@ export async function createScene(container, { timeline, loadThree = () => impor
         stage.applyPose(framePose(keyboard.width, w / h));
       },
       dispose() {
+        markers?.dispose();
+        markers = null;
         notes?.dispose();
         notes = null;
         keyboard?.dispose();
@@ -127,6 +144,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
     scene.resize();
     return scene;
   } catch {
+    markers?.dispose();
     notes?.dispose();
     keyboard?.dispose();
     stage?.dispose();
