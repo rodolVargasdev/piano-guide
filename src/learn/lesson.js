@@ -1,12 +1,13 @@
 // The lesson as a pure reducer: reduce(state, action) -> { state, effects }. The view feeds actions and
 // runs the returned effects (engine calls, storage writes, live-region text); it never decides what a
-// press means. No DOM, no audio, no storage. Milestone A: phases start, phraseIntro, listening,
-// yourTurn, phraseComplete and songComplete (lesson zero and stages arrive in Milestone B).
+// press means. No DOM, no audio, no storage. Phases: start, lessonZero, phraseIntro, listening, yourTurn,
+// phraseComplete and songComplete (stages arrive with their own slice).
 import { resolveLevel } from "../core/timeline.js";
 import { transposeSong } from "../theory/transpose.js";
+import { initZero, reduceZero } from "./lesson-zero.js";
 import { matchEvent, startStep } from "./matcher.js";
 import { derivePhrases } from "./phrases.js";
-import { positionOf } from "./progress.js";
+import { positionOf, withLessonZero } from "./progress.js";
 import { deriveSteps } from "./steps.js";
 
 const HANDS = ["R", "L"];
@@ -89,7 +90,21 @@ function beginStep(s, stepIndex) {
 const stay = (s) => ({ state: s, effects: [] });
 const listenEffect = (s) => ({ type: "listen", phraseId: s.phrases[s.phraseIndex].id, startTick: s.phrases[s.phraseIndex].startTick, endTick: s.phrases[s.phraseIndex].endTick, hand: s.hand });
 
+// Lesson zero keeps its own small state; its keys and its announcements pass through unchanged.
+function inZero(s, action) {
+  const r = reduceZero(s.zero, action);
+  const next = { ...s, zero: r.state, held: new Set(r.state.held) };
+  if (!r.effects.some((e) => e.type === "finish")) return { state: next, effects: r.effects };
+  return leaveZero(next, "done");
+}
+
+// Back to the first screen with lesson zero marked done or skipped (saved once for the learner, not per song).
+function leaveZero(s, value) {
+  return { state: { ...s, phase: "start", zero: null, feedback: null, progress: s.progress ? withLessonZero(s.progress, value) : s.progress }, effects: [{ type: "lessonZero", value }] };
+}
+
 function onNote(s, action) {
+  if (s.phase === "lessonZero") return inZero(s, action);
   const held = new Set(s.held);
   if (action.type === "NOTE_ON") held.add(action.midi);
   else held.delete(action.midi);
@@ -130,7 +145,8 @@ function refit(s, { phrases, timeline }, hand, effects) {
 /**
  * reduce(state, action) -> { state, effects }. Actions: START, CONTINUE, LISTEN, LISTEN_DONE, MY_TURN,
  * NOTE_ON { midi }, NOTE_OFF { midi }, LISTEN_AGAIN, NEXT_PHRASE, REPEAT, SET_LANG { lang },
- * SET_KEY { tonic }, SET_HAND { hand }, LEAVE. Effects: listen, stopListen, save, announce, releaseAll.
+ * SET_KEY { tonic }, SET_HAND { hand }, LESSON_ZERO, ZERO_NEXT, ZERO_SKIP, LEAVE. Effects: listen, stopListen,
+ * save, announce, releaseAll, lessonZero { value }.
  * An action that does not apply in the current phase changes nothing. An unknown action throws.
  */
 export function reduce(s, action) {
@@ -152,6 +168,12 @@ export function reduce(s, action) {
       if (index === -1) index = phraseWithSteps(s.timeline, s.phrases, hand, 0);
       return index === -1 ? stay(s) : { state: enterPhrase({ ...s, hand }, index), effects: [] };
     }
+    case "LESSON_ZERO":
+      return s.phase === "start" ? { state: { ...s, phase: "lessonZero", zero: initZero([...s.held]), feedback: null }, effects: [] } : stay(s);
+    case "ZERO_NEXT":
+      return s.phase === "lessonZero" ? inZero(s, { type: "NEXT" }) : stay(s);
+    case "ZERO_SKIP":
+      return s.phase === "lessonZero" ? leaveZero(s, "skipped") : stay(s);
     case "LISTEN":
       return s.phase === "phraseIntro" && !s.silent ? { state: { ...s, phase: "listening", returnStep: null }, effects: [listenEffect(s)] } : stay(s);
     case "LISTEN_AGAIN":
@@ -170,6 +192,7 @@ export function reduce(s, action) {
     case "SET_LANG":
       return stay(s);
     case "SET_KEY": {
+      if (s.phase === "lessonZero") return stay(s);
       const allowed = action.tonic === s.originalTonic || s.timeline.learn?.transposeTo?.includes(action.tonic);
       if (!allowed || action.tonic === s.keyTonic) return stay(s);
       let built;
@@ -184,7 +207,7 @@ export function reduce(s, action) {
       return next;
     }
     case "SET_HAND": {
-      if (!HANDS.includes(action.hand) || action.hand === s.hand || !handHasNotes(s.timeline, action.hand)) return stay(s);
+      if (s.phase === "lessonZero" || !HANDS.includes(action.hand) || action.hand === s.hand || !handHasNotes(s.timeline, action.hand)) return stay(s);
       const next = refit(s, { phrases: s.phrases, timeline: s.timeline }, action.hand, [...stopping]);
       if (!next) return stay(s);
       next.effects.push(savePosition(next.state, next.state.phraseIndex));

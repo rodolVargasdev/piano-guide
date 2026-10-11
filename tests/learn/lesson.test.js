@@ -260,3 +260,63 @@ test("counter-proof: choosing the left hand brings the intro back, numbered from
   assert.equal(moved.hand, "L");
   assert.ok(phraseNumber(moved).total === 3);
 });
+
+// ---- lesson zero (pr1b) -----------------------------------------------------------------------------------
+
+const zeroDone = (extra) => act(lesson(extra), "LESSON_ZERO", ...press(P.C4), "ZERO_NEXT", ...press(60), ...press(62), ...press(64), ...press(65), ...press(67), "ZERO_NEXT");
+
+test("lesson zero opens only from the first screen and changes nothing else in the lesson", () => {
+  const r = act(lesson(), "LESSON_ZERO");
+  assert.equal(r.state.phase, "lessonZero");
+  assert.equal(r.state.zero.part, 0);
+  assert.equal(r.state.phraseIndex, 0);
+  assert.deepEqual(r.effects, []);
+  // Counter-proof: from any other phase the action does nothing.
+  assert.equal(act(started(), "LESSON_ZERO").state.phase, "yourTurn");
+});
+
+test("lesson zero: keys go to its own state and never advance a step of the song", () => {
+  const s = act(lesson(), "LESSON_ZERO").state;
+  const r = act(s, ...press(P.D4)); // wrong in part 1
+  assert.equal(r.state.phase, "lessonZero");
+  assert.equal(r.state.zero.feedback.kind, "wrong");
+  assert.deepEqual(effectTypes(r), ["announce"]);
+  assert.equal(r.state.stepIndex, 0);
+  assert.equal(act(s, ...press(P.C4)).state.zero.part, 1, "any C moves on");
+});
+
+test("lesson zero: skip returns to the first screen and saves it as skipped, so it stays offered", () => {
+  const r = act(lesson(), "LESSON_ZERO", "ZERO_SKIP");
+  assert.equal(r.state.phase, "start");
+  assert.equal(r.state.zero, null);
+  assert.deepEqual(r.effects, [{ type: "lessonZero", value: "skipped" }]);
+  assert.equal(r.state.progress, null, "no progress object to update in a lesson started without one");
+  const withProgress = act(lesson({ progress: emptyProgress() }), "LESSON_ZERO", "ZERO_SKIP");
+  assert.equal(withProgress.state.progress.lessonZero, "skipped");
+  assert.equal(act(withProgress.state, "START").state.phase, "phraseIntro", "the song starts normally afterwards");
+});
+
+test("lesson zero: finishing every part saves it as done and returns to the first screen", () => {
+  const r = zeroDone({ progress: emptyProgress() });
+  assert.equal(r.state.phase, "start");
+  assert.deepEqual(r.effects.at(-1), { type: "lessonZero", value: "done" });
+  assert.equal(r.state.progress.lessonZero, "done");
+  // Counter-proof: the lesson is not done after only the first part.
+  const partial = act(lesson({ progress: emptyProgress() }), "LESSON_ZERO", ...press(P.C4), "ZERO_NEXT");
+  assert.equal(partial.state.phase, "lessonZero");
+  assert.ok(!effectTypes(partial).includes("lessonZero"));
+});
+
+test("lesson zero ignores the key and hand choices, and ZERO actions outside it do nothing", () => {
+  const s = act(lesson(), "LESSON_ZERO").state;
+  assert.equal(reduce(s, { type: "SET_KEY", tonic: "G" }).state, s);
+  assert.equal(reduce(s, { type: "SET_HAND", hand: "L" }).state, s);
+  assert.equal(act(lesson(), "ZERO_NEXT").state.phase, "start");
+  assert.equal(act(lesson(), "ZERO_SKIP").state.phase, "start");
+});
+
+test("a key held while lesson zero opens does not count for it", () => {
+  const down = act(lesson(), on(P.C4), "LESSON_ZERO").state; // C4 pressed on the first screen and still down
+  assert.equal(act(down, on(P.C4)).state.zero.part, 0);
+  assert.equal(act(down, off(P.C4), on(P.C4)).state.zero.part, 1);
+});
