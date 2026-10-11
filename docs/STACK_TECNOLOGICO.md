@@ -44,12 +44,12 @@ Unfixed advisories accepted: none. Because the result depends on the Alpine pack
 
 ### Final audit (last PR of the chain, PR 22g)
 
-Date: 2026-10-10 (local time; the container clock reads 2026-10-11 UTC). Both images were built from a clean clone of the repository at commit `COMMIT_A` (`docker build`, whose test stage ran `node --test` inside the build), then scanned with `docker scout cves` (Docker Scout v1.25.0, a newer 1.26.0 exists and was not needed):
+Date: 2026-10-10 (local time; the container clock reads 2026-10-11 UTC). Both images were built from a clean clone of the repository at commit `552f148` (`docker build`, whose test stage ran `node --test` inside the build), then scanned with `docker scout cves` (Docker Scout v1.25.0, a newer 1.26.0 exists and was not needed):
 
 | Image | Digest (short) | Packages indexed | Critical | High | Medium | Low | Result |
 |-------|----------------|------------------|----------|------|--------|-----|--------|
 | `piano-guide` final, shipped | `52bde68f6c35` | 26 | 0 | 0 | 0 | 0 | No vulnerable package detected |
-| `piano-guide` test stage (`--target test`) | `a6df419ac05f` | 27 | 0 | 0 | 0 | 0 | No vulnerable package detected |
+| `piano-guide` test stage (`--target test`) | `b12f8366fda0` | 27 | 0 | 0 | 0 | 0 | No vulnerable package detected |
 
 The commit that records this section changes only documentation, which is not copied into the shipped image (the test stage copies this file only for the vendor hash guard). Unfixed advisories accepted: none.
 
