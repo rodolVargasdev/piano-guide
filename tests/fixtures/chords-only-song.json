@@ -1,0 +1,365 @@
+{
+  "schemaVersion": 1,
+  "id": "chords-only-example",
+  "title": "Chords Only Example",
+  "composer": "Synthetic fixture",
+  "contentPolicy": "chords-only",
+  "key": {
+    "tonic": "A",
+    "mode": "major"
+  },
+  "meter": {
+    "num": 4,
+    "den": 4
+  },
+  "pickupTicks": 0,
+  "tempo": {
+    "bpm": 80,
+    "beatUnit": "quarter"
+  },
+  "lengthTicks": 15360,
+  "sections": [
+    {
+      "id": "intro",
+      "name": "Intro",
+      "startTick": 0,
+      "endTick": 3840
+    },
+    {
+      "id": "verse",
+      "name": "Verse",
+      "startTick": 3840,
+      "endTick": 11520
+    },
+    {
+      "id": "chorus",
+      "name": "Chorus",
+      "startTick": 11520,
+      "endTick": 15360
+    }
+  ],
+  "chords": [
+    { "tick": 0, "dur": 1920, "symbol": "A", "roman": "I", "function": "tonic" },
+    { "tick": 1920, "dur": 1920, "symbol": "E", "roman": "V", "function": "dominant" },
+    { "tick": 3840, "dur": 1920, "symbol": "F#m", "roman": "vi", "function": "relative minor" },
+    { "tick": 5760, "dur": 1920, "symbol": "D", "roman": "IV", "function": "subdominant" },
+    { "tick": 7680, "dur": 1920, "symbol": "A", "roman": "I", "function": "tonic" },
+    { "tick": 9600, "dur": 1920, "symbol": "E", "roman": "V", "function": "dominant" },
+    { "tick": 11520, "dur": 1920, "symbol": "G", "roman": "bVII", "function": "borrowed subdominant" },
+    { "tick": 13440, "dur": 1920, "symbol": "A", "roman": "I", "function": "tonic" }
+  ],
+  "levels": {
+    "beginner": {
+      "label": "Beginner",
+      "description": "Chord accompaniment: the bass note in the left hand and a triad in the right hand, one chord per bar.",
+      "notation": "labelled",
+      "strictBars": true,
+      "notes": [
+        { "tick": 0, "dur": 1920, "pitch": "A2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 0, "dur": 1920, "pitch": "A4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 0, "dur": 1920, "pitch": "C#5", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 0, "dur": 1920, "pitch": "E5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 1920, "dur": 1920, "pitch": "E2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 1920, "dur": 1920, "pitch": "E4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 1920, "dur": 1920, "pitch": "G#4", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 1920, "dur": 1920, "pitch": "B4", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 3840, "dur": 1920, "pitch": "F#2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 3840, "dur": 1920, "pitch": "F#4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 3840, "dur": 1920, "pitch": "A4", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 3840, "dur": 1920, "pitch": "C#5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 5760, "dur": 1920, "pitch": "D2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 5760, "dur": 1920, "pitch": "D4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 5760, "dur": 1920, "pitch": "F#4", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 5760, "dur": 1920, "pitch": "A4", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 7680, "dur": 1920, "pitch": "A2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 7680, "dur": 1920, "pitch": "A4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 7680, "dur": 1920, "pitch": "C#5", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 7680, "dur": 1920, "pitch": "E5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 9600, "dur": 1920, "pitch": "E2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 9600, "dur": 1920, "pitch": "E4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 9600, "dur": 1920, "pitch": "G#4", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 9600, "dur": 1920, "pitch": "B4", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 11520, "dur": 1920, "pitch": "G2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 11520, "dur": 1920, "pitch": "G4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 11520, "dur": 1920, "pitch": "B4", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 11520, "dur": 1920, "pitch": "D5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 13440, "dur": 1920, "pitch": "A2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 13440, "dur": 1920, "pitch": "A4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 13440, "dur": 1920, "pitch": "C#5", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 13440, "dur": 1920, "pitch": "E5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" }
+      ]
+    },
+    "original": {
+      "label": "Original",
+      "description": "A bass pattern in the left hand and a held chord in the right hand, built only from the chord track.",
+      "notation": "engraved",
+      "strictBars": true,
+      "notes": [
+        { "tick": 0, "dur": 480, "pitch": "A2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 480, "dur": 480, "pitch": "E3", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 960, "dur": 480, "pitch": "A3", "hand": "L", "finger": 1, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 1440, "dur": 480, "pitch": "E3", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 0, "dur": 1920, "pitch": "A4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 0, "dur": 1920, "pitch": "C#5", "hand": "R", "finger": 2, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 0, "dur": 1920, "pitch": "E5", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 0, "dur": 1920, "pitch": "A5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 1920, "dur": 480, "pitch": "E2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 2400, "dur": 480, "pitch": "B2", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 2880, "dur": 480, "pitch": "E3", "hand": "L", "finger": 1, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 3360, "dur": 480, "pitch": "B2", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 1920, "dur": 1920, "pitch": "E4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 1920, "dur": 1920, "pitch": "G#4", "hand": "R", "finger": 2, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 1920, "dur": 1920, "pitch": "B4", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 1920, "dur": 1920, "pitch": "E5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 3840, "dur": 480, "pitch": "F#2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 4320, "dur": 480, "pitch": "C#3", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 4800, "dur": 480, "pitch": "F#3", "hand": "L", "finger": 1, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 5280, "dur": 480, "pitch": "C#3", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 3840, "dur": 1920, "pitch": "F#4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 3840, "dur": 1920, "pitch": "A4", "hand": "R", "finger": 2, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 3840, "dur": 1920, "pitch": "C#5", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 3840, "dur": 1920, "pitch": "F#5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 5760, "dur": 480, "pitch": "D2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 6240, "dur": 480, "pitch": "A2", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 6720, "dur": 480, "pitch": "D3", "hand": "L", "finger": 1, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 7200, "dur": 480, "pitch": "A2", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 5760, "dur": 1920, "pitch": "D4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 5760, "dur": 1920, "pitch": "F#4", "hand": "R", "finger": 2, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 5760, "dur": 1920, "pitch": "A4", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 5760, "dur": 1920, "pitch": "D5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 7680, "dur": 480, "pitch": "A2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 8160, "dur": 480, "pitch": "E3", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 8640, "dur": 480, "pitch": "A3", "hand": "L", "finger": 1, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 9120, "dur": 480, "pitch": "E3", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 7680, "dur": 1920, "pitch": "A4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 7680, "dur": 1920, "pitch": "C#5", "hand": "R", "finger": 2, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 7680, "dur": 1920, "pitch": "E5", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 7680, "dur": 1920, "pitch": "A5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 9600, "dur": 480, "pitch": "E2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 10080, "dur": 480, "pitch": "B2", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 10560, "dur": 480, "pitch": "E3", "hand": "L", "finger": 1, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 11040, "dur": 480, "pitch": "B2", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 9600, "dur": 1920, "pitch": "E4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 9600, "dur": 1920, "pitch": "G#4", "hand": "R", "finger": 2, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 9600, "dur": 1920, "pitch": "B4", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 9600, "dur": 1920, "pitch": "E5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 11520, "dur": 480, "pitch": "G2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 12000, "dur": 480, "pitch": "D3", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 12480, "dur": 480, "pitch": "G3", "hand": "L", "finger": 1, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 12960, "dur": 480, "pitch": "D3", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 11520, "dur": 1920, "pitch": "G4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 11520, "dur": 1920, "pitch": "B4", "hand": "R", "finger": 2, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 11520, "dur": 1920, "pitch": "D5", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 11520, "dur": 1920, "pitch": "G5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 13440, "dur": 480, "pitch": "A2", "hand": "L", "finger": 5, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 13920, "dur": 480, "pitch": "E3", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 14400, "dur": 480, "pitch": "A3", "hand": "L", "finger": 1, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 14880, "dur": 480, "pitch": "E3", "hand": "L", "finger": 2, "fingeringSource": "editorial", "role": "bass" },
+        { "tick": 13440, "dur": 1920, "pitch": "A4", "hand": "R", "finger": 1, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 13440, "dur": 1920, "pitch": "C#5", "hand": "R", "finger": 2, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 13440, "dur": 1920, "pitch": "E5", "hand": "R", "finger": 3, "fingeringSource": "editorial", "role": "accompaniment" },
+        { "tick": 13440, "dur": 1920, "pitch": "A5", "hand": "R", "finger": 5, "fingeringSource": "editorial", "role": "accompaniment" }
+      ],
+      "analysis": [
+        {
+          "tick": 0,
+          "kind": "harmony",
+          "title": "Tonic",
+          "text": "A major is the home chord, the one the other chords are measured against.",
+          "roman": "I",
+          "function": "tonic"
+        },
+        {
+          "tick": 1920,
+          "kind": "harmony",
+          "title": "Dominant",
+          "text": "E major pulls back toward the home chord.",
+          "roman": "V",
+          "function": "dominant"
+        },
+        {
+          "tick": 3840,
+          "kind": "voice-leading",
+          "title": "Relative minor",
+          "text": "From E to F sharp minor the top voice steps up by one note.",
+          "roman": "vi",
+          "function": "relative minor"
+        },
+        {
+          "tick": 5760,
+          "kind": "harmony",
+          "title": "Subdominant",
+          "text": "D major leaves the home chord for a moment.",
+          "roman": "IV",
+          "function": "subdominant"
+        },
+        {
+          "tick": 7680,
+          "kind": "harmony",
+          "title": "Back home",
+          "text": "The home chord returns for the second half.",
+          "roman": "I",
+          "function": "tonic"
+        },
+        {
+          "tick": 9600,
+          "kind": "voice-leading",
+          "title": "Down a step",
+          "text": "E to G: the top voice steps down to a borrowed note.",
+          "roman": "V",
+          "function": "dominant"
+        },
+        {
+          "tick": 11520,
+          "kind": "harmony",
+          "title": "Borrowed chord",
+          "text": "G major is borrowed from the parallel minor key; its G is not in A major, so it prints with a natural sign.",
+          "roman": "bVII",
+          "function": "borrowed subdominant"
+        }
+      ]
+    }
+  },
+  "defaultLevel": "beginner",
+  "lesson": {
+    "beginner": {
+      "summary": "A synthetic example of a chords-only song: four chords in a row, one chord per bar. It is a generic chord-based accompaniment, not a transcription of any recording.",
+      "chordsUsed": [
+        "A",
+        "E",
+        "F#m",
+        "D",
+        "G"
+      ],
+      "handPositions": [
+        {
+          "tick": 0,
+          "hand": "L",
+          "anchor": "A2",
+          "text": "Left hand: little finger (5) on the bass note. 1 is the thumb and 5 is the little finger."
+        },
+        {
+          "tick": 3840,
+          "hand": "L",
+          "anchor": "F#2",
+          "text": "Bar 3: the same shape moves to F sharp minor."
+        },
+        {
+          "tick": 5760,
+          "hand": "L",
+          "anchor": "D2",
+          "text": "Bar 4: the same shape moves to D."
+        },
+        {
+          "tick": 0,
+          "hand": "R",
+          "anchor": "A4",
+          "text": "Right hand: thumb (1) on the root of the chord, then fingers 3 and 5 for the other two notes. 1 is the thumb."
+        },
+        {
+          "tick": 3840,
+          "hand": "R",
+          "anchor": "F#4",
+          "text": "Bar 3: the same shape moves to F sharp minor."
+        },
+        {
+          "tick": 5760,
+          "hand": "R",
+          "anchor": "D4",
+          "text": "Bar 4: the same shape moves to D."
+        }
+      ],
+      "posture": "Sit tall, elbows level with the keys, fingers curved.",
+      "practicePlan": [
+        "Play the hands separately first.",
+        "Then play both hands together, slowly."
+      ],
+      "arrangementNote": "This is a generic chord-based accompaniment, not a transcription. It exists only as a test fixture."
+    },
+    "original": {
+      "summary": "A synthetic example of a chords-only song: four chords in a row, one chord per bar. It is a generic chord-based accompaniment, not a transcription of any recording.",
+      "chordsUsed": [
+        "A",
+        "E",
+        "F#m",
+        "D",
+        "G"
+      ],
+      "handPositions": [
+        {
+          "tick": 0,
+          "hand": "L",
+          "anchor": "A2",
+          "text": "Left hand: little finger (5) on the bass note. 1 is the thumb and 5 is the little finger."
+        },
+        {
+          "tick": 3840,
+          "hand": "L",
+          "anchor": "F#2",
+          "text": "Bar 3: the same shape moves to F sharp minor."
+        },
+        {
+          "tick": 5760,
+          "hand": "L",
+          "anchor": "D2",
+          "text": "Bar 4: the same shape moves to D."
+        },
+        {
+          "tick": 0,
+          "hand": "R",
+          "anchor": "A4",
+          "text": "Right hand: thumb (1) on the root of the chord, then fingers 3 and 5 for the other two notes. 1 is the thumb."
+        },
+        {
+          "tick": 3840,
+          "hand": "R",
+          "anchor": "F#4",
+          "text": "Bar 3: the same shape moves to F sharp minor."
+        },
+        {
+          "tick": 5760,
+          "hand": "R",
+          "anchor": "D4",
+          "text": "Bar 4: the same shape moves to D."
+        }
+      ],
+      "posture": "Sit tall, elbows level with the keys, fingers curved.",
+      "practicePlan": [
+        "Play the hands separately first.",
+        "Then play both hands together, slowly."
+      ],
+      "arrangementNote": "This is a generic chord-based accompaniment, not a transcription. It exists only as a test fixture."
+    }
+  },
+  "sources": [
+    {
+      "url": "https://example.com/synthetic-chords",
+      "what": "Synthetic test fixture: chords invented for the tests, not taken from any song.",
+      "accessed": "2026-10-11",
+      "kind": "user-submitted"
+    },
+    {
+      "url": "https://example.com/reference",
+      "what": "Reference page for the fixture (a placeholder).",
+      "accessed": "2026-10-11",
+      "kind": "reference"
+    }
+  ],
+  "confidence": [
+    {
+      "scope": "chords:verse",
+      "level": "medium",
+      "note": "Invented for the tests."
+    },
+    {
+      "scope": "chords:chorus",
+      "level": "low",
+      "note": "Invented for the tests."
+    },
+    {
+      "scope": "structure",
+      "level": "medium",
+      "note": "Eight bars: intro, verse, chorus."
+    }
+  ]
+}
