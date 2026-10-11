@@ -573,3 +573,29 @@ test("the song file holds none of the typographic marks that betray machine-writ
   assert.equal(banned.test("a \u2014 b"), true, "the guard sees a long dash");
   assert.equal(banned.test("it\u2019s"), true, "and a curly quote");
 });
+
+// ---- the documents that credit the source ----
+const doc = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8").replaceAll("\r\n", "\n");
+const LY_SHA = "420a52244e9fbe106dd33ba2cac84414fd66e0d01c6d472205bad39678d4ce04";
+const MID_SHA = "09ce7337b4bf42ba12e1aa64b4c7dc7fcfa6455f1070cb12f8880a755df97384";
+/** What is missing from the three documents that must credit the Mutopia source (an empty list means all is there). */
+function creditProblems({ stack, license, readme }) {
+  const problems = [];
+  for (const [name, text] of [["stack document", stack], ["license note", license]]) {
+    for (const needle of ["Mutopia-2014/12/14-37", LY_SHA, MID_SHA, "Public Domain"]) if (!text.includes(needle)) problems.push(`${name} lacks ${needle}`);
+  }
+  if (!readme.includes("songs/satie-gymnopedie-1.json")) problems.push("README does not name the song file");
+  if (!readme.includes("songs/LICENSE-satie-gymnopedie-1.md")) problems.push("README does not point to the license note");
+  if (!stack.includes("mutopia-satie-gymnopedie1-onsets.json")) problems.push("stack document does not name the fixture");
+  return problems;
+}
+const credits = { stack: doc("docs/STACK_TECNOLOGICO.md"), license: doc("songs/LICENSE-satie-gymnopedie-1.md"), readme: doc("README.md") };
+
+test("the stack document, the license note and the README credit the Mutopia source with its ID, both SHA-256 and the license", () => {
+  assert.deepEqual(creditProblems(credits), []);
+});
+
+test("counter-proof: a stack document without the file hash, or a README without the license note, is reported", () => {
+  assert.deepEqual(creditProblems({ ...credits, stack: credits.stack.replace(LY_SHA, "") }), [`stack document lacks ${LY_SHA}`]);
+  assert.deepEqual(creditProblems({ ...credits, readme: credits.readme.replace("songs/LICENSE-satie-gymnopedie-1.md", "x") }), ["README does not point to the license note"]);
+});

@@ -986,7 +986,7 @@ test("the lessons describe the cadenza and the last bars with the app's bar numb
 
 // ---- the public set after the catalog swap -------------------------------------------------------------------
 
-const EXPECTED_PUBLIC = ["chopin-nocturne-op9-no2", "ode-to-joy"];
+const EXPECTED_PUBLIC = ["chopin-nocturne-op9-no2", "ode-to-joy", "satie-gymnopedie-1"];
 /** What is wrong with a list of public song ids (empty means it is exactly the expected public set). */
 const publicSetProblems = (ids) => {
   const problems = [];
@@ -995,7 +995,7 @@ const publicSetProblems = (ids) => {
   return problems;
 };
 
-test("the public catalog is exactly Ode to Joy and the Chopin Nocturne, none of them private, and the chords-only Cancer file is gone", () => {
+test("the public catalog is exactly Ode to Joy, the Chopin Nocturne and the Satie Gymnopedie, none of them private, and the chords-only Cancer file is gone", () => {
   assert.deepEqual(publicSetProblems(index.songs.map((e) => e.id)), []);
   assert.equal(index.songs[0].id, "ode-to-joy", "the easiest song comes first: the hero opens it");
   assert.ok(index.songs.every((e) => e.visibility !== "private"));
@@ -1004,8 +1004,8 @@ test("the public catalog is exactly Ode to Joy and the Chopin Nocturne, none of 
   for (const e of index.songs) assert.equal(visibilityMismatch(e, read(e.file)), null, e.id);
 });
 
-test("counter-proof: the exact-set check notices the removed song coming back, a third song and a missing song", () => {
-  assert.deepEqual(publicSetProblems(["ode-to-joy", "chopin-nocturne-op9-no2", "cancer"]), ["unexpected cancer"]);
-  assert.deepEqual(publicSetProblems(["ode-to-joy"]), ["missing chopin-nocturne-op9-no2"]);
-  assert.deepEqual(publicSetProblems([]), ["missing chopin-nocturne-op9-no2", "missing ode-to-joy"]);
+test("counter-proof: the exact-set check notices the removed song coming back, a fourth song and a missing song", () => {
+  assert.deepEqual(publicSetProblems(["ode-to-joy", "chopin-nocturne-op9-no2", "satie-gymnopedie-1", "cancer"]), ["unexpected cancer"]);
+  assert.deepEqual(publicSetProblems(["ode-to-joy", "chopin-nocturne-op9-no2"]), ["missing satie-gymnopedie-1"]);
+  assert.deepEqual(publicSetProblems([]), ["missing chopin-nocturne-op9-no2", "missing ode-to-joy", "missing satie-gymnopedie-1"]);
 });
