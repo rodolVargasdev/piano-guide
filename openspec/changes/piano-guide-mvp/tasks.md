@@ -156,7 +156,7 @@ Conventions for every task below: TDD mode is `strict_tdd: false`, tests land in
 
 ## Phase 15 (PR 15, S4): Level selector
 
-- [ ] 15.1 Create `tests/ui/level-select.test.js` for the pure resolution function: order hash `level`, then `sessionStorage["piano-guide:level:<songId>"]`, then `defaultLevel`; unknown level falls back; single-level songs yield a static chip. Check: `node --test tests/ui/level-select.test.js`.
+- [x] 15.1 Create `tests/ui/level-select.test.js` for the pure resolution function: order hash `level`, then `sessionStorage["piano-guide:level:<songId>"]`, then `defaultLevel`; unknown level falls back; single-level songs yield a static chip. Check: `node --test tests/ui/level-select.test.js`. Tests cover the resolution order, unknown and inherited ids, the static chip, the bar and beat mapping with its clamp, the hash update and the session memory (PR 15a).
 - [ ] 15.2 Create `src/ui/level-select.js`: selector listing only levels present, names toggle (solfege or letters, immediate), Analysis toggle shown only when the active level has `analysis[]`, `history.replaceState` updating the hash, session memory. Switching level keeps the musical position via `barBeatOf` and `tickOfBarBeat`, keeps BPM, loop, metronome and hand state, and while playing cancels pending voices and reschedules in the same task. Check: Browser 8790 with Cancer (single level shows a static chip; the multi-level case is verified in PR 18 and PR 19); names toggle applies without reload.
 - [ ] 15.3 Wire the selector into `src/ui/player.js` and the router query parameters (`level`, `names`, `view`). Check: deep link `#/song/cancer?level=beginner&names=letters&view=score` opens as specified.
 
