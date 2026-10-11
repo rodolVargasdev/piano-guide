@@ -129,8 +129,8 @@ The portfolio's `docs/STACK_TECNOLOGICO.md` prints the core hash with 65 charact
 
 **Choice**:
 - Background near-black blue (`#0b0d12`) with linear `Fog` softening the horizon.
-- Environment reflections: `PMREMGenerator.fromScene()` over a tiny procedural studio (two dim emissive softboxes and a ceiling strip); lacquered black keys and the floor reflect it.
-- Lights: warm `SpotLight` key light (wide penumbra, 1024 shadow map on High), cool rim `DirectionalLight`, low `HemisphereLight` fill.
+- Environment reflections: `PMREMGenerator.fromScene()` over a tiny procedural studio (two dim emissive softboxes and a ceiling strip); lacquered black keys and the floor reflect it. The studio has a long strip behind at the height a key top mirrors from the camera, a warm and a cool softbox and a ceiling strip. Keys take `scene.environment` (`scene.environmentIntensity`); the floor holds its own `envMap` because `material.envMapIntensity` only counts for a material's own map in three r186.
+- Lights: warm `SpotLight` key light (wide penumbra, 1024 shadow map on High), cool `DirectionalLight` from nearly overhead (a low one is mirrored by the glossy floor into a hot spot on wide screens, measured at 844 x 390), low `HemisphereLight` fill. A faint radial backdrop and a warm additive pool of light under the keyboard add depth on High and Medium.
 - Materials: white keys `MeshPhysicalMaterial` (roughness 0.35, clearcoat 0.3); black keys roughness 0.18, clearcoat 0.8; floor black `MeshStandardMaterial` roughness 0.22.
 - Colors: left hand `#3b82f6` blue, right hand `#f59e0b` orange; falling notes slightly emissive with a brighter leading edge.
 - `ACESFilmicToneMapping`, sRGB output. Effects never draw over the note field or the markers (markers render last with `depthTest: false`).
