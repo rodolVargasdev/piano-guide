@@ -167,3 +167,18 @@ export function tempoStepsValid(steps) {
 export function keysToPractice(done, order) {
   return order.filter((k) => !done.includes(k));
 }
+
+/**
+ * Card fields without text: for every exercise and every one of the five fields, in English and Spanish, the string
+ * key and language that is missing or empty, as "ex.<id>.<field> (<lang>)". An empty list means every card is complete.
+ * A test fails with this list naming the exercise and the field (and runs the same check on a fixture that lacks one).
+ */
+export function missingCardFields(exercises, table) {
+  const missing = [];
+  for (const e of exercises) {
+    for (const key of cardKeys(e.id)) {
+      for (const lang of ["en", "es"]) if (typeof table[key]?.[lang] !== "string" || table[key][lang].trim() === "") missing.push(`${key} (${lang})`);
+    }
+  }
+  return missing;
+}
