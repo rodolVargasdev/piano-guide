@@ -224,7 +224,7 @@ Specs: learn-mode (lesson zero), learner-language.
 Specs: learn-mode (stages, progress).
 
 - [x] 14.1 Create `src/learn/stages.js`: per phrase `[R slow, L slow, T slow, T full]` filtered by hands with onsets (no-note hand drops its stage; single hand drops "together"), then a section stage and a song stage; slow = `effectiveBpm({ userBpm: song bpm, slowMode: true })`, full = explicit song bpm. Test: `tests/learn/stages.test.js` (one-hand song, two-hand song, hand with no notes in a phrase, last stage leads to `songComplete`).
-- [ ] 14.2 Modify `src/learn/lesson.js` and `src/learn/progress.js`: `stageComplete` phase, `NEXT_STAGE`, `stage` and `hand` saved per song, level and tonic, "Continue" resumes phrase, stage, hand, key, language; `clearSong` for "Reset progress". Test: `tests/learn/lesson.test.js`, `tests/learn/progress.test.js` rows including hands-together expected union and resume.
+- [x] 14.2 Modify `src/learn/lesson.js` and `src/learn/progress.js`: `stageComplete` phase, `NEXT_STAGE`, `stage` and `hand` saved per song, level and tonic, "Continue" resumes phrase, stage, hand, key, language; `clearSong` for "Reset progress". Test: `tests/learn/lesson.test.js`, `tests/learn/progress.test.js` rows including hands-together expected union and resume.
 - [ ] 14.3 Modify `src/ui/learn-view.js`: metronome during My turn through `engine.setMetronome` at the stage tempo (A1: tempo affects Listen and the metronome only), full-tempo Listen passes explicit `bpm`, "Next stage" action, stage label in the progress line. Test: `tests/ui/learn-view.test.js` additions (stage labels, metronome tempo per stage, private song never starts song audio but may click if the user turned the metronome on).
 - [ ] 14.4 Browser check on 8790 using the synthetic public fixture (temporary local index entry, not committed) and private Cancer: walk the stages of one phrase, reload and use "Continue", "Reset progress" clears. Read screenshots at the three viewports.
   Learner-level acceptance: after finishing the right hand slow, the screen says plainly "Now the left hand, slowly" with a "Next stage" button; reloading offers "Continue" at that exact stage.
@@ -462,4 +462,5 @@ Phase 15 (pr3b-sampled-piano) is a STOP gate and is not approved, so this batch 
 | 1 | `feat/learn-mode-pr1b-lesson-zero` (base pr12a) | 13.1, 13.2, reducer half of 13.3 | 334 |
 | 2 | `feat/learn-mode-pr1b2-lesson-zero-view` | view half of 13.3, 13.4, 13.5 | 424 |
 | 3 | `feat/learn-mode-pr2b-stages` | 14.1 (plan and both-hands steps) | 217 |
+| 4 | `feat/learn-mode-pr2b2-stage-reducer` | 14.2, stage labels and Next stage of 14.3 | about 610 (`size:exception` recommended, see its description) |
 
