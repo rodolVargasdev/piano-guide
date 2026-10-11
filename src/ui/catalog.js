@@ -39,6 +39,18 @@ export async function fetchJsonOrAbsent(url, fetchFn = (u, o) => fetch(u, o)) {
   }
 }
 
+/**
+ * True for a page served from this machine (localhost, a *.localhost name, 127.0.0.1 or [::1]). The private
+ * library only ever exists locally, so a published site never asks for it: a browser logs every 404 in the
+ * console before the page can handle it, and asking where the folder cannot exist only produces that noise.
+ */
+export function isLocalHost(hostname) {
+  const h = String(hostname ?? "").toLowerCase();
+  return h === "localhost" || h.endsWith(".localhost") || h === "127.0.0.1" || h === "[::1]" || h === "::1";
+}
+
+const absentLibrary = async () => ({ status: "absent" });
+
 const firstReason = (errors) => `${errors[0].path || "file"}: ${errors[0].message}`;
 const allReasons = (errors) => errors.map((e) => `${e.path || "file"}: ${e.message}`).join("\n");
 const unavailable = (entry, reason, reasons = reason, reasonKey = undefined) => ({ entry, status: "unavailable", reason, reasons, ...(reasonKey ? { reasonKey } : {}) });
@@ -72,9 +84,10 @@ async function loadEntry(entry, url, fetchOne, kind) {
  * An id shared with a public song, an index and a file that disagree on visibility, and a private entry
  * whose file is not marked private all make the entry unavailable. Absent private index: no message.
  * `fetchPrivate(url)` is the three-state fetcher (see fetchJsonOrAbsent); it defaults to that one for the
- * real page and to "absent" when only `fetchJson` is injected (no private lookup unless a test asks for it).
+ * real page served locally (see isLocalHost), and to "absent" on a published host or when only `fetchJson`
+ * is injected (no private lookup unless a test asks for it).
  */
-export async function loadCatalog(fetchJson = defaultFetchJson, { fetchPrivate = fetchJson === defaultFetchJson ? fetchJsonOrAbsent : async () => ({ status: "absent" }) } = {}) {
+export async function loadCatalog(fetchJson = defaultFetchJson, { fetchPrivate = fetchJson === defaultFetchJson && isLocalHost(globalThis.location?.hostname) ? fetchJsonOrAbsent : absentLibrary } = {}) {
   let index;
   try {
     index = await fetchJson(INDEX_URL);

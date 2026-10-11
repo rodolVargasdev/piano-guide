@@ -48,7 +48,7 @@ Casio digital pianos: connect the USB TO HOST port to the computer with a USB ca
 
 ### Private songs
 
-A song you must not publish goes in `songs-private/` (a folder next to `index.html`, ignored by git and by Docker). It joins the catalog on your machine with a "Private" chip and is silent in the app: the cursor and the falling bars move, nothing from the song sounds, and the play button says "Play (no sound)". Nothing in the repository, the image or GitHub Pages contains it.
+A song you must not publish goes in `songs-private/` (a folder next to `index.html`, ignored by git and by Docker). It joins the catalog on your machine with a "Private" chip and is silent in the app: the cursor and the falling bars move, nothing from the song sounds, and the play button says "Play (no sound)". Nothing in the repository, the image or GitHub Pages contains it. The page only looks for the folder when it is served from this machine (localhost, a `*.localhost` name, 127.0.0.1 or [::1]); on GitHub Pages it never asks, so the console stays free of a 404.
 
 - Convert a Hooktheory capture: put it at `songs-private/sources/hooktheory-cancer.json` and run `node tools/convert-hooktheory.mjs` (writes `songs-private/cancer-private.json` and its index entry).
 - With Docker, mount the folder read-only: `docker run --rm -p 8790:8080 -v <path>/songs-private:/usr/share/nginx/html/songs-private:ro piano-guide`. Without the mount only the public songs appear and nothing is reported. The `sources/` folder is never served.

@@ -7,7 +7,7 @@ import { STRINGS } from "../../src/i18n/strings.js";
 
 const doc = fakeDoc();
 globalThis.document = { createElement: (t) => doc.make(t), createTextNode: (text) => ({ tag: "#text", text, attrs: {}, children: [] }) };
-const { loadCatalog, fetchJsonOrAbsent, canLearn, renderCatalog, heroModel } = await import("../../src/ui/catalog.js");
+const { loadCatalog, fetchJsonOrAbsent, canLearn, renderCatalog, heroModel, isLocalHost } = await import("../../src/ui/catalog.js");
 
 const entry = (over = {}) => ({ id: "example-song", file: "example-song.json", title: "Example Song", composer: "Traditional", key: { tonic: "C", mode: "major" }, defaultBpm: 72, levels: ["beginner"], ...over });
 const priv = (over = {}) => ({ ...validSong(), id: "secret-song", visibility: "private", ...over });
@@ -114,6 +114,35 @@ test("the public index is fetched exactly as before when no private fetcher is g
   const r = await loadCatalog(async (url) => (urls.push(url), PUBLIC[url]));
   assert.deepEqual(urls, ["songs/index.json", "songs/example-song.json"], "no private request without a private fetcher");
   assert.equal(r.entries[0].status, "ok");
+});
+
+test("isLocalHost accepts only names that point at this machine", () => {
+  for (const h of ["localhost", "LOCALHOST", "app.localhost", "127.0.0.1", "[::1]", "::1"]) assert.equal(isLocalHost(h), true, h);
+  for (const h of ["rodolvargasdev.github.io", "example.com", "localhost.example.com", "127.0.0.2", "", undefined]) assert.equal(isLocalHost(h), false, String(h));
+});
+
+test("the real page asks for the private library only when it is served locally", async () => {
+  const realFetch = globalThis.fetch;
+  const realLocation = globalThis.location;
+  const urls = [];
+  globalThis.fetch = async (url) => {
+    urls.push(url);
+    const body = PUBLIC[url];
+    return { ok: body !== undefined, status: body ? 200 : 404, headers: { get: () => "application/json" }, json: async () => structuredClone(body) };
+  };
+  try {
+    globalThis.location = { hostname: "rodolvargasdev.github.io" };
+    await loadCatalog();
+    assert.equal(urls.some((u) => u.startsWith("songs-private/")), false, "a published host never requests the private index");
+    urls.length = 0;
+    globalThis.location = { hostname: "localhost" };
+    await loadCatalog();
+    assert.equal(urls.includes("songs-private/index.json"), true, "counter-proof: served locally, the private index is requested");
+  } finally {
+    globalThis.fetch = realFetch;
+    if (realLocation === undefined) delete globalThis.location;
+    else globalThis.location = realLocation;
+  }
 });
 
 // ---- Learn gating and cards -----------------------------------------------------------------------------
