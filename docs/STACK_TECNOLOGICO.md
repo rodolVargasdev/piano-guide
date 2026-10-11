@@ -77,6 +77,58 @@ Changes to the container configuration since the first audit: `nginx.conf` now e
 - Unfixed advisories accepted: none.
 - Integrity guard: `tests/vendor.test.js` fails if either file changes by one byte or if the hashes above disappear from this document; `.gitattributes` marks `assets/vendor/*` as `-text` so line-ending conversion can never alter the hashed bytes. The portfolio's own stack document prints the core hash with an extra leading character (65 characters); the 64-character value above is the one computed here.
 
+## Audio assets
+
+| Component | Exact version | Where it is used | Why | Audit | Status |
+|-----------|---------------|------------------|-----|-------|--------|
+| Salamander Grand Piano (subset, 30 MP3 files) | The Tone.js audio copy, folder `salamander/`, fetched 2026-10-11 (the hosted README names the V2 lineage of the set; the original V3 is on archive.org item `SalamanderGrandPianoV3`) | `assets/audio/piano/`, loaded lazily by `src/audio/sampler.js` through `src/audio/voice.js` | Gives the learner and Listen a real piano timbre; the oscillator synthesizer stays as the automatic fallback | Static audio, no code: N/A (no CVE or GHSA applies to audio data; the hashes below pin the bytes) | In use from PR pr3b-sampled-piano |
+
+### Salamander Grand Piano (samples)
+
+- Author: Alexander Holm. Name: "Salamander Grand Piano".
+- Source URL: `https://tonejs.github.io/audio/salamander/` (the same files are in the GitHub repository `Tonejs/audio`, folder `salamander/`). Downloaded on 2026-10-11 with Node `fetch`; the size of each file was compared with its `Content-Length` and the total with the HEAD measurement taken before the download.
+- License: Creative Commons Attribution 3.0 Unported (CC BY 3.0), `https://creativecommons.org/licenses/by/3.0/`. Attribution is required. The credit line shown in the footer of every page (both languages) and in the README is: "Piano: Salamander Grand Piano by Alexander Holm, CC BY 3.0, subset converted to MP3, via tonejs.github.io/audio". The license text with the author, the source and the selection is in `assets/audio/piano/LICENSE.txt`, beside the files. The files are used unchanged from the Tone.js copy (which is itself a subset converted to MP3 from the original); nothing was re-encoded here.
+- Approval: the owner approved adding this set in the chat on 2026-10-11 (the STOP gate of task 15.1).
+- Selection: one velocity layer, 30 files, one sample every minor third (A0, C1, Ds1, Fs1, A1, ... A7, C8; Ds and Fs stand for D sharp and F sharp). The playback rate moves a sample at most 1.5 semitones (the code accepts up to 3). Total size 2,012,677 bytes (about 1.9 MiB), measured on 2026-10-11; the largest file is `Ds1.mp3` (120,625 bytes), the smallest `A7.mp3` (18,730 bytes). Decoded in memory the 30 files are 422 seconds of stereo audio at 48 kHz, about 155 MiB of PCM (measured in Chrome on 2026-10-11): not measured on a phone; a file that fails to decode is covered by the synthesizer for those notes (tested with a fake context, not on a real low-memory device).
+- Format: MP3, which `decodeAudioData` decodes in the current Chrome, Edge, Firefox and Safari. Checked here only in Chrome (see the PR notes); the other three are not tested on this machine.
+- Rejected alternatives: FluidR3_GM as a MIDI.js soundfont (one 1.8 MB base64 blob in a script file, a weaker piano timbre, and it needs its own runtime); synthesis only (sounds artificial, which was the complaint; it stays as the fallback); Tone.js `Sampler` (an npm runtime library, the project has none).
+- Vulnerability check: N/A, static audio with no code. If the files are ever replaced the hashes below must change in the same commit.
+- Guards: `tests/assets-guard.test.js` fails if an audio file under `assets/` is missing from this document (name and SHA-256) or if `assets/audio/piano/manifest.json` disagrees with the bytes on disk. `.gitattributes` marks `assets/audio/**` as `-text` so line-ending conversion can never alter the bytes.
+- Files, size in bytes and SHA-256, computed on the copies in this repository on 2026-10-11 (MIDI numbers: A0 is 21, middle C is 60, C8 is 108):
+
+  | File | MIDI | Bytes | SHA-256 |
+  |------|------|-------|---------|
+  | `A0.mp3` | 21 | 113969 | `f62d50bd977679e1316063866ece754604b8c214d73b7e3033372c75d9064c03` |
+  | `C1.mp3` | 24 | 110199 | `caba05f0be4d9f6030adcc033208b49ac54e47d58edc57b743085b095b4ea395` |
+  | `Ds1.mp3` | 27 | 120625 | `1c02b816b85d2fa938815fdf04d7d327ff20068f1aadc3c97052144c735afa0c` |
+  | `Fs1.mp3` | 30 | 115010 | `5cbb51d2a0a55a9ef3656671ca72e336856813949055bb6c189cf990655335cf` |
+  | `A1.mp3` | 33 | 115061 | `17fa1e363f9fad67c3357be54a6defc4fca5a5c2aada21de84b30254f9cb2f5b` |
+  | `C2.mp3` | 36 | 110357 | `7029a9e84f748433bc33d067ee13d37d0b866768f09ae6c7dac8e2e98e1e53ca` |
+  | `Ds2.mp3` | 39 | 110796 | `a106cdec93aa4e767e36809fc9cdaa6b92453fb9f18d5fc28ac4eb0f9f239ecd` |
+  | `Fs2.mp3` | 42 | 102320 | `dd34c708274eeba35da1fd99fc31ef904e390ff02f6864aefe8a13261f8a8327` |
+  | `A2.mp3` | 45 | 81678 | `20601d890f44a3c22499c7b61f52e571795df1fe5a01fac553dded7b6379e1d4` |
+  | `C3.mp3` | 48 | 78036 | `bb70dd921d81b3dda561c19b5c029292ae5a6fba1947e364bf274218ce19a9d1` |
+  | `Ds3.mp3` | 51 | 78717 | `4fe73ea3f2c59a1dbfb35cff1d9d8a9e38cb12ef39a91a13083729544cdafed5` |
+  | `Fs3.mp3` | 54 | 77933 | `960fefd90f56608b7edf958dadfeca893cff5744ab9034d61e419401fe45ce9c` |
+  | `A3.mp3` | 57 | 74526 | `8e108fe228e34e32f6b4e61efff732eec53058a9e6f05a8d8e719598b132c4f9` |
+  | `C4.mp3` | 60 | 78718 | `689eaa4c2fd7f29a2cc0e386eec462156d523a87d701269e5e2458e66056f4f6` |
+  | `Ds4.mp3` | 63 | 73519 | `663e8bb3e2d0fa23a30526dcd7ab0e42609c193c07025647ef46badcf81ec211` |
+  | `Fs4.mp3` | 66 | 68219 | `613652f5c96e35736ce6a46bc4ddb6ba1076d1fb16a35a4c22c14e67efdde57c` |
+  | `A4.mp3` | 69 | 61148 | `a62df24a2c84cea8d18c1fa8aca7c18c877ba2b76a00a591256fa74d3ce54ac3` |
+  | `C5.mp3` | 72 | 68920 | `2f5b0f7422063010fb379e684bfdf2daa3911dcd2251413d79fa2a53029fdc30` |
+  | `Ds5.mp3` | 75 | 58179 | `bf71096e653ab7ceca3914b9fd44d8c27fe83c162564c5db34bd06b94eb14b8c` |
+  | `Fs5.mp3` | 78 | 51597 | `ed2fdf543274ea72ddd4eb634a16356531a5f4040b2a60d34fb12a5c72cbf22f` |
+  | `A5.mp3` | 81 | 45747 | `9e5cee1fe9cf68b7193623d46a27c8956e572c1ff234ca0e11599b556050dec6` |
+  | `C6.mp3` | 84 | 28065 | `0d3232edd13ba69fd5caf4a295060ae0fd533b8a1433ae0a038644d70715c907` |
+  | `Ds6.mp3` | 87 | 31395 | `eb643014d9f926f1a5f9f51fc4a1ed8c07c6da36ce164d5b221d7b878a53f142` |
+  | `Fs6.mp3` | 90 | 26478 | `c584d2b4e96a37b12c920ed3212d149abedf25342389bfdc557b2fac847ab11c` |
+  | `A6.mp3` | 93 | 30013 | `b6064a657592c63c03561d2ce1092607c14e1d8091445d50065d0ec819ff6fbc` |
+  | `C7.mp3` | 96 | 18963 | `694b512fac99ba7f7290c045d9c18e94724a7ebcc319b937baabc62125814283` |
+  | `Ds7.mp3` | 99 | 22136 | `d51f4c51bed719f51e75ad22d5b9ac4b4d1a4749d02ef31ea03696de46fa5e77` |
+  | `Fs7.mp3` | 102 | 22709 | `e9ce71e0f7dc39c1d0033d656cf57e3aa8b303127147f194cc92b04e2b648a9f` |
+  | `A7.mp3` | 105 | 18730 | `751c0a0acd00bad6e52749063dac56a0def9870242b053c68ab45cbe8d083fc1` |
+  | `C8.mp3` | 108 | 18914 | `b4b5f321751b544ee7f0d6d3e3f1ef52873dd4a6aee91ba41e6c8e61e17a084c` |
+
 ## Content sources (not code dependencies)
 
 | Content | Source | License | Where it is credited | Note |

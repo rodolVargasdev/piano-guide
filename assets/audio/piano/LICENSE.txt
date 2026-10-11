@@ -1,0 +1,21 @@
+Salamander Grand Piano (subset, converted to MP3)
+
+Author: Alexander Holm
+Original: Salamander Grand Piano V3, https://archive.org/details/SalamanderGrandPianoV3
+Copy used here: the 30 MP3 files of the Tone.js audio repository, folder salamander/
+  (https://github.com/Tonejs/audio, served at https://tonejs.github.io/audio/salamander/).
+  The hosted README of that folder names the V2 lineage of the set.
+Selection: one velocity layer, one sample every minor third (A0, C1, Ds1, Fs1, A1, ... A7, C8),
+  where Ds and Fs stand for D sharp and F sharp. The files are used unchanged, as downloaded
+  on 2026-10-11. The SHA-256 of each file is in manifest.json and in docs/STACK_TECNOLOGICO.md.
+
+License: Creative Commons Attribution 3.0 Unported (CC BY 3.0)
+  https://creativecommons.org/licenses/by/3.0/
+
+You may share and adapt the samples, including commercially, as long as you give appropriate
+credit, link to the license and indicate whether changes were made.
+
+Credit line shown in the app:
+  Piano: Salamander Grand Piano by Alexander Holm, CC BY 3.0, subset converted to MP3, via tonejs.github.io/audio
+
+This license applies only to the files in this folder. The rest of Piano Guide is under the MIT license (see LICENSE at the repository root).
