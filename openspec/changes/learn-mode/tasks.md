@@ -271,10 +271,10 @@ Specs: song-data-model, song-catalog (tests must stop depending on the public Ca
 
 Specs: song-catalog (public set), song-data-model (Cancer no longer named as shipped), lesson-guide (Cancer policy moves off the public song).
 
-- [ ] 18.1 Delete `songs/cancer.json`; modify `songs/index.json` so it lists exactly `chopin-nocturne-op9-no2` and `ode-to-joy`, each entry with `visibility` not private. Test: `tests/songs.test.js` update: index is exactly the two public songs, `songs/cancer.json` absent, Ode provenance and melody checks still pass, `visibilityMismatch` over the index.
-- [ ] 18.2 Modify `README.md` so examples and descriptions no longer name the public chords-only Cancer; modify `src/ui/lesson-card.js` or lesson texts only if a Cancer-specific branch exists (check with `rg -n -i "cancer" src styles README.md docs`), leaving the private song id `cancer-private` untouched so saved progress keys do not change. Test: add `tests/privacy.test.js` assertion that no file in the repository (tracked paths, `songs/`) contains the Cancer melody or lyrics markers used by the private-local test (marker list in the test is title-level only, no lyrics).
-- [ ] 18.3 Browser check on 8790: catalog shows Chopin and Ode to Joy plus (with `songs-private/`) Cancer with the "Private" chip; with `$env:NO_PRIVATE=1` only the two public songs; deep link `#/learn/cancer` shows "Song not found"; `#/learn/cancer-private` works locally. Docker: `docker build -t piano-guide .` then `docker run --rm piano-guide find /usr/share/nginx/html -path '*songs-private*'` prints nothing and the image contains no `songs/cancer.json`.
-- [ ] 18.4 Milestone B close-out: list in the PR notes which success criteria are met (Ode to Joy listen-then-play, resume, public catalog guards) and which await the user (piano sound judgment if samples were approved).
+- [x] 18.1 Delete `songs/cancer.json`; modify `songs/index.json` so it lists exactly `chopin-nocturne-op9-no2` and `ode-to-joy`, each entry with `visibility` not private. Test: `tests/songs.test.js` update: index is exactly the two public songs, `songs/cancer.json` absent, Ode provenance and melody checks still pass, `visibilityMismatch` over the index.
+- [x] 18.2 Modify `README.md` so examples and descriptions no longer name the public chords-only Cancer; modify `src/ui/lesson-card.js` or lesson texts only if a Cancer-specific branch exists (check with `rg -n -i "cancer" src styles README.md docs`), leaving the private song id `cancer-private` untouched so saved progress keys do not change. Test: add `tests/privacy.test.js` assertion that no file in the repository (tracked paths, `songs/`) contains the Cancer melody or lyrics markers used by the private-local test (marker list in the test is title-level only, no lyrics).
+- [x] 18.3 Browser check on 8790: catalog shows Chopin and Ode to Joy plus (with `songs-private/`) Cancer with the "Private" chip; with `$env:NO_PRIVATE=1` only the two public songs; deep link `#/learn/cancer` shows "Song not found"; `#/learn/cancer-private` works locally. Docker: `docker build -t piano-guide .` then `docker run --rm piano-guide find /usr/share/nginx/html -path '*songs-private*'` prints nothing and the image contains no `songs/cancer.json`.
+- [x] 18.4 Milestone B close-out: list in the PR notes which success criteria are met (Ode to Joy listen-then-play, resume, public catalog guards) and which await the user (piano sound judgment if samples were approved).
 
 ---
 
@@ -467,4 +467,21 @@ Phase 15 (pr3b-sampled-piano) is a STOP gate and is not approved, so this batch 
 | 6 | `feat/learn-mode-pr4b-ode-to-joy` | 16.1 to 16.6 | 537 (data file, `size:exception` recommended) |
 | 7 | `feat/learn-mode-pr5b-test-migration` | 17.1, 17.2, 17.3, 17.5 | about 545 (356 are the fixture's JSON; `size:exception` recommended for the data file). Re-measure: 121 matches in 12 files, only 2 files read `songs/cancer.json` |
 | 8 | `feat/learn-mode-pr5b2-ui-test-migration` | 17.4 | 76 |
+| 9 | `feat/learn-mode-pr6b-catalog-swap` | 18.1 to 18.4 | about 85 (plus the deletion of 347 data lines) |
+
+Full suite on the tip: 1343 tests, 0 failures (1266 at the start of the batch). `docker build` passes (1343 tests in the image, 22 skipped with reasons).
+
+### Decisions recorded in this batch
+
+- Lesson zero returns to the first screen when it ends (the design said phraseIntro): the learner presses Start or Continue, and a skipped lesson stays offered there.
+- Stages are per phrase: R slow, L slow, T slow, T full when both hands play in the phrase, only that hand's slow stage when one plays; then a stage per section (only with more than one section and more than one phrase in it) and one for the whole song (more than one phrase), at song tempo. After a stage that is not the last of its phrase the screen offers Next stage and Next phrase; the hand buttons choose which hand the learner follows.
+- The metronome click runs the engine clock over a copy of the timeline with no notes, so a song never plays by accident and a private song can click on request.
+- Ode to Joy has eight two-bar phrases, not four of four bars; its melody is the soprano of the Mutopia source moved down a perfect fifth to C major; its left hand is an editorial arrangement and says so.
+
+### Findings recorded for the user
+
+- Browser walkthroughs found and fixed: a key left pressed when the layout shifted under the finger (release now also heard on the document), a negative rectangle width with hands far apart on a phone, and a repeated sentence at a hand move ("Then thumb on G" after "thumb on G").
+- Left open (see the pr6b description): small keys in a both-hands step on a phone in portrait when the hands are far apart, and a finger badge partly hidden by the key letter in landscape.
+- Still user-only and NOT verified: sound of Listen, the learner's key and the metronome, the Casio over MIDI, a real touch screen, the usability protocol with a person who has never played, and the piano sound (pr3b is not approved).
+- pr3b-sampled-piano (phase 15) is still pending approval and will be appended after pr6b.
 
