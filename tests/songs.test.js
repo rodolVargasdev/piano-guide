@@ -196,3 +196,70 @@ test("Cancer Original starts every bar on the bass note of the chord, the slash 
     assert.equal(first(c).replace(/[0-9]+$/, ""), chord.bass ?? chord.root, c.symbol);
   });
 });
+
+// ---- Cancer Original: lesson and analysis ----
+const original = cancer.lesson.original;
+const analysis = cancer.levels.original.analysis;
+const rightVoices = (bar) => cancer.levels.original.notes.filter((n) => n.hand === "R" && n.tick === (bar - 1) * 1920).map((n) => parsePitch(n.pitch).midi).sort((a, b) => a - b);
+const bassStart = (bar) => parsePitch(cancer.levels.original.notes.find((n) => n.hand === "L" && n.tick === (bar - 1) * 1920).pitch).midi;
+const moves = (from, to) => rightVoices(to).map((m, i) => m - rightVoices(from)[i]);
+
+test("the Cancer Original lesson validates, lists the chord track chords and every hand anchor is a note the level plays", () => {
+  assert.deepEqual(validateSong(cancer).warnings, [], "both levels have a lesson");
+  assert.deepEqual([...original.chordsUsed].sort(), [...new Set(cancer.chords.map((c) => c.symbol))].sort());
+  assert.ok(original.handPositions.length >= 6);
+  for (const h of original.handPositions) assert.ok(playsAt("original", h.tick, h.hand, h.anchor), `${h.hand} ${h.anchor} at ${h.tick}`);
+});
+
+test("the Original lesson states the arrangement is generic and not a transcription, and mentions the lower-confidence chorus", () => {
+  assert.match(original.arrangementNote, /generic chord-based accompaniment/);
+  assert.match(original.arrangementNote, /not a transcription/);
+  assert.match(original.arrangementNote, /chorus is lower confidence/);
+  assert.match(original.summary, /generic chord-based accompaniment, not a transcription/);
+});
+
+test("analysis exists on Original only, has harmony and voice-leading entries, and stays inside the song", () => {
+  assert.equal(cancer.levels.beginner.analysis, undefined, "Beginner shows no analysis");
+  assert.ok(analysis.length >= 6);
+  assert.deepEqual([...new Set(analysis.map((a) => a.kind))].sort(), ["harmony", "voice-leading"]);
+  for (const a of analysis) {
+    assert.ok(a.tick >= 0 && (a.endTick ?? a.tick) <= cancer.lengthTicks, a.title);
+    assert.ok(a.title.length <= 18, `${a.title}: callout titles stay short`);
+  }
+});
+
+test("analysis roman numerals and functions agree with the chord track at their tick", () => {
+  for (const a of analysis) {
+    const chord = chordAt(cancer, a.tick);
+    assert.equal(chord.tick, a.tick, `${a.title} sits on a chord change`);
+    assert.equal(a.roman, chord.roman, a.title);
+    assert.equal(a.function, chord.function, a.title);
+  }
+});
+
+test("counter-proof: an analysis entry with the wrong numeral does not match the chord track", () => {
+  const wrong = { ...analysis[0], roman: "V" };
+  assert.notEqual(wrong.roman, chordAt(cancer, wrong.tick).roman);
+});
+
+test("the borrowed iv entry sits on the verse Am and explains modal mixture", () => {
+  const borrowed = analysis.find((a) => a.title === "Borrowed iv");
+  assert.equal(chordAt(cancer, borrowed.tick).symbol, "Am");
+  assert.equal(borrowed.tick, 9600, "the Am of the verse (the first one)");
+  assert.match(borrowed.text, /modal mixture/);
+  assert.match(borrowed.text, /parallel key, E minor/);
+});
+
+test("the voice-leading claims in the analysis are true of the Original voicings", () => {
+  assert.deepEqual(moves(5, 6), [0, 1, -1, 0], "C#m to Am: G# up to A, C# down to C, E stays");
+  assert.deepEqual(moves(6, 7), [0, 0, 1, 0], "Am to A: only C up to C#");
+  assert.equal(bassStart(8) - bassStart(7), 1, "the bass climbs a half step, A to A#");
+  assert.deepEqual(moves(10, 11).filter((d) => d === 1), [1], "Am to F#m: C rises to C# (one half-step voice)");
+});
+
+test("counter-proof: the voice-leading check fails when a voicing is changed", () => {
+  const saved = structuredClone(cancer);
+  saved.levels.original.notes.find((n) => n.hand === "R" && n.tick === 9600 && n.pitch === "C5").pitch = "C#5";
+  const voices = saved.levels.original.notes.filter((n) => n.hand === "R" && n.tick === 9600).map((n) => parsePitch(n.pitch).midi).sort((a, b) => a - b);
+  assert.notEqual(voices.join(), rightVoices(6).join(), "the mutated bar differs from the real one");
+});

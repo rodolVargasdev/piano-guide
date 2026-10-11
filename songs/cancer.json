@@ -174,6 +174,15 @@
         {"tick":19200,"dur":1920,"pitch":"A4","hand":"R","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
         {"tick":19200,"dur":1920,"pitch":"C#5","hand":"R","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
         {"tick":19200,"dur":1920,"pitch":"F#5","hand":"R","finger":5,"fingeringSource":"editorial","role":"accompaniment"}
+      ],
+      "analysis": [
+        {"tick":0,"kind":"harmony","title":"Tonic","text":"E major is the home chord, the one the other chords are measured against. The right hand holds its three notes with the root doubled on top.","roman":"I","function":"tonic"},
+        {"tick":1920,"kind":"harmony","title":"Dominant","text":"B major sits on the fifth degree of E major. Moving from the home chord to the fifth and back gives the intro and the verse their question-and-answer feel.","roman":"V","function":"dominant"},
+        {"tick":7680,"kind":"harmony","title":"Relative minor","text":"C# minor is the relative minor of E major. It shares two of its three notes, E and G#, with the home chord, so it sounds like a softer version of it.","roman":"vi","function":"tonic substitute"},
+        {"tick":9600,"endTick":11520,"kind":"harmony","title":"Borrowed iv","text":"A minor does not belong to E major, which has C# where A minor has C natural. The expected chord is A major (IV), so this Am is borrowed from the parallel key, E minor. This is called modal mixture. From C#m to Am the right hand moves only two voices by a half step: G# rises to A and C# falls to C, while E stays put.","roman":"iv","function":"borrowed subdominant"},
+        {"tick":11520,"kind":"voice-leading","title":"C back to C#","text":"From Am to A only one voice moves: C rises a half step to C#, and the sound turns major again. This is the first chord of the chorus, the part of the source with the lowest confidence.","roman":"IV","function":"subdominant"},
+        {"tick":13440,"kind":"voice-leading","title":"Bass climbs","text":"The bass note is A#, a half step above the A of the previous bar, so the bass climbs by a half step. F# major is the dominant of B (V of V), which is why the chord is labelled V6/V (first inversion). In this progression it moves on to C#m.","roman":"V6/V","function":"secondary dominant"},
+        {"tick":19200,"kind":"harmony","title":"Supertonic","text":"F#m is the chord on the second degree. In major keys a ii chord usually leads toward the dominant (B). Coming from Am, the C rises once more to C#.","roman":"ii","function":"subdominant"}
       ]
     }
   },
@@ -249,6 +258,76 @@
         "Finish with the Pre-Chorus and Chorus. Its chords are the least certain part of the source, so check them by ear."
       ],
       "arrangementNote": "This is a generic chord-based accompaniment built from the chord progression: a bass note on the left and a triad on the right. It is not a transcription of the recording and it leaves out the vocal line."
+    },
+    "original": {
+      "summary": "The Original level plays the same seven chords as Beginner with a fuller sound: the left hand plays a bass arpeggio and the right hand holds a four-note chord for the whole bar. It is a generic chord-based accompaniment, not a transcription of the recording. Turn on Analysis to read the harmony.",
+      "chordsUsed": [
+        "E",
+        "B",
+        "C#m",
+        "Am",
+        "A",
+        "F#/A#",
+        "F#m"
+      ],
+      "handPositions": [
+        {
+          "tick": 0,
+          "hand": "L",
+          "anchor": "E2",
+          "text": "Left hand: little finger (5) on E2, index finger (2) on B2, thumb (1) on E3, then the index finger back on B2. The same shape (root, fifth, octave, fifth) repeats on every chord."
+        },
+        {
+          "tick": 0,
+          "hand": "R",
+          "anchor": "E4",
+          "text": "Right hand: thumb (1) on E4, index finger (2) on G#4, middle finger (3) on B4 and little finger (5) on E5. Hold the four keys for the whole bar."
+        },
+        {
+          "tick": 1920,
+          "hand": "R",
+          "anchor": "D#4",
+          "text": "B chord: the thumb, index finger and little finger step down by one or two half steps while the middle finger stays on B4. Thumb (1) on D#4, index finger (2) on F#4, middle finger (3) on B4, little finger (5) on D#5."
+        },
+        {
+          "tick": 7680,
+          "hand": "R",
+          "anchor": "E4",
+          "text": "C#m: every finger steps up from the B chord by one or two half steps. Thumb (1) on E4, index finger (2) on G#4, middle finger (3) on C#5, little finger (5) on E5."
+        },
+        {
+          "tick": 9600,
+          "hand": "R",
+          "anchor": "E4",
+          "text": "Am: the thumb stays on E4, the index finger moves up to A4 and the middle finger moves down to C5. This is the borrowed chord: only two fingers change, each by a half step."
+        },
+        {
+          "tick": 11520,
+          "hand": "R",
+          "anchor": "A4",
+          "text": "A: only the middle finger moves, from C5 up to C#5. Everything else stays where it was."
+        },
+        {
+          "tick": 13440,
+          "hand": "R",
+          "anchor": "F#4",
+          "text": "F#/A#: three fingers step up while the middle finger stays on C#5. Thumb (1) on F#4, index finger (2) on A#4, middle finger (3) on C#5, little finger (5) on F#5. The left hand starts on A#2."
+        },
+        {
+          "tick": 19200,
+          "hand": "R",
+          "anchor": "F#4",
+          "text": "F#m: thumb (1) on F#4, index finger (2) on A4, middle finger (3) on C#5, little finger (5) on F#5."
+        }
+      ],
+      "posture": "Sit as in the Beginner lesson: centered, back straight but relaxed, forearms level with the keys. The right hand now holds an octave, so keep the hand open and the wrist level instead of pressing down.",
+      "practicePlan": [
+        "Start with the left hand alone (press Mute right): four quarter notes per bar, root, fifth, octave, fifth. Switch on Metronome and keep it even.",
+        "Then press Mute left and practice moving the right-hand chord from bar to bar. Only one or two fingers change at each step, so look for the notes that stay.",
+        "Put the hands together with Slow on. Use Set A here and Set B here to loop bars 5 to 7 (C#m, Am, A) and listen to the borrowed Am.",
+        "Switch on Analysis to see the roman numerals and the notes about the harmony, then raise the tempo with Ramp."
+      ],
+      "arrangementNote": "This is a generic chord-based accompaniment built from the chord progression: a bass arpeggio on the left and a held four-note chord on the right. It is not a transcription of the recording and it leaves out the vocal line. The chords come from one user-submitted source and the chorus is lower confidence."
     }
   },
   "sources": [
@@ -261,6 +340,8 @@
     {"scope":"chords:chorus","level":"low","note":"One user-submitted source gives IV V6/V vi iv ii (F# over A#, then Am, then F#m). No second source agrees and the inversion and the minor iv are the least certain parts."},
     {"scope":"structure","level":"low","note":"The sources list progressions, not bar counts. One chord per bar and the section lengths are an editorial layout for practice."},
     {"scope":"tempo","level":"medium","note":"Sources disagree slightly: 70 BPM (Wikipedia) and 75 BPM (Hooktheory). The default of 72 sits between them; the practice range is 70 to 75."},
-    {"scope":"fingering","level":"low","note":"Editorial: root-position triads with fingers 1, 3 and 5 in the right hand and finger 5 on the bass note."}
+    {"scope":"fingering","level":"low","note":"Editorial on both levels: Beginner uses root-position triads with fingers 1, 3 and 5 in the right hand and finger 5 on the bass note; Original uses 5, 2, 1, 2 in the left hand and 1, 2, 3, 5 in the right hand."},
+    {"scope":"voicings","level":"low","note":"Editorial: the Original voicings and the root, fifth, octave, fifth bass pattern are an arrangement choice built only from the notes of each chord. They are not taken from any source."},
+    {"scope":"analysis","level":"medium","note":"The analysis describes the chords as listed in the chord track, so it is only as certain as they are (the chorus is lower confidence). The theory terms used (relative minor, modal mixture, secondary dominant) are standard."}
   ]
 }

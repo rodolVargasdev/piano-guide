@@ -35,6 +35,14 @@ The runner is the built-in one; there is nothing to install.
 
 Songs are data. A new song needs a `songs/<id>.json` file and an entry in `songs/index.json`. The format is defined and enforced by `src/core/schema.js` (`validateSong`, `validateIndex`); an invalid song shows as "Unavailable" in the catalog with the reason.
 
+Levels and analysis, by example from `songs/cancer.json`:
+
+- `levels` has up to two keys, `beginner` and `original`; `defaultLevel` names one of them and `songs/index.json` lists the same level ids. A song with one level shows a static chip instead of the selector.
+- `notation: "labelled"` draws note names inside enlarged noteheads (Beginner); `notation: "engraved"` draws standard notation (Original). `strictBars: true` asks the validator to check that every bar of every hand is exactly covered, and the score then draws only the rests you wrote.
+- `analysis` (optional, per level) is a list of `{ tick, endTick?, kind, title, text, roman?, function? }` with `kind` one of `harmony`, `voice-leading`, `ornament`, `rubato`, `dynamics`, `form`. It appears only when the Analysis toggle is on: roman numerals under the staff, a short callout per entry (keep `title` under about 18 characters) and the full text in the lesson card. A level with no `analysis` has no Analysis toggle.
+- `lesson` has one entry per level id; a level without one shows "No lesson for this level yet" and a validator warning.
+- `contentPolicy: "chords-only"` (Cancer) forbids `role: "melody"` and any `lyrics` string anywhere in the file; the arrangement is then described as a generic chord-based accompaniment.
+
 ## Routes
 
 The site uses hash routes, so it works on any static host and under a subpath with no rewrites.
