@@ -58,6 +58,26 @@ A song you must not publish goes in `songs-private/` (a folder next to `index.ht
 
 `docs/USABILITY_CHECK.md` is the protocol to test Learn mode with a person who has never played.
 
+## Practice exercises
+
+Open **Practice exercises** (the link in the header, or the button on the catalog). Nothing here is a song: every exercise is generated from music theory, so there is nothing to copy and no copyright. The page opens with a **Today** card (the 10-minute routine of the day, the key of the day on a circle of fifths and your days in a row) and then the exercises in four groups.
+
+| Group | Exercises |
+|-------|-----------|
+| Technique | Five-finger patterns, major scales (one or two octaves, right hand, left hand, then both together), arpeggios |
+| Harmony | Chords and inversions, the cadence I, IV, V, I, the progressions I, vi, IV, V and I, V, vi, IV (a left hand root and a right hand chord, with the smallest movement between chords) |
+| Ear training | Hear the interval (starts with major third, perfect fifth and octave), hear the chord (major or minor) |
+| Routine | The 10-minute routine |
+
+- **Doc card**: every exercise has a short card (goal, why it matters, how to do it, what good looks like, tempo steps) in English and Spanish, one tap away on the exercise page ("How this exercise works").
+- **A run**: press **Start**; the keys to press are shaded with the finger number, one step at a time. Right keys say "Correct", a wrong key says "Try again", keeps the step and makes the run "not clean". Taps, the computer keys and MIDI work like in Learn mode (same input panel). **Listen** plays the exercise first (generated notes only; it never plays a song).
+- **After a run**: **Again** (same key and tempo), **Faster** (the next tempo of the card after a clean run; it stops at the top and says so), **Next hand** (right, left, then both together) and **Next key**. The order of the keys is the circle of fifths, the circle of fourths, random (every key once before a repeat) or the same key; the key is also chosen on the circle of fifths. A scale opens on the first key without a clean run in the order C, G, D, F, A, E, B, Bb, Eb, Ab, Db, F#; it is a suggestion, every key can be chosen.
+- **Metronome**: a click at the page tempo while a run is going. Tempo is a pacing aid: nothing is timed, and a "clean run at 72" means no wrong key while the click was at 72.
+- **Ear drills**: **Play** the question (as often as you like), then pick a name or play it back on the keyboard (any octave counts). A second wrong answer shows the right one. A round is ten questions; 8 of 10 right unlock the next choice (perfect fourth, minor third, major sixth, major second, minor sixth, minor seventh, major seventh, tritone, minor second; chords add diminished and augmented).
+- **10-minute routine**: a warm-up (a five-finger pattern in the key after the last warm-up on the circle of fifths), a scale (the key practiced longest ago or never), chords (triads, the cadence or the I, V, vi, IV progression) and an ear drill, 2 + 3 + 3 + 2 minutes. **Skip block** at any moment; the summary says "N days in a row". A day counts when at least one block was done; skipping everything records nothing.
+- **Progress** (best clean tempo, clean streak, clean runs, last practiced, the days in a row, the unlocked ear choices) is saved in the browser under one key and shows on the list and on each exercise; **Reset progress** on the list asks "Reset all practice progress? Yes No" and clears it. It holds only ids, key names, counts, tempos and dates.
+- **Suggested fingering**: a fingering is marked "Suggested fingering" when method books disagree: the right hand of B-flat major and the left hand of F-sharp major scales, the left hand arpeggios of D-flat, E-flat, A-flat and B-flat, the left hand crossing finger of two-octave arpeggios, and the minor arpeggios of B, F-sharp and the flat keys. The scale and arpeggio cards also say "Standard fingering; some books differ."
+
 ## Tests
 
 ```sh
@@ -90,6 +110,8 @@ The site uses hash routes, so it works on any static host and under a subpath wi
 | `#/song/<id>` | Song player: 3D keyboard with falling notes, transport controls, position readout and BPM, and the grand-staff score under the keyboard. Add `?debug=1` to the page URL (or the hash) for the overlay (clock jitter, frame time, graphics tier and camera section) |
 | `#/song/<id>?level=<id>&names=<solfege or letters>&view=<both, scene or score>` | Same song with the level, note names and view preselected; the selector under the title changes them and rewrites the hash without a reload |
 | `#/learn/<id>?level=<id>` | Learn mode: the step-by-step teacher (see "Learn mode" above) |
+| `#/practice` | Practice exercises: the Today card and the list of exercises (see "Practice exercises" above) |
+| `#/practice/<id>` | One exercise: `five-finger`, `scale-major`, `triads`, `arpeggios`, `cadence-i-iv-v-i`, `progression-i-vi-iv-v`, `progression-i-v-vi-iv`, `ear-intervals`, `ear-chords` or `routine`; any other id shows "Exercise not found" with a link back |
 | anything else | "Page not found" with a link to the catalog |
 
 An id that is not in the index shows "Song not found". The browser back button always disposes the previous view first.

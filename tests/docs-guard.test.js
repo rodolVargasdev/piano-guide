@@ -18,10 +18,14 @@ export function usabilityProblems(doc) {
     else if (!/\d+ min/.test(task)) problems.push(`${id} has no time limit`);
     if (!new RegExp(`^\\| ${id}\\b[^\\n]*\\d+ min|^\\| ${id}\\b[^\\n]*\\| 0 \\|`, "m").test(thresholds)) problems.push(`${id} has no pass threshold`);
   }
-  // T1 (lesson zero) is available since Milestone B part 1; T3 and T5 wait for their milestone.
-  for (const id of ["T3", "T5"]) {
+  // Every task is available since Milestone C: lesson zero (T1), the private song (T2), Ode to Joy (T3), resuming (T4) and the routine (T5).
+  for (const id of ["T1", "T2", "T3", "T4", "T5"]) {
     const row = new RegExp(`^\\| ${id}\\b[^\\n]*`, "m").exec(doc)?.[0] ?? "";
-    if (!/after Milestone [BC]/.test(row)) problems.push(`${id} is not marked as available after its milestone`);
+    if (!/\| now\b/.test(row)) problems.push(`${id} is not marked as available now`);
+  }
+  if (!/^### T5: the 10-minute routine/m.test(doc)) problems.push("no T5 routine instructions");
+  for (const field of ["which blocks were done and which were skipped", "Listen", "clean run", "Suggested fingering"]) {
+    if (!doc.includes(field)) problems.push(`T5 does not record: ${field}`);
   }
   if (!/does not (?:explain|help)|Do not explain/i.test(doc)) problems.push("no rule that the observer does not help");
   if (!/hesitations? (?:longer than|over) 10 seconds|hesitations over 10 s/i.test(doc)) problems.push("hesitations over 10 seconds are not recorded");
@@ -37,6 +41,15 @@ export function readmeProblems(readme) {
   if (!readme.includes("songs-private") || !/-v <path>\/songs-private:\/usr\/share\/nginx\/html\/songs-private:ro/.test(readme)) problems.push("no read-only mount command for the private folder");
   if (!readme.includes("node tools/convert-hooktheory.mjs")) problems.push("no converter command");
   if (!readme.includes("`A S D F G H J K L ; '`")) problems.push("the computer key map is not documented");
+  // Practice exercises (Milestone C): the section, its parts and the routes.
+  if (!/^## Practice exercises$/m.test(readme)) problems.push("no Practice exercises section");
+  for (const part of ["Today", "Doc card", "Metronome", "Ear drills", "10-minute routine", "Skip block", "Reset progress", "Suggested fingering", "days in a row"]) {
+    if (!readme.slice(readme.indexOf("## Practice exercises")).includes(part)) problems.push(`the Practice exercises section does not mention ${part}`);
+  }
+  for (const route of ["`#/practice`", "`#/practice/<id>`"]) if (!readme.includes(route)) problems.push(`the routes table does not list ${route}`);
+  for (const id of ["five-finger", "scale-major", "triads", "arpeggios", "cadence-i-iv-v-i", "progression-i-vi-iv-v", "progression-i-v-vi-iv", "ear-intervals", "ear-chords", "routine"]) {
+    if (!readme.includes(id)) problems.push(`the exercise id ${id} is not documented`);
+  }
   if (!/Docker \(primary\)/.test(readme)) problems.push("Docker is not presented as the primary path");
   return problems;
 }
@@ -49,9 +62,11 @@ test("counter-proof: a protocol without T3, without a threshold row or without t
   const doc = read("docs/USABILITY_CHECK.md");
   assert.ok(usabilityProblems(doc.replace(/^\| T3\b[^\n]*\n/gm, "")).some((p) => p.startsWith("T3")));
   assert.ok(usabilityProblems(doc.replace(/^Revised on:[^\n]*\n/m, "")).includes("no 'Revised on' line"));
-  assert.ok(usabilityProblems(doc.replace("after Milestone B (Ode to Joy)", "now")).some((p) => p.includes("T3")));
-  assert.match(doc, /^\| T1\b[^\n]*\| now /m, "lesson zero exists, so T1 is available now");
-  assert.doesNotMatch(doc.replace(/^(\| T1\b[^\n]*)\| now /m, "$1| after Milestone B "), /^\| T1\b[^\n]*\| now /m, "counter-proof of the pattern");
+  assert.ok(usabilityProblems(doc.replace(/^(\| T3\b[^\n]*)\| now /m, "$1| after Milestone B ")).includes("T3 is not marked as available now"));
+  assert.ok(usabilityProblems(doc.replace(/^(\| T5\b[^\n]*)\| now /m, "$1| after Milestone C ")).includes("T5 is not marked as available now"));
+  for (const id of ["T1", "T2", "T3", "T4", "T5"]) assert.match(doc, new RegExp(`^\\| ${id}\\b[^\\n]*\\| now\\b`, "m"), `${id} is available now`);
+  assert.ok(usabilityProblems(doc.replace("### T5: the 10-minute routine", "### T5")).includes("no T5 routine instructions"));
+  assert.ok(usabilityProblems(doc.replace("which blocks were done and which were skipped", "which blocks")).includes("T5 does not record: which blocks were done and which were skipped"));
   assert.ok(usabilityProblems(doc.slice(0, doc.indexOf("## Pass thresholds"))).some((p) => p.includes("pass threshold")));
   assert.ok(usabilityProblems("").length >= 5);
 });
@@ -66,4 +81,8 @@ test("counter-proof: a README missing the link, the mount command or the key map
   assert.ok(readmeProblems(readme.replace(":ro", "")).includes("no read-only mount command for the private folder"));
   assert.ok(readmeProblems(readme.replace("`A S D F G H J K L ; '`", "the home row")).includes("the computer key map is not documented"));
   assert.ok(readmeProblems(readme.replace("Run with Docker (primary)", "Run")).includes("Docker is not presented as the primary path"));
+  assert.ok(readmeProblems(readme.replace("## Practice exercises", "## Practice")).includes("no Practice exercises section"));
+  assert.ok(readmeProblems(readme.replaceAll("Skip block", "Skip")).includes("the Practice exercises section does not mention Skip block"));
+  assert.ok(readmeProblems(readme.replace("| `#/practice/<id>` |", "| `#/practice/x` |")).includes("the routes table does not list `#/practice/<id>`"));
+  assert.ok(readmeProblems(readme.replace("ear-chords", "ear-x")).includes("the exercise id ear-chords is not documented"));
 });

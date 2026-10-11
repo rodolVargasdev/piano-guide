@@ -33,9 +33,15 @@ For T2 the private song must be available on the observer's machine (the local l
 |------|------------|------------|-----------|
 | T1 | "Find the note C on the piano." (lesson zero) | 2 min | now (the "Lesson zero" button on the first screen of any song) |
 | T2 | "Play the first part of this song with your right hand." Once in the original key, once in C major (use the key toggle) | 10 min per key | now (private Cancer on the observer's machine) |
-| T3 | "Play the first phrase of Ode to Joy." | 5 min | after Milestone B (Ode to Joy) |
+| T3 | "Play the first phrase of Ode to Joy." | 5 min | now (Ode to Joy is in the public catalog) |
 | T4 | Close the page in the middle of a phrase. "Open it again and carry on where you were." | 2 min | now |
-| T5 | "Do the 10-minute routine." | 10 min | after Milestone C (practice exercises) |
+| T5 | "Do the 10-minute routine." | 10 min | now (Practice exercises, the Today card or the "Start the routine" button) |
+
+### T5: the 10-minute routine
+
+Start from the catalog with no saved practice progress (use "Reset progress" on the Practice exercises page, or a clean browser profile) so the routine is the first-day one (a C warm-up, a C scale, a chord drill, an ear drill). Read the task aloud once and say nothing else. The routine has four blocks: the participant may skip a block, and that is allowed and recorded. The task ends when the summary appears.
+
+Record, besides the fields below: which blocks were done and which were skipped; whether the participant used **Listen** before a run, a metronome or the tempo buttons; whether they understood "clean run" and "Suggested fingering" without help; whether the summary line ("1 day in a row") made sense to them; and whether they could answer an ear question by playing it back (not only by the buttons).
 
 ## What to record, per task
 
