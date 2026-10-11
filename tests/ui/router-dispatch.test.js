@@ -142,3 +142,15 @@ test("lazyView wired in the router: the previous view is disposed before the laz
   h.go("#/");
   assert.deepEqual(log, ["mount catalog", "dispose catalog", "mount lazy:cancer", "dispose lazy", "mount catalog"]);
 });
+
+test("the learn route reaches its own view with the raw id, and a route with no view falls to unknown", () => {
+  const log = [];
+  const views = { ...recordingViews(log), learn: (route) => (log.push(`mount learn:${route.songId}`), { dispose: () => log.push("dispose learn") }) };
+  const h = harness(views);
+  h.router.start();
+  h.go("#/learn/cancer-private");
+  assert.deepEqual(log, ["mount catalog", "dispose catalog", "mount learn:cancer-private"]);
+  log.length = 0;
+  h.go("#/practice"); // no practice view yet: unknown, and Learn is disposed first
+  assert.deepEqual(log, ["dispose learn", "mount unknown"]);
+});

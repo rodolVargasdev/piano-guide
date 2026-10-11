@@ -63,3 +63,26 @@ test("a second question mark in the hash does not leak into the id", () => {
   const r = parseHash("#/song/cancer?level=beginner?x");
   assert.equal(r.songId, "cancer");
 });
+
+test("#/learn/<id> is the Learn route, with an optional level", () => {
+  assert.deepEqual(parseHash("#/learn/cancer-private"), { route: "learn", ...DEFAULTS, songId: "cancer-private" });
+  assert.deepEqual(parseHash("#/learn/cancer-private?level=beginner"), { route: "learn", ...DEFAULTS, songId: "cancer-private", level: "beginner" });
+  assert.equal(parseHash("#/learn/x?level=Be%20Ginner").level, null, "a level that is not an id is dropped");
+});
+
+test("#/practice and #/practice/<id> are the practice routes", () => {
+  assert.deepEqual(parseHash("#/practice"), { route: "practice", ...DEFAULTS });
+  assert.deepEqual(parseHash("#/practice/"), { route: "practice", ...DEFAULTS });
+  assert.deepEqual(parseHash("#/practice/c-major-scale"), { route: "practice", ...DEFAULTS, songId: "c-major-scale" });
+});
+
+test("counter-proof: malformed learn and practice paths stay unknown", () => {
+  for (const h of ["#/learn", "#/learn/", "#/learn/a/b", "#/practice/a/b", "#/learns/x", "#learn/x"]) assert.equal(parseHash(h).route, "unknown", h);
+});
+
+test("a hostile learn id comes back as inert text and is not a valid id", () => {
+  const r = parseHash("#/learn/%3Cimg%20src%3Dx%3E");
+  assert.equal(r.route, "learn");
+  assert.equal(r.songId, "<img src=x>");
+  assert.equal(isSongId(r.songId), false);
+});
