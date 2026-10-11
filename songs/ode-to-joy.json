@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "id": "ode-to-joy",
+  "title": "Ode to Joy",
+  "composer": "Ludwig van Beethoven",
+  "contentPolicy": "open",
+  "key": {
+    "tonic": "C",
+    "mode": "major"
+  },
+  "meter": {
+    "num": 4,
+    "den": 4
+  },
+  "pickupTicks": 0,
+  "tempo": {
+    "bpm": 100,
+    "beatUnit": "quarter"
+  },
+  "lengthTicks": 30720,
+  "sections": [
+    {
+      "id": "theme",
+      "name": "Theme",
+      "startTick": 0,
+      "endTick": 30720
+    }
+  ],
+  "chords": [
+    { "tick": 0, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 1920, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 3840, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 5760, "dur": 1920, "symbol": "G", "roman": "V", "function": "dominant" },
+    { "tick": 7680, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 9600, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 11520, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 13440, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 15360, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 17280, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 19200, "dur": 1920, "symbol": "G", "roman": "V", "function": "dominant" },
+    { "tick": 21120, "dur": 1920, "symbol": "G", "roman": "V", "function": "dominant" },
+    { "tick": 23040, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 24960, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 26880, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 28800, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" }
+  ],
+  "levels": {
+    "beginner": {
+      "label": {
+        "en": "Beginner",
+        "es": "Principiante"
+      },
+      "description": {
+        "en": "The melody in C major, one note at a time, with a simple left hand: one long note in each bar.",
+        "es": "La melodía en Do mayor, una nota a la vez, con una mano izquierda sencilla: una nota larga en cada compás."
+      },
+      "notation": "labelled",
+      "transcribed": true,
+      "strictBars": true,
+      "notes": [
+        { "tick": 0, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 0, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 480, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 960, "dur": 480, "pitch": "F4", "hand": "R", "role": "melody" },
+        { "tick": 1440, "dur": 480, "pitch": "G4", "hand": "R", "role": "melody" },
+        { "tick": 1920, "dur": 480, "pitch": "G4", "hand": "R", "role": "melody" },
+        { "tick": 1920, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 2400, "dur": 480, "pitch": "F4", "hand": "R", "role": "melody" },
+        { "tick": 2880, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 3360, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 3840, "dur": 480, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 3840, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 4320, "dur": 480, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 4800, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 5280, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 5760, "dur": 720, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 5760, "dur": 1920, "pitch": "G2", "hand": "L", "role": "bass" },
+        { "tick": 6480, "dur": 240, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 6720, "dur": 960, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 7680, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 7680, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 8160, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 8640, "dur": 480, "pitch": "F4", "hand": "R", "role": "melody" },
+        { "tick": 9120, "dur": 480, "pitch": "G4", "hand": "R", "role": "melody" },
+        { "tick": 9600, "dur": 480, "pitch": "G4", "hand": "R", "role": "melody" },
+        { "tick": 9600, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 10080, "dur": 480, "pitch": "F4", "hand": "R", "role": "melody" },
+        { "tick": 10560, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 11040, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 11520, "dur": 480, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 11520, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 12000, "dur": 480, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 12480, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 12960, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 13440, "dur": 720, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 13440, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 14160, "dur": 240, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 14400, "dur": 960, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 15360, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 15360, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 15840, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 16320, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 16800, "dur": 480, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 17280, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 17280, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 17760, "dur": 240, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 18000, "dur": 240, "pitch": "F4", "hand": "R", "role": "melody" },
+        { "tick": 18240, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 18720, "dur": 480, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 19200, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 19200, "dur": 1920, "pitch": "G2", "hand": "L", "role": "bass" },
+        { "tick": 19680, "dur": 240, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 19920, "dur": 240, "pitch": "F4", "hand": "R", "role": "melody" },
+        { "tick": 20160, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 20640, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 21120, "dur": 480, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 21120, "dur": 1920, "pitch": "G2", "hand": "L", "role": "bass" },
+        { "tick": 21600, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 22080, "dur": 960, "pitch": "G3", "hand": "R", "role": "melody" },
+        { "tick": 23040, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 23040, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 23520, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 24000, "dur": 480, "pitch": "F4", "hand": "R", "role": "melody" },
+        { "tick": 24480, "dur": 480, "pitch": "G4", "hand": "R", "role": "melody" },
+        { "tick": 24960, "dur": 480, "pitch": "G4", "hand": "R", "role": "melody" },
+        { "tick": 24960, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 25440, "dur": 480, "pitch": "F4", "hand": "R", "role": "melody" },
+        { "tick": 25920, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 26400, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 26880, "dur": 480, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 26880, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 27360, "dur": 480, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 27840, "dur": 480, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 28320, "dur": 480, "pitch": "E4", "hand": "R", "role": "melody" },
+        { "tick": 28800, "dur": 720, "pitch": "D4", "hand": "R", "role": "melody" },
+        { "tick": 28800, "dur": 1920, "pitch": "C3", "hand": "L", "role": "bass" },
+        { "tick": 29520, "dur": 240, "pitch": "C4", "hand": "R", "role": "melody" },
+        { "tick": 29760, "dur": 960, "pitch": "C4", "hand": "R", "role": "melody" }
+      ],
+      "pedal": [],
+      "learn": {
+        "phrases": [
+          {
+            "id": "p1",
+            "startTick": 0,
+            "endTick": 3840,
+            "hint": {
+              "en": "It climbs to G and walks back down.",
+              "es": "Sube hasta Sol y vuelve bajando."
+            }
+          },
+          {
+            "id": "p2",
+            "startTick": 3840,
+            "endTick": 7680,
+            "hint": {
+              "en": "It ends by stepping down to D.",
+              "es": "Termina bajando hasta Re."
+            }
+          },
+          {
+            "id": "p3",
+            "startTick": 7680,
+            "endTick": 11520,
+            "hint": {
+              "en": "The first phrase comes back.",
+              "es": "Vuelve la primera frase."
+            }
+          },
+          {
+            "id": "p4",
+            "startTick": 11520,
+            "endTick": 15360,
+            "hint": {
+              "en": "Now it ends on C, the home note.",
+              "es": "Ahora termina en Do, la nota de casa."
+            }
+          },
+          {
+            "id": "p5",
+            "startTick": 15360,
+            "endTick": 19200,
+            "hint": {
+              "en": "A new idea: it starts on D.",
+              "es": "Una idea nueva: empieza en Re."
+            }
+          },
+          {
+            "id": "p6",
+            "startTick": 19200,
+            "endTick": 23040,
+            "hint": {
+              "en": "It finishes with a jump down to G.",
+              "es": "Termina con un salto hacia abajo hasta Sol."
+            }
+          },
+          {
+            "id": "p7",
+            "startTick": 23040,
+            "endTick": 26880,
+            "hint": {
+              "en": "The first phrase comes back again.",
+              "es": "La primera frase vuelve otra vez."
+            }
+          },
+          {
+            "id": "p8",
+            "startTick": 26880,
+            "endTick": 30720,
+            "hint": {
+              "en": "The song ends on C.",
+              "es": "La canción termina en Do."
+            }
+          }
+        ]
+      }
+    }
+  },
+  "defaultLevel": "beginner",
+  "lesson": {
+    "beginner": {
+      "summary": {
+        "en": "This is the theme of Ode to Joy, 16 bars. The right hand plays the tune in C major, which uses only white keys and starts with the thumb on C. The left hand adds one long note in each bar, C or G.",
+        "es": "Este es el tema de la Oda a la alegría, 16 compases. La mano derecha toca la melodía en Do mayor, que usa solo teclas blancas y empieza con el pulgar en Do. La mano izquierda agrega una nota larga en cada compás, Do o Sol."
+      },
+      "chordsUsed": [
+        "C",
+        "G"
+      ],
+      "handPositions": [
+        {
+          "tick": 0,
+          "hand": "R",
+          "anchor": "D4",
+          "text": "Put the thumb (1) on D4 and rest one finger on each of the next four white keys. The first note is E, played with finger 2."
+        },
+        {
+          "tick": 0,
+          "hand": "L",
+          "anchor": "C3",
+          "text": "Little finger (5) on C3. It plays one whole note in the bar."
+        },
+        {
+          "tick": 5760,
+          "hand": "L",
+          "anchor": "G2",
+          "text": "Bar 4: the left hand goes down to G2 for one bar, then comes back to C3."
+        },
+        {
+          "tick": 22080,
+          "hand": "R",
+          "anchor": "G3",
+          "text": "Bar 12: the last note jumps down to G3. Move the right hand there, then come back to C4 for the final bars."
+        }
+      ],
+      "posture": {
+        "en": "Sit tall, with your elbows level with the keys and your fingers curved. Let your arms hang loose.",
+        "es": "Siéntese derecho, con los codos a la altura de las teclas y los dedos curvos. Deje los brazos sueltos."
+      },
+      "practicePlan": [
+        "Learn one phrase at a time: the right hand slowly, then the left hand, then both hands.",
+        "Play each phrase until it feels easy, then go to the next one.",
+        "When all eight phrases are easy, play the whole song at the song speed."
+      ],
+      "arrangementNote": "The right hand is the soprano line of the source, moved from G major down a fifth to C major and written in the register C4 to G4 (one note, bar 12, goes down to G3). The left hand is NOT in the source: it is an editorial arrangement of one whole note per bar, C or G, written for this project."
+    }
+  },
+  "sources": [
+    {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=528",
+      "what": "Mutopia Project piece 528 (Mutopia-2009/08/05-528), \"Ode to Joy\" for voices (SATB) by L. V. Beethoven, typeset in LilyPond by Peter Chubb. Public Domain (dedicated by the typesetter). Transcribed by a script from the soprano voice (sop) of the LilyPond file, 16 bars in G major, 4/4, tempo 4=100: each note was read as a spelled pitch and an onset and then moved down a perfect fifth (G major to C major, four letter names and seven semitones, the beginner level) so the tune sits on the white keys C4 to G4. Rhythm and notes are the source's; nothing was written from memory.",
+      "accessed": "2026-10-11",
+      "kind": "public-domain-score",
+      "mutopiaId": "Mutopia-2009/08/05-528",
+      "license": "Public Domain",
+      "licenseUrl": "http://creativecommons.org/licenses/publicdomain",
+      "maintainer": "Peter Chubb",
+      "fileUrl": "https://www.mutopiaproject.org/ftp/BeethovenLv/ode/ode.ly",
+      "sha256": "a0c865aa9f71221605362622d281405071e0734540e86ce131131757cc803a71"
+    },
+    {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=528",
+      "what": "Left hand of the beginner level: an original editorial arrangement written for this project, one whole note per bar (C or G, the root of the chord that fits the bar). It is NOT taken from the Mutopia page named in the first source, which has a tenor and a bass line that this level does not use.",
+      "accessed": "2026-10-11",
+      "kind": "original-arrangement"
+    }
+  ],
+  "confidence": [
+    {
+      "scope": "notes",
+      "level": "high",
+      "note": "The right-hand pitches and rhythms were read by a script from one Mutopia LilyPond file and are checked note by note against it in the tests (the fixture holds the source onsets). A second edition was not compared."
+    },
+    {
+      "scope": "transposition",
+      "level": "high",
+      "note": "Every note moved by the same interval (four letter names down, seven semitones); the tests rebuild the right hand from the fixture with that interval."
+    },
+    {
+      "scope": "left hand",
+      "level": "low",
+      "note": "Editorial: the chord roots are a plain choice for a beginner, not a harmonization from the source, and may be changed."
+    },
+    {
+      "scope": "fingering",
+      "level": "medium",
+      "note": "Fingers are not printed in the source; the lesson assigns them from the hand position (editorial)."
+    }
+  ]
+}
