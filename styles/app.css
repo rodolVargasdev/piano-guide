@@ -232,3 +232,86 @@ a:focus-visible {
     padding: 0.25rem 0.625rem;
   }
 }
+
+.player {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.player-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.player-head > div {
+  flex: 1 1 14rem;
+}
+
+.player-head h2 {
+  margin: 0;
+}
+
+.stage {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 9rem;
+  border: 1px dashed var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.debug {
+  position: fixed;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  margin: 0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background: rgba(0, 0, 0, 0.75);
+  color: #86efac;
+  font: 12px/1.4 ui-monospace, Consolas, monospace;
+  pointer-events: none;
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  header,
+  main {
+    padding: 0.5rem 0.75rem;
+  }
+
+  h1 {
+    font-size: 1.125rem;
+  }
+
+  .player {
+    gap: 0.5rem;
+  }
+
+  .player-head > div {
+    flex-basis: 8rem;
+  }
+
+  .player-head .meta {
+    margin: 0;
+    font-size: 0.8125rem;
+  }
+
+  .stage {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .slot {
+    min-height: 3.5rem;
+  }
+}
