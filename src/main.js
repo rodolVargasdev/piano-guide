@@ -28,6 +28,8 @@ createRouter({
     catalog: (route, root) => catalogView(route, root, { i18n }),
     // The player pulls in the audio engine, the score and the scene: fetched when a song opens, not for the catalog.
     song: lazyView(() => import("./ui/player.js").then((m) => m.playerView({ i18n }))),
+    // Learn pulls in the keyboard, the inputs and the audio engine: fetched when a lesson opens.
+    learn: lazyView(() => import("./ui/learn-view.js").then((m) => m.learnView({ i18n }))),
     unknown: notFoundView("Page not found"),
   },
 }).start();

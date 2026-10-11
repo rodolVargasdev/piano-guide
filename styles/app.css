@@ -1084,3 +1084,233 @@ header {
 .card-note {
   font-size: 0.875rem;
 }
+
+/* Learn view (src/ui/learn-view.js): one column, one instruction at a time, the keys always on screen with it. */
+[hidden] {
+  display: none !important;
+}
+
+body[data-route="learn"] header .language-select {
+  display: none;
+}
+
+.learn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.learn-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.learn-title {
+  flex: 1 1 10rem;
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.learn-top .btn,
+.learn-top .button {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.9375rem;
+}
+
+.learn-card {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.learn-progress,
+.learn-sub {
+  margin: 0;
+}
+
+.learn-instruction {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.learn-feedback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2rem;
+}
+
+.learn-chip {
+  padding: 0.125rem 0.875rem;
+  border: 2px solid;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.learn-chip[data-kind="correct"] {
+  border-color: #22c55e;
+  background: #14532d;
+  color: #bbf7d0;
+}
+
+.learn-chip[data-kind="wrong"] {
+  border-color: #f87171;
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+.learn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.learn-action {
+  min-height: 3rem;
+  padding: 0.5rem 1.25rem;
+  font-size: 1rem;
+}
+
+.learn-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+}
+
+.learn-actions .button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
+.learn-keyboard-slot {
+  display: flex;
+  justify-content: center;
+}
+
+.input-panel {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.input-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.input-connect {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.input-sound {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.input-hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 40rem) {
+  .learn-instruction {
+    font-size: 1.25rem;
+  }
+
+  .learn-card {
+    padding: 0.75rem;
+  }
+
+  .learn-actions .btn,
+  .learn-actions .button {
+    flex: 1 1 40%;
+    justify-content: center;
+  }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  body[data-route="learn"] header {
+    display: none;
+  }
+
+  .learn {
+    gap: 0.375rem;
+  }
+
+  .learn-top {
+    gap: 0.25rem 0.5rem;
+  }
+
+  .learn-title {
+    font-size: 1rem;
+  }
+
+  .learn-top .btn,
+  .learn-top .button,
+  .language-select .btn {
+    min-height: 2rem;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .learn-card {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.125rem 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+
+  .learn-card > * {
+    grid-column: 1;
+  }
+
+  .learn-card .learn-actions {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+  }
+
+  .learn-instruction {
+    font-size: 1.125rem;
+  }
+
+  .learn-card[data-phase="yourTurn"] .learn-sub {
+    display: none;
+  }
+
+  .learn-feedback {
+    min-height: 1.5rem;
+  }
+
+  .learn-action,
+  .learn-actions .button {
+    min-height: 2.25rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.9375rem;
+  }
+
+  .input-panel {
+    padding: 0.25rem 0.5rem;
+  }
+
+  .input-connect {
+    min-height: 1.75rem;
+  }
+}

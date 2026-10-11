@@ -162,7 +162,8 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     const together = new Set(stepKeys.map((k) => k.hand)).size > 1;
     const parts = [];
     const bottomOf = (g) => top + (g.black ? m.blackH : m.keyH);
-    const badgeY = (g) => (g.black ? bottomOf(g) - m.badge / 2 - 4 : top + m.blackH + m.badge / 2 + 4);
+    // On a black key the badge sits above the computer-key letter box, which takes the bottom of the key.
+    const badgeY = (g) => (g.black ? bottomOf(g) - (m.letter + 6) - 8 - m.badge / 2 : top + m.blackH + m.badge / 2 + 4);
     for (const k of stepKeys) {
       const g = geom.get(k.midi);
       if (!g) continue;
@@ -185,7 +186,7 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     for (const k of positionKeys) {
       const g = geom.get(k.midi);
       if (!g || expected.has(k.midi)) continue;
-      parts.push(make("text", { class: `lk-quiet lk-hand-${k.hand}`, x: g.cx, y: badgeY(g) + 5, "text-anchor": "middle", "font-size": m.letter }, String(k.finger)));
+      parts.push(make("text", { class: `lk-quiet lk-hand-${k.hand}`, x: g.cx, y: g.black ? badgeY(g) + 5 : top + m.blackH + m.letter + 4, "text-anchor": "middle", "font-size": m.letter }, String(k.finger)));
     }
     for (const [midi, label] of letters) {
       const g = geom.get(midi);

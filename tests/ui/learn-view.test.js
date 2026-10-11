@@ -202,6 +202,15 @@ test("hand and level selectors appear only when there is a choice", async () => 
   assert.equal((await open({ song: two })).buttonsIn("learn-levels").length, 2);
 });
 
+test("Learn opens the beginner level even when the song opens on another by default, and honors an explicit level", async () => {
+  const song = makeSong();
+  song.levels.original = { ...song.levels.beginner, label: "Original", notation: "engraved" };
+  song.defaultLevel = "original";
+  const pressed = (v) => v.segment("learn-levels").children.filter((b) => b.attrs["aria-pressed"] === "true").map(textOfNode);
+  assert.deepEqual(pressed(await open({ song })), ["Beginner"]);
+  assert.deepEqual(pressed(await open({ song, level: "original" })), ["Original"], "counter-proof: the route level wins");
+});
+
 test("progress is saved and the next visit offers Continue at that phrase, with Start over and Reset beside it", async () => {
   const storage = memory();
   const first = await open({ song: privateSong(), storage });

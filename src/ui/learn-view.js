@@ -67,7 +67,8 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
       const doc = win.document ?? globalThis.document;
       let progress = readProgress(storage);
       const levels = learnableLevels(song);
-      let levelId = levels.includes(route.level) ? route.level : levels.includes(song.defaultLevel) ? song.defaultLevel : levels[0];
+      // A learner starts on the beginner level when the song has one with notes, whatever the player opens by default.
+      let levelId = levels.includes(route.level) ? route.level : levels.includes("beginner") ? "beginner" : levels.includes(song.defaultLevel) ? song.defaultLevel : levels[0];
       const bus = createNoteBus();
       const engine = makeEngine();
       let panel = null;
