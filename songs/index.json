@@ -17,6 +17,15 @@
       "key": { "tonic": "Eb", "mode": "major" },
       "defaultBpm": 44,
       "levels": ["beginner", "original"]
+    },
+    {
+      "id": "satie-gymnopedie-1",
+      "file": "satie-gymnopedie-1.json",
+      "title": "Gymnopédie No. 1",
+      "composer": "Erik Satie",
+      "key": { "tonic": "D", "mode": "major" },
+      "defaultBpm": 60,
+      "levels": ["beginner", "original"]
     }
   ]
 }
