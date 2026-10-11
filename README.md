@@ -33,8 +33,21 @@ The runner is the built-in one; there is nothing to install.
 
 ## Adding a song
 
-Songs are data. A new song needs a `songs/<id>.json` file and an entry in `songs/index.json`. The data format arrives with the song catalog; this section is extended then.
+Songs are data. A new song needs a `songs/<id>.json` file and an entry in `songs/index.json`. The format is defined and enforced by `src/core/schema.js` (`validateSong`, `validateIndex`); an invalid song shows as "Unavailable" in the catalog with the reason.
 
-## Open items
+## Routes
 
-- nginx Content-Security-Policy: add the SHA-256 of the inline import map to `script-src` in `nginx.conf` once `index.html` carries it (tracked as a TODO comment in `nginx.conf`).
+The site uses hash routes, so it works on any static host and under a subpath with no rewrites.
+
+| Hash | Shows |
+|------|-------|
+| `#/` | Song catalog (cards from `songs/index.json`) |
+| `#/song/<id>` | Song player (a placeholder until the player lands) |
+| `#/song/<id>?level=<id>&names=<solfege or letters>&view=<both, scene or score>` | Same song with the level, note names and view preselected |
+| anything else | "Page not found" with a link to the catalog |
+
+An id that is not in the index shows "Song not found". The browser back button always disposes the previous view first.
+
+## Content security policy
+
+`nginx.conf` allows the inline import map in `index.html` by its SHA-256 hash. If the import map text changes, update the hash in `nginx.conf`; `tests/csp.test.js` fails until both agree. Inline scripts and inline styles are not allowed.

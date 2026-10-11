@@ -9,6 +9,8 @@ WORKDIR /app
 COPY package.json ./
 COPY src/ ./src/
 COPY tests/ ./tests/
+# Guards that read these files (CSP hash against the import map).
+COPY index.html nginx.conf ./
 COPY songs/ ./songs/
 RUN node --test && touch /app/.tests-passed
 
