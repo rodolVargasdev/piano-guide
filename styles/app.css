@@ -1493,7 +1493,7 @@ body[data-route="practice-run"] header .language-select {
   font-weight: 600;
 }
 
-.practice-run[data-phase="running"] .practice-options,
+.practice-run[data-phase="running"] .practice-setup,
 .practice-run[data-phase="running"] .practice-fold {
   display: none;
 }
@@ -1510,4 +1510,154 @@ body[data-route="practice-run"] header .language-select {
   .practice-run .learn-card[data-phase="running"] .learn-sub {
     display: none;
   }
+}
+
+/* The circle of fifths key picker (src/ui/circle-of-fifths.js): twelve buttons on a circle, C at the top. */
+.practice-setup {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 56rem) {
+  .practice-setup {
+    grid-template-columns: 1fr auto;
+    align-items: start;
+  }
+}
+
+.practice-keys > .cof {
+  margin-block: 0.25rem 0.5rem;
+}
+
+.practice-keys > summary {
+  cursor: pointer;
+  color: var(--accent);
+  padding: 0.25rem 0;
+}
+
+.practice-keys[open] > summary {
+  margin-bottom: 0.25rem;
+}
+
+.cof {
+  position: relative;
+  width: 17rem;
+  max-width: 100%;
+  aspect-ratio: 1;
+}
+
+.cof-key {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 2.375rem;
+  height: 2.375rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0.875rem;
+  transform: translate(-50%, -50%);
+}
+
+.cof-pos-0 {
+  left: 50.00%;
+  top: 11.00%;
+}
+
+.cof-pos-1 {
+  left: 69.50%;
+  top: 16.23%;
+}
+
+.cof-pos-2 {
+  left: 83.77%;
+  top: 30.50%;
+}
+
+.cof-pos-3 {
+  left: 89.00%;
+  top: 50.00%;
+}
+
+.cof-pos-4 {
+  left: 83.77%;
+  top: 69.50%;
+}
+
+.cof-pos-5 {
+  left: 69.50%;
+  top: 83.77%;
+}
+
+.cof-pos-6 {
+  left: 50.00%;
+  top: 89.00%;
+}
+
+.cof-pos-7 {
+  left: 30.50%;
+  top: 83.77%;
+}
+
+.cof-pos-8 {
+  left: 16.23%;
+  top: 69.50%;
+}
+
+.cof-pos-9 {
+  left: 11.00%;
+  top: 50.00%;
+}
+
+.cof-pos-10 {
+  left: 16.23%;
+  top: 30.50%;
+}
+
+.cof-pos-11 {
+  left: 30.50%;
+  top: 16.23%;
+}
+
+.cof-key[data-done="true"] {
+  box-shadow: inset 0 0 0 3px #22c55e;
+}
+
+.cof-key[data-next="true"] {
+  outline: 2px dashed var(--accent);
+  outline-offset: 2px;
+}
+
+.cof-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  pointer-events: none;
+}
+
+/* Practice progress of the exercise, the metronome button and the reset question of the list. */
+.practice-metronome {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.9375rem;
+}
+
+.practice-summary-title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.practice-run[data-phase="running"] .practice-keys,
+.practice-run[data-phase="running"] .practice-summary {
+  display: none;
+}
+
+.practice-reset {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
 }

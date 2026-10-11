@@ -5,8 +5,8 @@
 // is timed. A language switch is not an action here: it cannot change the exercise, step, key, tempo or presses.
 // No DOM, no audio, no storage.
 import { BPM_MAX, BPM_MIN, clampBpm } from "../core/practice.js";
-import { keyOrder } from "../theory/keys.js";
-import { exerciseById, generateExercise, resolveOptions } from "./catalog.js";
+import { introOrder, keyOrder } from "../theory/keys.js";
+import { exerciseById, generateExercise, keysToPractice, resolveOptions } from "./catalog.js";
 import { nextStage, nextTempo, runReduce, startRun } from "./runner.js";
 
 /** How "Next key" chooses the next key: the same key, or around the circle of fifths or of fourths, or at random. */
@@ -29,14 +29,24 @@ function rotationFor(kind, key, seed) {
 const bestTempoOf = (progress, id, key) => progress?.exercises?.[id]?.[key]?.bestTempo ?? 0;
 
 /**
+ * The keys of an exercise in the order a learner should meet them: the keys that have no clean run yet, in the order
+ * of introduction (C G D F A E B Bb Eb Ab Db F#). An order, never a lock: every key can be chosen.
+ */
+export function practiceOrder(progress, exerciseId) {
+  const done = Object.entries(progress?.exercises?.[exerciseId] ?? {}).filter(([, e]) => e.cleanRuns > 0).map(([key]) => key);
+  return keysToPractice(done, introOrder());
+}
+
+/**
  * initSession({ exerciseId, options, bpm, progress, seed, rotation }) -> state, or null for an id that is not a run
  * exercise. The tempo starts at the learner's best clean tempo for this exercise and key when there is one, else at
- * the first step of the card; `rotation` defaults to the circle of fifths.
+ * the first step of the card; `rotation` defaults to the circle of fifths. Without a key the page opens on the first key
+ * with no clean run yet (C for a learner who has not practiced it), so the order of introduction is suggested.
  */
 export function initSession({ exerciseId, options = {}, bpm, progress = null, seed = 1, rotation = "circle" } = {}) {
   const exercise = exerciseById(exerciseId);
   if (!exercise || exercise.kind !== "run") return null;
-  const resolved = resolveOptions(exercise, options);
+  const resolved = resolveOptions(exercise, { ...options, key: options.key ?? (exercise.keyed ? practiceOrder(progress, exerciseId)[0] : undefined) });
   const made = generateExercise(exerciseId, resolved);
   if (!made) return null;
   const best = bestTempoOf(progress, exerciseId, resolved.key);

@@ -17,6 +17,17 @@ export function cardModel({ exercise, i18n }) {
   };
 }
 
+/** The small facts of a progress record: best tempo, clean streak, clean runs and the last day. Empty when never practiced. */
+export function summaryChips(summary, t) {
+  if (summary.keys === 0) return [];
+  return [
+    summary.bestTempo > 0 ? t("practice.summary.best", { bpm: summary.bestTempo }) : null,
+    summary.cleanStreak > 0 ? t("practice.summary.streak", { count: summary.cleanStreak }) : null,
+    summary.cleanRuns > 0 ? t("practice.summary.runs", { count: summary.cleanRuns }) : null,
+    summary.lastPracticed ? t("practice.summary.last", { date: summary.lastPracticed }) : null,
+  ].filter(Boolean);
+}
+
 /** docArticle(model) -> an <article> from the card model of ui/practice-view.js `cardModel`. */
 export function docArticle(model) {
   return el(

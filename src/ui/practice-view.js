@@ -3,12 +3,12 @@
 // into elements with text nodes only. The id in the address bar is only compared against the catalog and is never
 // shown. The page follows the language selector and keeps its place when the language changes.
 import { GROUPS, exerciseById, exercisesIn } from "../practice/catalog.js";
-import { readPracticeProgress, summaryOf } from "../practice/progress.js";
+import { clearPracticeProgress, readPracticeProgress, summaryOf } from "../practice/progress.js";
 import { el } from "./dom.js";
-import { cardModel, docArticle } from "./practice-doc.js";
+import { cardModel, docArticle, summaryChips } from "./practice-doc.js";
 import { createExercisePage } from "./practice-run.js";
 
-export { cardModel };
+export { cardModel, summaryChips };
 
 const safeStorage = (win) => {
   try {
@@ -17,17 +17,6 @@ const safeStorage = (win) => {
     return undefined; // blocked storage: the page works for the session, with no saved progress
   }
 };
-
-/** The small facts shown on a list entry: best tempo, clean streak, clean runs and the last day. Empty when never practiced. */
-export function summaryChips(summary, t) {
-  if (summary.keys === 0) return [];
-  return [
-    summary.bestTempo > 0 ? t("practice.summary.best", { bpm: summary.bestTempo }) : null,
-    summary.cleanStreak > 0 ? t("practice.summary.streak", { count: summary.cleanStreak }) : null,
-    summary.cleanRuns > 0 ? t("practice.summary.runs", { count: summary.cleanRuns }) : null,
-    summary.lastPracticed ? t("practice.summary.last", { date: summary.lastPracticed }) : null,
-  ].filter(Boolean);
-}
 
 /** The list: a heading and the groups with their exercises, each with a one-line goal and its summary chips. */
 export function listModel({ progress, i18n }) {
@@ -43,7 +32,18 @@ export function listModel({ progress, i18n }) {
   };
 }
 
-function listScreen(model) {
+// "Reset progress" asks once, inline ("Reset all practice progress? Yes No"), and never opens a dialog.
+function resetRow({ confirming, t, onAsk, onYes, onNo }) {
+  const button = (action, label, handler) => {
+    const b = el("button", { type: "button", class: "btn", "data-action": action }, label);
+    b.addEventListener("click", handler);
+    return b;
+  };
+  if (!confirming) return el("div", { class: "practice-reset" }, button("RESET", t("common.resetProgress"), onAsk));
+  return el("div", { class: "practice-reset", role: "group", "aria-label": t("practice.reset.ask") }, el("span", {}, t("practice.reset.ask")), button("RESET_YES", t("practice.reset.yes"), onYes), button("RESET_NO", t("practice.reset.no"), onNo));
+}
+
+function listScreen(model, reset) {
   return el(
     "section",
     { class: "practice" },
@@ -69,6 +69,7 @@ function listScreen(model) {
         ),
       ),
     ),
+    reset,
   );
 }
 
@@ -93,6 +94,7 @@ export function practiceView({ i18n, win = window, storage = safeStorage(win), m
   return (route, root) => {
     let disposed = false;
     let page = null;
+    let confirming = false;
     const exercise = route.songId ? exerciseById(route.songId) : null;
 
     function render() {
@@ -105,7 +107,24 @@ export function practiceView({ i18n, win = window, storage = safeStorage(win), m
       } else if (exercise) {
         root.replaceChildren(cardScreen(cardModel({ exercise, i18n }), { back: t("practice.back") }));
       } else {
-        root.replaceChildren(listScreen(listModel({ progress: readPracticeProgress(storage), i18n })));
+        const reset = resetRow({
+          confirming,
+          t,
+          onAsk: () => {
+            confirming = true;
+            render();
+          },
+          onYes: () => {
+            clearPracticeProgress(storage);
+            confirming = false;
+            render();
+          },
+          onNo: () => {
+            confirming = false;
+            render();
+          },
+        });
+        root.replaceChildren(listScreen(listModel({ progress: readPracticeProgress(storage), i18n }), reset));
       }
     }
 

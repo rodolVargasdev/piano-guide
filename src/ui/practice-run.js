@@ -5,10 +5,12 @@
 // Hearing the exercise first plays generated notes only (engine.playNotes), so it never touches a song.
 import { keyMapFor } from "../input/computer-keys.js";
 import { learnRegion } from "../learn/region.js";
-import { initSession, reduceSession } from "../practice/session.js";
-import { localIsoDate, readPracticeProgress, recordRun, writePracticeProgress } from "../practice/progress.js";
+import { makeTimeline } from "../core/timeline.js";
+import { ROTATIONS, initSession, practiceOrder, reduceSession, tempoChoices } from "../practice/session.js";
+import { entryOf, localIsoDate, readPracticeProgress, recordRun, writePracticeProgress } from "../practice/progress.js";
 import { announcement, choiceModel, screenModel } from "./practice-screen.js";
-import { cardModel, docArticle } from "./practice-doc.js";
+import { cardModel, docArticle, summaryChips } from "./practice-doc.js";
+import { createCircleOfFifths } from "./circle-of-fifths.js";
 import { el } from "./dom.js";
 import { createLanguageSelect } from "./language-select.js";
 import { createLearnKeyboard } from "./learn-keyboard.js";
@@ -38,6 +40,11 @@ export function createExercisePage({ i18n, win, storage, exercise, makeEngine, s
   // ---- elements ------------------------------------------------------------------------------------
   const top = el("div", { class: "learn-top practice-top" });
   const options = el("div", { class: "practice-options" });
+  // The key picker and the order of the next keys fold away on a narrow screen, so Start stays near the top.
+  const keys = el("details", { class: "practice-keys" });
+  if ((win.innerWidth ?? 1024) >= 900) keys.setAttribute("open", "");
+  const summary = el("section", { class: "practice-summary" });
+  const circle = createCircleOfFifths({ i18n, onPick: (tonic) => dispatch({ type: "SET_OPTION", name: "key", value: tonic }) });
   const fold = el("details", { class: "practice-fold" });
   const progressLine = el("p", { class: "learn-progress meta" });
   const instruction = el("p", { class: "learn-instruction" });
@@ -50,7 +57,7 @@ export function createExercisePage({ i18n, win, storage, exercise, makeEngine, s
   const card = el("section", { class: "learn-card practice-card" }, progressLine, instruction, sub, notice, flag, el("div", { class: "learn-feedback" }, chip, detail), actions);
   const keyboardMount = el("div", { class: "learn-keyboard-slot" });
   const langSelect = createLanguageSelect({ i18n });
-  const view = el("section", { class: "practice practice-run", "data-exercise": exercise.id }, top, options, fold, card, keyboardMount, panel.element);
+  const view = el("section", { class: "practice practice-run", "data-exercise": exercise.id }, top, el("div", { class: "practice-setup" }, options, keys), summary, fold, card, keyboardMount, panel.element);
   const keyboard = createLearnKeyboard({ mount: keyboardMount, i18n, bus, doc });
 
   // ---- keyboard ------------------------------------------------------------------------------------
@@ -112,19 +119,43 @@ export function createExercisePage({ i18n, win, storage, exercise, makeEngine, s
   function paintTop() {
     top.replaceChildren(el("a", { class: "button button-secondary learn-back", href: "#/practice" }, t("practice.back")), el("h2", { class: "learn-title practice-title" }, t(`ex.${exercise.id}.title`)), langSelect.element);
   }
+  // A group of buttons of which one is pressed: the shape of every choice on the page.
+  const segment = (name, label, values, current, onPick) =>
+    el(
+      "div",
+      { class: "seg practice-choice", role: "group", "aria-label": label, "data-choice": name },
+      values.map((v) => {
+        const b = el("button", { type: "button", class: "btn", "aria-pressed": String(v.value === current), "data-value": v.value }, v.label);
+        b.addEventListener("click", () => onPick(v.value));
+        return b;
+      }),
+    );
   function paintOptions() {
-    options.replaceChildren(
-      ...choiceModel(state, { i18n }).map((c) =>
-        el(
-          "div",
-          { class: "seg practice-choice", role: "group", "aria-label": c.label, "data-choice": c.name },
-          c.values.map((v) => {
-            const b = el("button", { type: "button", class: "btn", "aria-pressed": String(v.value === c.current), "data-value": v.value }, v.label);
-            b.addEventListener("click", () => dispatch({ type: "SET_OPTION", name: c.name, value: v.value }));
-            return b;
-          }),
-        ),
-      ),
+    const rows = choiceModel(state, { i18n }).map((c) => segment(c.name, c.label, c.values, c.current, (value) => dispatch({ type: "SET_OPTION", name: c.name, value })));
+    if (state.exercise.tempoSteps.length > 0) {
+      rows.push(segment("tempo", t("practice.choice.tempo"), tempoChoices(state.exercise, state.bpm).map((bpm) => ({ value: bpm, label: String(bpm) })), state.bpm, (bpm) => dispatch({ type: "SET_BPM", bpm })));
+      const metro = el("button", { type: "button", class: "btn practice-metronome", "aria-pressed": String(state.metronome), title: t("learn.metronomeTitle"), "data-toggle": "metronome" }, t("learn.metronome"));
+      metro.addEventListener("click", () => dispatch({ type: "SET_METRONOME", on: !state.metronome }));
+      rows.push(metro);
+    }
+    options.replaceChildren(...rows);
+    keys.hidden = !state.exercise.keyed;
+    if (state.exercise.keyed) {
+      const doneKeys = Object.entries(progress.exercises[exercise.id] ?? {}).filter(([, e]) => e.cleanRuns > 0).map(([key]) => key);
+      const order = practiceOrder(progress, exercise.id).filter((key) => key !== state.options.key);
+      circle.set({ current: state.options.key, done: doneKeys, next: order.slice(0, 3) });
+      const rotation = segment("rotation", t("practice.choice.rotation"), ROTATIONS.map((kind) => ({ value: kind, label: t(`practice.rotation.${kind}`) })), state.rotation.kind, (kind) => dispatch({ type: "SET_ROTATION", kind }));
+      keys.replaceChildren(el("summary", {}, `${t("learn.key")}: ${t("key.major", { tonic: state.options.key })}`), circle.element, rotation);
+    } else keys.replaceChildren();
+  }
+  function paintSummary() {
+    const key = state.options.key;
+    const e = entryOf(progress, exercise.id, key);
+    const label = t("key.major", { tonic: key });
+    const chips = e ? summaryChips({ keys: 1, ...e }, t) : [];
+    summary.replaceChildren(
+      el("h3", { class: "practice-summary-title" }, t("practice.summary.title", { key: label })),
+      chips.length > 0 ? el("p", { class: "chips" }, chips.map((c) => el("span", { class: "chip" }, c))) : el("p", { class: "meta" }, t("practice.summary.none", { key: label })),
     );
   }
   function paintCard() {
@@ -157,10 +188,27 @@ export function createExercisePage({ i18n, win, storage, exercise, makeEngine, s
   function refresh() {
     paintOptions();
     paintCard();
+    paintSummary();
     paintKeyboard();
   }
 
   // ---- effects -------------------------------------------------------------------------------------
+  // The metronome clicks on a timeline with no notes (so nothing of a song can sound), at the tempo of the page.
+  let clicking = false;
+  function metronome({ on, bpm }) {
+    if (on && !clicking) {
+      engine.setTimeline?.(makeTimeline({ meter: { num: 4, den: 4 }, bpm, bars: 400 }));
+      engine.setBpm?.(bpm);
+      engine.setMetronome?.({ enabled: true });
+      engine.play?.();
+      clicking = true;
+    } else if (on) {
+      engine.setBpm?.(bpm);
+    } else if (clicking) {
+      clicking = false;
+      engine.stop?.();
+    }
+  }
   let timers = [];
   const stopHearing = () => {
     for (const id of timers) win.clearTimeout?.(id);
@@ -190,6 +238,7 @@ export function createExercisePage({ i18n, win, storage, exercise, makeEngine, s
     for (const e of effects) {
       if (e.type === "listen") hear(e.plan);
       else if (e.type === "stopListen") stopHearing();
+      else if (e.type === "metronome") metronome(e);
       else if (e.type === "releaseAll") bus.releaseAll();
       else if (e.type === "record") {
         progress = recordRun(progress, { exerciseId: e.exerciseId, key: e.key, bpm: e.bpm, clean: e.clean, date: localIsoDate() });
@@ -245,6 +294,7 @@ export function createExercisePage({ i18n, win, storage, exercise, makeEngine, s
     element: view,
     dispose() {
       disposed = true;
+      metronome({ on: false, bpm: state.bpm });
       stopHearing();
       win.clearTimeout?.(correctTimer);
       for (const off of offs) off();
