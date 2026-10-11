@@ -8,7 +8,7 @@
   "meter": { "num": 12, "den": 8 },
   "pickupTicks": 240,
   "tempo": { "bpm": 44, "beatUnit": "dotted-quarter", "marking": "Andante" },
-  "lengthTicks": 80880,
+  "lengthTicks": 89520,
   "sections": [
     {"id":"opening","name":"A: opening phrase","startTick":0,"endTick":11760},
     {"id":"second","name":"A: second phrase","startTick":11760,"endTick":23280},
@@ -16,7 +16,7 @@
     {"id":"return","name":"A': return in Tempo I","startTick":29040,"endTick":46320},
     {"id":"episode-again","name":"B: episode again","startTick":46320,"endTick":52080},
     {"id":"return-again","name":"A'': second return","startTick":52080,"endTick":69360},
-    {"id":"coda","name":"Coda","startTick":69360,"endTick":80880}
+    {"id":"coda","name":"Coda","startTick":69360,"endTick":89520}
   ],
   "chords": [
     {"tick":240,"dur":720,"symbol":"Eb","roman":"I","function":"tonic"},
@@ -99,7 +99,17 @@
     {"tick":76560,"dur":720,"symbol":"Eb","roman":"I","function":"tonic"},
     {"tick":77280,"dur":720,"symbol":"F7/A","roman":"V6/5/V","function":"secondary dominant of the dominant, first inversion"},
     {"tick":78000,"dur":1440,"symbol":"Bb7","roman":"V7","function":"dominant"},
-    {"tick":79440,"dur":1440,"symbol":"Eb","roman":"I","function":"tonic"}
+    {"tick":79440,"dur":1440,"symbol":"Eb","roman":"I","function":"tonic"},
+    {"tick":80880,"dur":720,"symbol":"Abm","roman":"iv","function":"minor subdominant"},
+    {"tick":81600,"dur":720,"symbol":"Abm/Eb","roman":"iv6/4","function":"minor subdominant over the tonic bass"},
+    {"tick":82320,"dur":1440,"symbol":"Eb","roman":"I","function":"tonic"},
+    {"tick":83760,"dur":720,"symbol":"Abm","roman":"iv","function":"minor subdominant"},
+    {"tick":84480,"dur":720,"symbol":"Abm/Eb","roman":"iv6/4","function":"minor subdominant over the tonic bass"},
+    {"tick":85200,"dur":720,"symbol":"Eb","roman":"I","function":"tonic"},
+    {"tick":86640,"dur":720,"symbol":"Bb7","roman":"V7","function":"dominant"},
+    {"tick":87360,"dur":720,"symbol":"G7/B","roman":"V6/5/vi","function":"secondary dominant"},
+    {"tick":88080,"dur":720,"symbol":"Cm","roman":"vi","function":"tonic substitute"},
+    {"tick":88800,"dur":720,"symbol":"F7/A","roman":"V6/5/V","function":"secondary dominant of the dominant, first inversion"}
   ],
   "levels": {
     "beginner": {
@@ -283,6 +293,27 @@
         {"tick":78960,"dur":240,"pitch":"G5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
         {"tick":79200,"dur":240,"pitch":"F5","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody"},
         {"tick":79440,"dur":1440,"pitch":"Eb5","hand":"R","finger":3,"fingeringSource":"source","role":"melody"},
+        {"tick":80880,"dur":1440,"pitch":"Eb5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":82320,"dur":720,"pitch":"G5","hand":"R","finger":5,"fingeringSource":"editorial","role":"melody"},
+        {"tick":83040,"dur":720,"hand":"R","rest":true},
+        {"tick":83760,"dur":240,"pitch":"Eb5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":84000,"dur":960,"pitch":"Ab4","hand":"R","finger":2,"fingeringSource":"source","role":"melody"},
+        {"tick":84960,"dur":240,"pitch":"Eb6","hand":"R","finger":5,"fingeringSource":"source","role":"melody"},
+        {"tick":85200,"dur":240,"pitch":"G6","hand":"R","finger":4,"fingeringSource":"source","role":"melody"},
+        {"tick":85440,"dur":240,"pitch":"Eb6","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody"},
+        {"tick":85680,"dur":480,"pitch":"Eb6","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody"},
+        {"tick":86160,"dur":240,"pitch":"D6","hand":"R","finger":1,"fingeringSource":"editorial","role":"melody"},
+        {"tick":86400,"dur":240,"pitch":"C6","hand":"R","finger":4,"fingeringSource":"editorial","role":"melody"},
+        {"tick":86640,"dur":240,"pitch":"Cb6","hand":"R","finger":4,"fingeringSource":"editorial","role":"melody"},
+        {"tick":86880,"dur":240,"pitch":"Bb5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":87120,"dur":240,"pitch":"Bbb5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":87360,"dur":240,"pitch":"Ab5","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody"},
+        {"tick":87600,"dur":240,"pitch":"G5","hand":"R","finger":1,"fingeringSource":"editorial","role":"melody"},
+        {"tick":87840,"dur":240,"pitch":"D5","hand":"R","finger":1,"fingeringSource":"editorial","role":"melody"},
+        {"tick":88080,"dur":240,"pitch":"Eb5","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody"},
+        {"tick":88320,"dur":720,"pitch":"Eb6","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody"},
+        {"tick":89040,"dur":240,"pitch":"F5","hand":"R","finger":1,"fingeringSource":"editorial","role":"melody"},
+        {"tick":89280,"dur":240,"pitch":"C6","hand":"R","finger":5,"fingeringSource":"editorial","role":"melody"},
         {"tick":0,"dur":240,"hand":"L","rest":true},
         {"tick":240,"dur":240,"pitch":"Eb2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
         {"tick":480,"dur":480,"pitch":"Bb3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
@@ -715,7 +746,52 @@
         {"tick":80160,"dur":240,"pitch":"Eb3","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
         {"tick":80400,"dur":480,"pitch":"Bb3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
         {"tick":80400,"dur":480,"pitch":"Eb4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
-        {"tick":80400,"dur":480,"pitch":"G4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"}
+        {"tick":80400,"dur":480,"pitch":"G4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":80880,"dur":240,"pitch":"Ab1","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":81120,"dur":480,"pitch":"Ab3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":81120,"dur":480,"pitch":"Cb4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":81120,"dur":480,"pitch":"Eb4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":81600,"dur":720,"pitch":"Ab3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":81600,"dur":720,"pitch":"Cb4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":81600,"dur":720,"pitch":"Eb4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":82320,"dur":240,"pitch":"Eb2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":82560,"dur":480,"pitch":"Bb3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":82560,"dur":480,"pitch":"Eb4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":82560,"dur":480,"pitch":"G4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":83040,"dur":240,"pitch":"Eb3","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":83280,"dur":480,"pitch":"Bb3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":83280,"dur":480,"pitch":"Eb4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":83280,"dur":480,"pitch":"G4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":83760,"dur":240,"pitch":"Ab1","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":84000,"dur":480,"pitch":"Ab3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":84000,"dur":480,"pitch":"Cb4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":84000,"dur":480,"pitch":"Eb4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":84480,"dur":720,"pitch":"Ab3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":84480,"dur":720,"pitch":"Cb4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":84480,"dur":720,"pitch":"Eb4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":85200,"dur":240,"pitch":"Eb2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":85440,"dur":480,"pitch":"Bb3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":85440,"dur":480,"pitch":"Eb4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":85440,"dur":480,"pitch":"G4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":85920,"dur":240,"pitch":"A2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":86160,"dur":480,"pitch":"Cb4","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":86160,"dur":480,"pitch":"Eb4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":86160,"dur":480,"pitch":"F4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":86640,"dur":240,"pitch":"Bb2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":86880,"dur":480,"pitch":"Bb3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":86880,"dur":480,"pitch":"Eb4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":86880,"dur":480,"pitch":"Ab4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":87360,"dur":240,"pitch":"B2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":87600,"dur":480,"pitch":"D4","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":87600,"dur":480,"pitch":"F4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":87600,"dur":480,"pitch":"G4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":88080,"dur":240,"pitch":"C3","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":88320,"dur":480,"pitch":"C4","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":88320,"dur":480,"pitch":"G4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":88800,"dur":240,"pitch":"A2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":89040,"dur":480,"pitch":"C4","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":89040,"dur":480,"pitch":"Eb4","hand":"L","finger":2,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":89040,"dur":480,"pitch":"F4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"}
       ],
       "pedal": [
         {"startTick":240,"endTick":960},
@@ -780,15 +856,23 @@
         {"startTick":77280,"endTick":78000},
         {"startTick":78000,"endTick":78720},
         {"startTick":78720,"endTick":79440},
-        {"startTick":79440,"endTick":80880}
+        {"startTick":79440,"endTick":80880},
+        {"startTick":80880,"endTick":82320},
+        {"startTick":82320,"endTick":83760},
+        {"startTick":83760,"endTick":85200},
+        {"startTick":85200,"endTick":85920},
+        {"startTick":85920,"endTick":86640},
+        {"startTick":86640,"endTick":87360},
+        {"startTick":87360,"endTick":88080},
+        {"startTick":88800,"endTick":89520}
       ]
     },
     "original": {
       "label": "Original",
-      "description": "The pickup and bars 1 to 28 as printed: the right-hand melody and the left-hand bass and chords on the grand staff.",
+      "description": "The pickup and bars 1 to 31 as printed: the right-hand melody and the left-hand bass and chords on the grand staff.",
       "notation": "engraved",
       "transcribed": true,
-      "strictBars": true,
+      "strictBars": false,
       "notes": [
         {"tick":0,"dur":240,"pitch":"Bb4","hand":"R","finger":1,"fingeringSource":"source","role":"melody"},
         {"tick":240,"dur":720,"pitch":"G5","hand":"R","finger":5,"fingeringSource":"source","role":"melody","tie":true},
@@ -1131,6 +1215,58 @@
         {"tick":79200,"dur":180,"pitch":"G5","hand":"R","finger":5,"fingeringSource":"source","role":"melody"},
         {"tick":79380,"dur":60,"pitch":"F5","hand":"R","finger":4,"fingeringSource":"source","role":"melody"},
         {"tick":79440,"dur":1440,"pitch":"Eb5","hand":"R","finger":3,"fingeringSource":"source","role":"melody"},
+        {"tick":80880,"dur":720,"pitch":"Eb5","hand":"R","role":"melody","tie":true},
+        {"tick":81600,"dur":90,"pitch":"Eb5","hand":"R","role":"melody","tuplet":{"n":8,"inSpaceOf":6}},
+        {"tick":81690,"dur":90,"pitch":"F5","hand":"R","role":"melody","tuplet":{"n":8,"inSpaceOf":6}},
+        {"tick":81780,"dur":90,"pitch":"Eb5","hand":"R","role":"melody","tuplet":{"n":8,"inSpaceOf":6}},
+        {"tick":81870,"dur":90,"pitch":"F5","hand":"R","role":"melody","tuplet":{"n":8,"inSpaceOf":6}},
+        {"tick":81960,"dur":90,"pitch":"Eb5","hand":"R","role":"melody","tuplet":{"n":8,"inSpaceOf":6}},
+        {"tick":82050,"dur":90,"pitch":"F5","hand":"R","role":"melody","tuplet":{"n":8,"inSpaceOf":6}},
+        {"tick":82140,"dur":90,"pitch":"Eb5","hand":"R","role":"melody","tuplet":{"n":8,"inSpaceOf":6}},
+        {"tick":82230,"dur":90,"pitch":"F5","hand":"R","role":"melody","tuplet":{"n":8,"inSpaceOf":6}},
+        {"tick":82320,"dur":720,"pitch":"G5","hand":"R","role":"melody"},
+        {"tick":83040,"dur":480,"hand":"R","rest":true},
+        {"tick":83520,"dur":240,"hand":"R","rest":true},
+        {"tick":83760,"dur":240,"pitch":"Eb5","hand":"R","role":"melody"},
+        {"tick":84000,"dur":120,"pitch":"Ab4","hand":"R","finger":2,"fingeringSource":"source","role":"melody"},
+        {"tick":84120,"dur":120,"pitch":"Bb4","hand":"R","role":"melody"},
+        {"tick":84240,"dur":120,"pitch":"Ab4","hand":"R","role":"melody","ornament":"trill"},
+        {"tick":84360,"dur":120,"pitch":"G4","hand":"R","role":"melody"},
+        {"tick":84480,"dur":120,"pitch":"Ab4","hand":"R","finger":2,"fingeringSource":"source","role":"melody"},
+        {"tick":84600,"dur":120,"pitch":"Cb5","hand":"R","finger":1,"fingeringSource":"source","role":"melody"},
+        {"tick":84720,"dur":120,"pitch":"Eb5","hand":"R","finger":2,"fingeringSource":"source","role":"melody"},
+        {"tick":84840,"dur":120,"pitch":"Ab5","hand":"R","finger":3,"fingeringSource":"source","role":"melody"},
+        {"tick":84960,"dur":120,"pitch":"Eb6","hand":"R","finger":5,"fingeringSource":"source","role":"melody"},
+        {"tick":85080,"dur":60,"hand":"R","rest":true},
+        {"tick":85140,"dur":60,"pitch":"F6","hand":"R","finger":3,"fingeringSource":"source","role":"melody"},
+        {"tick":85200,"dur":240,"pitch":"G6","hand":"R","finger":4,"fingeringSource":"source","role":"melody"},
+        {"tick":85440,"dur":240,"pitch":"Eb6","hand":"R","role":"melody"},
+        {"tick":85680,"dur":480,"pitch":"Eb6","hand":"R","role":"melody"},
+        {"tick":85680,"dur":480,"pitch":"Eb7","hand":"R","role":"melody"},
+        {"tick":86160,"dur":240,"pitch":"D6","hand":"R","role":"melody"},
+        {"tick":86160,"dur":240,"pitch":"D7","hand":"R","role":"melody"},
+        {"tick":86400,"dur":240,"pitch":"C6","hand":"R","role":"melody"},
+        {"tick":86400,"dur":240,"pitch":"C7","hand":"R","role":"melody"},
+        {"tick":86640,"dur":240,"pitch":"Cb6","hand":"R","role":"melody"},
+        {"tick":86640,"dur":240,"pitch":"Cb7","hand":"R","finger":5,"fingeringSource":"source","role":"melody"},
+        {"tick":86880,"dur":240,"pitch":"Bb5","hand":"R","role":"melody"},
+        {"tick":86880,"dur":240,"pitch":"Bb6","hand":"R","finger":4,"fingeringSource":"source","role":"melody"},
+        {"tick":87120,"dur":240,"pitch":"Bbb5","hand":"R","role":"melody"},
+        {"tick":87120,"dur":240,"pitch":"Bbb6","hand":"R","finger":5,"fingeringSource":"source","role":"melody"},
+        {"tick":87360,"dur":240,"pitch":"Ab5","hand":"R","role":"melody"},
+        {"tick":87360,"dur":240,"pitch":"Ab6","hand":"R","finger":4,"fingeringSource":"source","role":"melody"},
+        {"tick":87600,"dur":240,"pitch":"G5","hand":"R","role":"melody"},
+        {"tick":87600,"dur":240,"pitch":"G6","hand":"R","role":"melody"},
+        {"tick":87840,"dur":240,"pitch":"D5","hand":"R","role":"melody"},
+        {"tick":87840,"dur":240,"pitch":"D6","hand":"R","finger":5,"fingeringSource":"source","role":"melody"},
+        {"tick":88080,"dur":240,"pitch":"Eb5","hand":"R","role":"melody"},
+        {"tick":88080,"dur":240,"pitch":"Eb6","hand":"R","finger":4,"fingeringSource":"source","role":"melody"},
+        {"tick":88320,"dur":720,"pitch":"Eb6","hand":"R","role":"melody"},
+        {"tick":88320,"dur":720,"pitch":"Eb7","hand":"R","role":"melody"},
+        {"tick":89040,"dur":240,"pitch":"F5","hand":"R","role":"melody"},
+        {"tick":89040,"dur":240,"pitch":"F6","hand":"R","role":"melody"},
+        {"tick":89280,"dur":240,"pitch":"C6","hand":"R","role":"melody"},
+        {"tick":89280,"dur":240,"pitch":"C7","hand":"R","role":"melody"},
         {"tick":0,"dur":240,"hand":"L","rest":true},
         {"tick":240,"dur":240,"pitch":"Eb2","hand":"L","role":"bass"},
         {"tick":480,"dur":240,"pitch":"G3","hand":"L","role":"accompaniment"},
@@ -1795,7 +1931,88 @@
         {"tick":80400,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
         {"tick":80640,"dur":240,"pitch":"Bb3","hand":"L","role":"accompaniment"},
         {"tick":80640,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
-        {"tick":80640,"dur":240,"pitch":"G4","hand":"L","role":"accompaniment"}
+        {"tick":80640,"dur":240,"pitch":"G4","hand":"L","role":"accompaniment"},
+        {"tick":80880,"dur":240,"pitch":"Ab1","hand":"L","role":"bass"},
+        {"tick":81120,"dur":240,"pitch":"Eb3","hand":"L","role":"accompaniment"},
+        {"tick":81120,"dur":240,"pitch":"Ab3","hand":"L","role":"accompaniment"},
+        {"tick":81120,"dur":240,"pitch":"Cb4","hand":"L","role":"accompaniment"},
+        {"tick":81360,"dur":240,"pitch":"Ab3","hand":"L","role":"accompaniment"},
+        {"tick":81360,"dur":240,"pitch":"Cb4","hand":"L","role":"accompaniment"},
+        {"tick":81360,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":81600,"dur":240,"pitch":"Cb4","hand":"L","role":"accompaniment"},
+        {"tick":81600,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":81600,"dur":240,"pitch":"Ab4","hand":"L","role":"accompaniment"},
+        {"tick":81840,"dur":240,"pitch":"Ab3","hand":"L","role":"accompaniment"},
+        {"tick":81840,"dur":240,"pitch":"Cb4","hand":"L","role":"accompaniment"},
+        {"tick":81840,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":82080,"dur":240,"pitch":"Eb3","hand":"L","role":"accompaniment"},
+        {"tick":82080,"dur":240,"pitch":"Ab3","hand":"L","role":"accompaniment"},
+        {"tick":82080,"dur":240,"pitch":"Cb4","hand":"L","role":"accompaniment"},
+        {"tick":82320,"dur":240,"pitch":"Eb2","hand":"L","role":"bass"},
+        {"tick":82560,"dur":240,"pitch":"G3","hand":"L","role":"accompaniment"},
+        {"tick":82560,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":82800,"dur":240,"pitch":"Bb3","hand":"L","role":"accompaniment"},
+        {"tick":82800,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":82800,"dur":240,"pitch":"G4","hand":"L","role":"accompaniment"},
+        {"tick":83040,"dur":240,"pitch":"Eb3","hand":"L","role":"bass"},
+        {"tick":83280,"dur":240,"pitch":"G3","hand":"L","role":"accompaniment"},
+        {"tick":83280,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":83520,"dur":240,"pitch":"Bb3","hand":"L","role":"accompaniment"},
+        {"tick":83520,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":83520,"dur":240,"pitch":"G4","hand":"L","role":"accompaniment"},
+        {"tick":83760,"dur":240,"pitch":"Ab1","hand":"L","role":"bass"},
+        {"tick":84000,"dur":240,"pitch":"Eb3","hand":"L","role":"accompaniment"},
+        {"tick":84000,"dur":240,"pitch":"Ab3","hand":"L","role":"accompaniment"},
+        {"tick":84000,"dur":240,"pitch":"Cb4","hand":"L","role":"accompaniment"},
+        {"tick":84240,"dur":240,"pitch":"Ab3","hand":"L","role":"accompaniment"},
+        {"tick":84240,"dur":240,"pitch":"Cb4","hand":"L","role":"accompaniment"},
+        {"tick":84240,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":84480,"dur":240,"pitch":"Eb3","hand":"L","role":"accompaniment"},
+        {"tick":84480,"dur":240,"pitch":"Ab3","hand":"L","role":"accompaniment"},
+        {"tick":84480,"dur":240,"pitch":"Cb4","hand":"L","role":"accompaniment"},
+        {"tick":84720,"dur":240,"pitch":"Ab3","hand":"L","role":"accompaniment"},
+        {"tick":84720,"dur":240,"pitch":"Cb4","hand":"L","role":"accompaniment"},
+        {"tick":84720,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":84960,"dur":240,"pitch":"Eb3","hand":"L","role":"accompaniment"},
+        {"tick":84960,"dur":240,"pitch":"Ab3","hand":"L","role":"accompaniment"},
+        {"tick":84960,"dur":240,"pitch":"Cb4","hand":"L","role":"accompaniment"},
+        {"tick":85200,"dur":240,"pitch":"Eb2","hand":"L","role":"bass"},
+        {"tick":85440,"dur":240,"pitch":"G3","hand":"L","role":"accompaniment"},
+        {"tick":85440,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":85680,"dur":240,"pitch":"Bb3","hand":"L","role":"accompaniment"},
+        {"tick":85680,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":85680,"dur":240,"pitch":"G4","hand":"L","role":"accompaniment"},
+        {"tick":85920,"dur":240,"pitch":"A2","hand":"L","role":"bass"},
+        {"tick":86160,"dur":240,"pitch":"F3","hand":"L","role":"accompaniment"},
+        {"tick":86160,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":86400,"dur":240,"pitch":"Cb4","hand":"L","role":"accompaniment"},
+        {"tick":86400,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":86400,"dur":240,"pitch":"F4","hand":"L","role":"accompaniment"},
+        {"tick":86640,"dur":240,"pitch":"Bb2","hand":"L","role":"bass"},
+        {"tick":86880,"dur":240,"pitch":"F3","hand":"L","role":"accompaniment"},
+        {"tick":86880,"dur":240,"pitch":"Bb3","hand":"L","role":"accompaniment"},
+        {"tick":86880,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":87120,"dur":240,"pitch":"Bb3","hand":"L","role":"accompaniment"},
+        {"tick":87120,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":87120,"dur":240,"pitch":"Ab4","hand":"L","role":"accompaniment"},
+        {"tick":87360,"dur":240,"pitch":"B2","hand":"L","role":"bass"},
+        {"tick":87600,"dur":240,"pitch":"G3","hand":"L","role":"accompaniment"},
+        {"tick":87600,"dur":240,"pitch":"F4","hand":"L","role":"accompaniment"},
+        {"tick":87840,"dur":240,"pitch":"D4","hand":"L","role":"accompaniment"},
+        {"tick":87840,"dur":240,"pitch":"F4","hand":"L","role":"accompaniment"},
+        {"tick":87840,"dur":240,"pitch":"G4","hand":"L","role":"accompaniment"},
+        {"tick":88080,"dur":240,"pitch":"C3","hand":"L","role":"bass"},
+        {"tick":88320,"dur":240,"pitch":"G3","hand":"L","role":"accompaniment"},
+        {"tick":88320,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":88560,"dur":240,"pitch":"C4","hand":"L","role":"accompaniment"},
+        {"tick":88560,"dur":240,"pitch":"G4","hand":"L","role":"accompaniment"},
+        {"tick":88800,"dur":240,"pitch":"A2","hand":"L","role":"bass"},
+        {"tick":89040,"dur":240,"pitch":"C4","hand":"L","role":"accompaniment"},
+        {"tick":89040,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":89040,"dur":480,"pitch":"F3","hand":"L","voice":2,"role":"accompaniment"},
+        {"tick":89280,"dur":240,"pitch":"C4","hand":"L","role":"accompaniment"},
+        {"tick":89280,"dur":240,"pitch":"Eb4","hand":"L","role":"accompaniment"},
+        {"tick":89280,"dur":240,"pitch":"F4","hand":"L","role":"accompaniment"}
       ],
       "pedal": [
         {"startTick":240,"endTick":960},
@@ -1860,7 +2077,15 @@
         {"startTick":77280,"endTick":78000},
         {"startTick":78000,"endTick":78720},
         {"startTick":78720,"endTick":79440},
-        {"startTick":79440,"endTick":80880}
+        {"startTick":79440,"endTick":80880},
+        {"startTick":80880,"endTick":82320},
+        {"startTick":82320,"endTick":83760},
+        {"startTick":83760,"endTick":85200},
+        {"startTick":85200,"endTick":85920},
+        {"startTick":85920,"endTick":86640},
+        {"startTick":86640,"endTick":87360},
+        {"startTick":87360,"endTick":88080},
+        {"startTick":88800,"endTick":89520}
       ],
       "analysis": [
         {"tick":240,"kind":"harmony","title":"Tonic","text":"E-flat major is the home chord. The bass sits on its root, Eb2, and the left hand then plays two chords above it, Bb3 Eb4 G4 in the second, while the right hand sings G over it.","roman":"I","function":"tonic"},
@@ -1910,14 +2135,17 @@
         {"tick":75120,"kind":"harmony","title":"Bb7 on Eb","text":"Marked sempre pp: B flat 7 (Bb, D, F, Ab) sounds over an E flat bass on beats 1 and 2, the E flat staying as a pedal under the dominant. The melody falls B flat 5, A5, A flat 5 and leaps down to C5.","roman":"V7/I","function":"dominant seventh over the tonic pedal"},
         {"tick":77280,"kind":"dynamics","title":"Dolcissimo","text":"dolcissimo is printed over the G6, after a small slashed E flat grace note: the melody leaps up more than an octave and should sound as sweet as possible."},
         {"tick":78000,"endTick":79440,"kind":"voice-leading","title":"Suspension","text":"The cadential B flat 7 of bar 28 again holds the E flat on beat 1 before it steps down to D on beat 2, as in bars 4, 8, 16 and 24.","roman":"V7","function":"dominant"},
-        {"tick":79440,"kind":"harmony","title":"Cadence","text":"The last full cadence of the coda: B flat 7 to E flat, with the bass Bb1 up to Eb2. The melody has fallen from C flat 6 through B flat 5, B double flat 5, A flat 5, G5 and F5 to the E flat 5.","roman":"I","function":"tonic"}
+        {"tick":79440,"kind":"harmony","title":"Cadence","text":"The last full cadence of the coda: B flat 7 to E flat, with the bass Bb1 up to Eb2. The melody has fallen from C flat 6 through B flat 5, B double flat 5, A flat 5, G5 and F5 to the E flat 5.","roman":"I","function":"tonic"},
+        {"tick":81600,"kind":"ornament","title":"Shimmer","text":"Eight sixteenths are played in the time of six (a tuplet): E flat, F, E flat, F, E flat, F, E flat, F, a shimmer on the held E flat. A short hairpin swells toward the G5 that follows."},
+        {"tick":83760,"kind":"dynamics","title":"Con forza","text":"con forza, with force: a flourish rises from A flat 4 to E flat 6 (a trill sign over the first A flat asks for a quick short trill on the way up), then G6, E flat 6 and the octaves begin, accented on the first and marked stretto from the D."},
+        {"tick":86640,"kind":"harmony","title":"Octaves","text":"Bar 31 runs in octaves that fall from C flat 6 to G5, then D5 and E flat 5, and end on an accented long E flat octave. The source writes them under an 8va sign; the data keeps the sounding notes. The left hand plays the cadential chords of bars 3 and 7: B flat 7, G7 over B, C minor and F7 over A.","roman":"V7","function":"dominant"}
       ]
     }
   },
   "defaultLevel": "original",
   "lesson": {
     "beginner": {
-      "summary": "This level plays the first twenty-eight bars of Chopin's Nocturne in E-flat major, Op. 9 No. 2: a pickup and twenty-eight bars. The right hand sings the melody and the left hand rocks underneath in 12/8, which you feel as four big beats per bar: count one, two, three, four, not twelve. It is a simplified version of the transcribed bars, so read the Arrangement note to see what was left out.",
+      "summary": "This level plays the first thirty-one bars of Chopin's Nocturne in E-flat major, Op. 9 No. 2: a pickup and thirty-one bars. The right hand sings the melody and the left hand rocks underneath in 12/8, which you feel as four big beats per bar: count one, two, three, four, not twelve. It is a simplified version of the transcribed bars, so read the Arrangement note to see what was left out.",
       "chordsUsed": [
         "Eb",
         "Bdim7/Eb",
@@ -2102,6 +2330,24 @@
           "hand": "R",
           "anchor": "Cb6",
           "text": "Bar 28: the falling line C flat 6, B flat 5, B double flat 5, A flat 5, G5 and F5, then a long E flat 5."
+        },
+        {
+          "tick": 80880,
+          "hand": "R",
+          "anchor": "Eb5",
+          "text": "Bar 29: E flat 5 held for two beats (the shimmer is left out), G5 and a rest."
+        },
+        {
+          "tick": 83760,
+          "hand": "R",
+          "anchor": "Eb5",
+          "text": "Bar 30: E flat 5, A flat 4 held, then E flat 6, G6 and E flat 6; the octaves keep only their lower note: E flat 6, D6, C6."
+        },
+        {
+          "tick": 86640,
+          "hand": "R",
+          "anchor": "Cb6",
+          "text": "Bar 31: the octaves keep only their lower note, C flat 6 down to E flat 5, then E flat 6, F5 and C6."
         }
       ],
       "posture": "Sit centered, back straight but relaxed, forearms level with the keys. The left hand travels from the low bass notes to chords near the middle of the keyboard on every beat, so let the arm swing from the elbow and keep the wrist loose instead of stretching the fingers.",
@@ -2112,14 +2358,14 @@
         "Move on bar by bar, then raise the tempo with Ramp toward the printed 44 beats per minute.",
         "Use Loop a section to practise one part of the piece at a time (the opening, the second phrase, the B-flat major episode, the returns, the coda, the cadenza), then join them."
       ],
-      "arrangementNote": "This level is a simplified version of the transcribed bars, not a printed edition: the tied G is one long note, the turn sign of bar 2 is left out, the fast run of bar 4 is cut to the notes Bb5, D5 and Eb5, and the left hand plays the bass note and then the last chord of each beat held. Every other ornament sign, grace note and fast run is cut the same way: a run keeps its first note and, when it is long enough, a last note one eighth before the next one. Where the right hand plays two-note chords (bars 11 and 12) only the top note is kept, and in beats 3 and 4 of bar 12 the left hand plays a B flat chord, G3 and an F chord in place of the chromatic line. The left-hand fingers and the right-hand fingers of the notes the source does not finger are editorial; the other right-hand fingers are the printed ones. Switch to Original for the full texture.",
+      "arrangementNote": "This level is a simplified version of the transcribed bars, not a printed edition: the tied G is one long note, the turn sign of bar 2 is left out, the fast run of bar 4 is cut to the notes Bb5, D5 and Eb5, and the left hand plays the bass note and then the last chord of each beat held. Every other ornament sign, grace note and fast run is cut the same way: a run keeps its first note and, when it is long enough, a last note one eighth before the next one. Where the right hand plays two-note chords (bars 11 and 12) only the top note is kept, and in beats 3 and 4 of bar 12 the left hand plays a B flat chord, G3 and an F chord in place of the chromatic line. In bars 29 and 30 the shimmer is one long E flat and beat 2 of the left hand is one held chord; the octaves of bars 30 and 31 keep only their lower note. The left-hand fingers and the right-hand fingers of the notes the source does not finger are editorial; the other right-hand fingers are the printed ones. Switch to Original for the full texture.",
       "interpretation": {
         "rubato": "Keep the beat steady while you learn the notes. Once they are secure, let the melody breathe a little at the end of each bar and give the rest in bar 4 a moment, but keep the left hand even. Take a little time in bar 10 and at the end of bar 12, where the score marks poco ritard. and poco rallent. The score marks poco rall. again in bar 20. Bar 26 has poco rubato on the G5.",
         "dynamics": "Start softly and sing the melody: the score says espress. dolce, sweetly and with expression. Keep the left hand quieter than the right. Bar 5 is soft again (p) and bar 8 is marked f. Bars 9 and 10 are softer, then the theme returns in bar 11 at f. Bar 18 is softer still. The coda (bar 25) begins p and sinks to pp in bar 26."
       }
     },
     "original": {
-      "summary": "The Original level is the pickup and bars 1 to 28 of Chopin's Nocturne Op. 9 No. 2 as printed in the Mutopia Project edition of the 1881 Schirmer score: the full left-hand texture of a bass note and two chords on each of the four beats, the right-hand melody with its ornaments, grace notes and written-out runs, and the pedal. Turn on Analysis to read the harmony.",
+      "summary": "The Original level is the pickup and bars 1 to 31 of Chopin's Nocturne Op. 9 No. 2 as printed in the Mutopia Project edition of the 1881 Schirmer score: the full left-hand texture of a bass note and two chords on each of the four beats, the right-hand melody with its ornaments, grace notes and written-out runs, and the pedal. Turn on Analysis to read the harmony.",
       "chordsUsed": [
         "Eb",
         "Bdim7/Eb",
@@ -2298,6 +2544,24 @@
           "hand": "R",
           "anchor": "Cb6",
           "text": "Bar 28: the falling line C flat 6 (5), B flat 5 (4), B double flat 5 (5), A flat 5 (4) and G5 (5), then F5 (4) and E flat 5 (3)."
+        },
+        {
+          "tick": 82320,
+          "hand": "R",
+          "anchor": "G5",
+          "text": "Bar 29: after the shimmer, G5 for a dotted quarter, then a quarter rest and an eighth rest before the flourish of bar 30."
+        },
+        {
+          "tick": 84000,
+          "hand": "R",
+          "anchor": "Ab4",
+          "text": "Bar 30: the flourish A flat 4 (2), B flat 4, A flat 4 with its trill sign, G4, A flat 4 (2), C flat 5 (1), E flat 5 (2), A flat 5 (3) and E flat 6 (5), then F6 (3) and G6 (4)."
+        },
+        {
+          "tick": 86640,
+          "hand": "R",
+          "anchor": "Cb6",
+          "text": "Bar 31: octaves. The source prints fingers only for the upper notes: 5, 4, 5 and 4 on the first four, then 5 on the D and 4 on the E flat."
         }
       ],
       "posture": "Sit as in the Beginner lesson, centered and relaxed. The left hand covers a wide range on every beat and the pedal changes with each bass note, so keep the forearm loose and the heel of the foot on the floor.",
@@ -2308,10 +2572,10 @@
         "Put the hands together at Slow, then raise the tempo with Ramp toward 44 beats per minute. Switch on Analysis to read the harmony as you play.",
         "Use Loop a section to practise one part of the piece at a time (the opening, the second phrase, the B-flat major episode, the returns, the coda, the cadenza), then join them."
       ],
-      "arrangementNote": "Transcribed from the Mutopia Project LilyPond source (Mutopia-2014/12/18-1590, typeset by Renato Biolcati Rinaldi from the 1881 G. Schirmer edition, licensed CC BY-SA 3.0) and checked note by note against the MIDI file that LilyPond makes from it: the pickup and bars 1 to 28. The right-hand fingers are the printed ones; the source has no left-hand fingering. The turns, mordents and trills are signs: their notes are not written in the source, while the small grace notes are.",
+      "arrangementNote": "Transcribed from the Mutopia Project LilyPond source (Mutopia-2014/12/18-1590, typeset by Renato Biolcati Rinaldi from the 1881 G. Schirmer edition, licensed CC BY-SA 3.0) and checked note by note against the MIDI file that LilyPond makes from it: the pickup and bars 1 to 31. The right-hand fingers are the printed ones; the source has left-hand fingering only in the cadenza. The turns, mordents and trills are signs: their notes are not written in the source, while the small grace notes are. The octaves of bars 30 and 31 and the cadenza are written under an 8va sign in the source and are stored as the sounding notes.",
       "interpretation": {
         "rubato": "The source marks Andante and espress. dolce and asks for time only in a few places. Keep the left hand steady in its rocking beat and let the melody breathe: a little time on the long G of bar 1 and on the rest before the pickup at the end of bar 4, a poco ritard. across bar 10 and a poco rallent. at the end of bar 12, before Tempo I. returns, a poco rall. in bar 20 and a poco rubato on the G of bar 26.",
-        "dynamics": "Begin softly and sing the melody. The hairpin of bar 2 grows into the C6 and bar 4 opens marked f. Keep the left hand below the melody throughout and release the pedal cleanly at each beat. Bar 5 starts p again, the hairpin of bar 6 opens after the run, and bar 8 is marked f again. The episode of bar 9 is p, sinking toward pp, and Tempo I. returns at f in bar 11. Bar 13 begins with an sf grace note and settles to p. Bar 17 is p and bar 18 più p; bar 19 is f again. The coda starts p in bar 25, drops to pp in bar 26 and stays there (sempre pp), with a dolcissimo on the G6 of bar 27."
+        "dynamics": "Begin softly and sing the melody. The hairpin of bar 2 grows into the C6 and bar 4 opens marked f. Keep the left hand below the melody throughout and release the pedal cleanly at each beat. Bar 5 starts p again, the hairpin of bar 6 opens after the run, and bar 8 is marked f again. The episode of bar 9 is p, sinking toward pp, and Tempo I. returns at f in bar 11. Bar 13 begins with an sf grace note and settles to p. Bar 17 is p and bar 18 più p; bar 19 is f again. The coda starts p in bar 25, drops to pp in bar 26 and stays there (sempre pp), with a dolcissimo on the G6 of bar 27. Bar 29 is p, bar 30 is con forza, and the octaves of bar 31 lead into the cadenza."
       },
       "ornaments": [
         {
@@ -2368,6 +2632,11 @@
           "tick": 76920,
           "name": "Inverted mordent",
           "text": "The sign over the E flat among the four sixteenths F, E flat, D, E flat is a quick inverted mordent, read as E flat, F, E flat."
+        },
+        {
+          "tick": 84240,
+          "name": "Trill",
+          "text": "A short trill on the A flat 4 inside the rising flourish of bar 30."
         }
       ]
     }
@@ -2375,7 +2644,7 @@
   "sources": [
     {
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1590",
-      "what": "Mutopia Project piece 1590 (Mutopia-2014/12/18-1590), Nocturne Op. 9 No. 2 for piano, typeset in LilyPond by Renato Biolcati Rinaldi from the G. Schirmer, New York, 1881 edition (scans at the Library of Congress). Licensed under Creative Commons Attribution-ShareAlike 3.0, https://creativecommons.org/licenses/by-sa/3.0/ . Transcribed from the LilyPond file: the pickup and bars 1 to 28 (both hands with the printed fingering, the ornament signs, the grace notes and the pedal marks). The notes were read from the file with a throwaway program that resolves its relative octaves and durations (it is not part of this repository), and every onset of the result was checked against the MIDI file listed next. This data is adapted from that file under the same license.",
+      "what": "Mutopia Project piece 1590 (Mutopia-2014/12/18-1590), Nocturne Op. 9 No. 2 for piano, typeset in LilyPond by Renato Biolcati Rinaldi from the G. Schirmer, New York, 1881 edition (scans at the Library of Congress). Licensed under Creative Commons Attribution-ShareAlike 3.0, https://creativecommons.org/licenses/by-sa/3.0/ . Transcribed from the LilyPond file: the pickup and bars 1 to 31 (both hands with the printed fingering, the ornament signs, the grace notes and the pedal marks). The notes were read from the file with a throwaway program that resolves its relative octaves and durations (it is not part of this repository), and every onset of the result was checked against the MIDI file listed next. This data is adapted from that file under the same license.",
       "accessed": "2026-10-11",
       "kind": "public-domain-score",
       "mutopiaId": "Mutopia-2014/12/18-1590",
@@ -2387,7 +2656,7 @@
     },
     {
       "url": "https://www.mutopiaproject.org/ftp/ChopinFF/O9/chopin_nocturne_op9_n2/chopin_nocturne_op9_n2.mid",
-      "what": "MIDI file that LilyPond generated from the same source. It was used to check every octave and onset of the transcribed bars (290 right-hand and 336 left-hand onsets, pinned in tests/fixtures).",
+      "what": "MIDI file that LilyPond generated from the same source. It was used to check every octave and onset of the transcribed bars (325 right-hand and 372 left-hand onsets, pinned in tests/fixtures).",
       "accessed": "2026-10-11",
       "kind": "reference",
       "sha256": "e202d3941ce5f26397f57f59f0e2e4e3ad9e19061fa3c4dc596c5ee6a6a2548e"
@@ -2431,9 +2700,14 @@
       "note": "The roman numerals and notes about the harmony are read from the transcribed notes and checked by tests against the left-hand notes; no published analysis was consulted. The five-note realization of the turn (C D C Bb C) is the reading that fits the printed fingering and accidentals, not a written-out ornament. The reading of bars 9 and 17 as B-flat major and of bars 11 and 19 as a chain of secondary chords is a judgment of this app."
     },
     {
+      "scope": "octaves",
+      "level": "medium",
+      "note": "The octaves of bars 30 and 31, and the cadenza, are written under an 8va sign in the source. The data holds the sounding pitches, which the MIDI file confirms; the sign itself is not drawn."
+    },
+    {
       "scope": "structure",
       "level": "low",
-      "note": "Only the pickup and bars 1 to 28 are transcribed so far. The sections are read from the repeats of the notes and the printed Tempo I. and Coda marks."
+      "note": "Only the pickup and bars 1 to 31 are transcribed so far. The sections are read from the repeats of the notes and the printed Tempo I. and Coda marks."
     }
   ]
 }
