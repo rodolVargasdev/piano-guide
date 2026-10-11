@@ -92,7 +92,7 @@ test("a card without a fingering note (chords) shows none, and the routine card 
 });
 
 test("every card opens with all five fields in Spanish when Spanish is selected", () => {
-  for (const e of EXERCISES) {
+  for (const e of EXERCISES.filter((x) => x.kind !== "routine")) {
     const v = open({ id: e.id, lang: "es" });
     assert.equal(textOf(v.all((n) => n.tag === "h2")[0]), STRINGS[`ex.${e.id}.title`].es, e.id);
     const sections = v.all((n) => n.tag === "section" && hasClass(n, "practice-field"));

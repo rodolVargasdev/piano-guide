@@ -217,7 +217,7 @@ test("Spanish: the buttons, the question and the score; a language switch in the
   assert.equal(v.text("learn-progress"), "Question 1 of 10 | Score 0/1");
 });
 
-test("through the practice view: the ear drills open this page and the routine still shows its card", () => {
+test("through the practice view: the ear drills open this page and the routine opens its own", () => {
   const i18n = createI18n({ table: STRINGS, navigatorLanguage: "en", warn: () => assert.fail("missing") });
   const root = doc.make("div");
   const handle = practiceView({ i18n, win: fakeWin(), storage: memory(), makeEngine: fakeEngine })({ songId: "ear-chords" }, root);
@@ -226,6 +226,7 @@ test("through the practice view: the ear drills open this page and the routine s
   const routine = doc.make("div");
   practiceView({ i18n, win: fakeWin(), storage: memory(), makeEngine: fakeEngine })({ songId: "routine" }, routine);
   assert.equal(all(routine, (n) => hasClass(n, "practice-ear")).length, 0);
+  assert.equal(all(routine, (n) => hasClass(n, "routine")).length, 1);
 });
 
 test("leaving releases everything: engine disposed, listeners and the page marker gone", () => {

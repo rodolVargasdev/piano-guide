@@ -17,10 +17,11 @@ import { createPracticeInputs } from "./practice-inputs.js";
 const REGION = Object.freeze({ low: 60, high: 83 });
 
 /**
- * createEarPage({ i18n, win, storage, exercise, makeEngine, seed }) -> { element, dispose() }, or null for an exercise
- * that is not an ear drill.
+ * createEarPage({ i18n, win, storage, exercise, makeEngine, seed, embedded }) -> { element, dispose() }, or null for an
+ * exercise that is not an ear drill. `embedded` ({ onState }) is how the routine uses the page for its ear block: no own
+ * title bar, fold or progress, and `onState` hears the session state after every change.
  */
-export function createEarPage({ i18n, win, storage, exercise, makeEngine, seed = (Date.now() & 0xffff) + 1 }) {
+export function createEarPage({ i18n, win, storage, exercise, makeEngine, seed = (Date.now() & 0xffff) + 1, embedded = null }) {
   const t = i18n.t;
   const doc = win.document ?? globalThis.document;
   const kind = exercise.id === "ear-chords" ? "chord" : exercise.id === "ear-intervals" ? "interval" : null;
@@ -44,7 +45,7 @@ export function createEarPage({ i18n, win, storage, exercise, makeEngine, seed =
   const summary = el("section", { class: "practice-summary" });
   const keyboardMount = el("div", { class: "learn-keyboard-slot" });
   const langSelect = createLanguageSelect({ i18n });
-  const view = el("section", { class: "practice practice-run practice-ear", "data-exercise": exercise.id }, top, fold, card, keyboardMount, panel.element, summary);
+  const view = el("section", { class: `practice practice-run practice-ear${embedded ? " practice-compact" : ""}`, "data-exercise": exercise.id }, ...(embedded ? [] : [top]), fold, card, keyboardMount, panel.element, summary);
   const keyboard = createLearnKeyboard({ mount: keyboardMount, i18n, bus, doc });
   // No key: black keys take their sharp names, so the strip above the keys stays short and readable.
   keyboard.setKeyContext({ tonic: "C", mode: "major" });
@@ -131,6 +132,7 @@ export function createEarPage({ i18n, win, storage, exercise, makeEngine, seed =
     const r = reduceEar(state, action);
     state = r.state;
     runEffects(r.effects);
+    embedded?.onState?.(state);
     if (r.effects.length === 0 && (action.type === "NOTE_ON" || action.type === "NOTE_OFF")) return;
     refresh();
   }
@@ -145,11 +147,12 @@ export function createEarPage({ i18n, win, storage, exercise, makeEngine, seed =
   const offLegend = inputs.onLegend(() => paintKeyboard());
   const onResize = () => paintKeyboard();
   win.addEventListener("resize", onResize);
-  win.document?.body?.setAttribute("data-route", "practice-run");
+  if (!embedded) win.document?.body?.setAttribute("data-route", "practice-run");
 
   paintTop();
   paintFold();
   refresh();
+  embedded?.onState?.(state);
 
   return {
     element: view,
@@ -159,7 +162,7 @@ export function createEarPage({ i18n, win, storage, exercise, makeEngine, seed =
       offLang();
       offLegend();
       win.removeEventListener("resize", onResize);
-      win.document?.body?.removeAttribute("data-route");
+      if (!embedded) win.document?.body?.removeAttribute("data-route");
       bus.releaseAll();
       keyboard.dispose();
       langSelect.dispose();

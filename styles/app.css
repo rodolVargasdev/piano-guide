@@ -1726,3 +1726,107 @@ body[data-route="practice-run"] header .language-select {
     display: none;
   }
 }
+
+/* The 10-minute routine (src/ui/practice-routine.js): today's blocks, the step marks and the summary. A block is
+   said in words and marked by shape (a ring for done, a dashed line for skipped, a thick border for the current one). */
+.routine-list {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.routine-list li {
+  margin: 0.25rem 0;
+}
+
+.routine-header {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.routine-now {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.routine-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.routine-step {
+  display: grid;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.routine-step-status {
+  color: var(--muted);
+}
+
+.routine-step[data-status="current"] {
+  border: 3px solid var(--accent);
+}
+
+.routine-step[data-status="done"] {
+  box-shadow: inset 0 0 0 2px #22c55e;
+}
+
+.routine-step[data-status="skipped"] {
+  border-style: dashed;
+}
+
+.routine-host {
+  margin-bottom: 0.75rem;
+}
+
+.routine-controls {
+  margin-bottom: 0.75rem;
+}
+
+.routine-counts {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* A block hosted by the routine has no title bar, choices, key picker, card fold or progress of its own. */
+.practice-compact .practice-setup,
+.practice-compact .practice-summary,
+.practice-compact .practice-fold {
+  display: none;
+}
+
+@media (orientation: landscape) and (max-height: 480px) {
+  .routine-steps {
+    display: none;
+  }
+
+  .routine-block {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0 0.75rem;
+  }
+
+  .routine-header {
+    grid-column: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .routine-controls {
+    grid-column: 2;
+    margin-bottom: 0;
+  }
+
+  .routine-host {
+    grid-column: 1 / -1;
+    margin-bottom: 0.25rem;
+  }
+}

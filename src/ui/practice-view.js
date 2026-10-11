@@ -7,6 +7,7 @@ import { clearPracticeProgress, readPracticeProgress, summaryOf } from "../pract
 import { el } from "./dom.js";
 import { cardModel, docArticle, summaryChips } from "./practice-doc.js";
 import { createEarPage } from "./practice-ear.js";
+import { createRoutinePage } from "./practice-routine.js";
 import { createExercisePage } from "./practice-run.js";
 
 export { cardModel, summaryChips };
@@ -86,8 +87,8 @@ function cardScreen(model, { back }) {
 /**
  * practiceView({ i18n, win, storage }) returns a router view (route, root) => { dispose() }. `route.songId` is the
  * exercise id of "#/practice/<id>" (null for the list). An id the catalog does not have shows "Exercise not found"
- * and a link back to the list. A run exercise opens its page (choices, keys to press, feedback) and an ear drill its
- * own (play, answer, count); the routine shows its card until its screen arrives. The exercise page repaints itself when the language changes, so this view
+ * and a link back to the list. A run exercise opens its page (choices, keys to press, feedback), an ear drill its own
+ * (play, answer, count) and the routine its four blocks in order. The exercise page repaints itself when the language changes, so this view
  * leaves it alone (a redraw would lose the step, key and tempo).
  */
 export function practiceView({ i18n, win = window, storage = safeStorage(win), makeEngine } = {}) {
@@ -101,8 +102,9 @@ export function practiceView({ i18n, win = window, storage = safeStorage(win), m
     function render() {
       if (route.songId && !exercise) {
         root.replaceChildren(el("section", { class: "panel", role: "alert" }, el("h2", {}, t("practice.notFound")), el("a", { class: "button", href: "#/practice" }, t("practice.back"))));
-      } else if (exercise?.kind === "run" || exercise?.kind === "ear") {
-        page = (exercise.kind === "run" ? createExercisePage : createEarPage)({ i18n, win, storage, exercise, makeEngine });
+      } else if (exercise?.kind === "run" || exercise?.kind === "ear" || exercise?.kind === "routine") {
+        const make = { run: createExercisePage, ear: createEarPage, routine: createRoutinePage }[exercise.kind];
+        page = make({ i18n, win, storage, exercise, makeEngine });
         if (page) root.replaceChildren(page.element);
         else root.replaceChildren(el("section", { class: "panel", role: "alert" }, el("h2", {}, t("practice.notFound")), el("a", { class: "button", href: "#/practice" }, t("practice.back"))));
       } else if (exercise) {

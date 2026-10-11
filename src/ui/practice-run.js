@@ -24,14 +24,17 @@ const whiteBelow = (midi) => {
 };
 
 /**
- * createExercisePage({ i18n, win, storage, exercise, makeEngine, seed }) -> { element, dispose() }, or null when the
- * exercise cannot be generated. `makeEngine` and `storage` are injectable so the page runs against fakes under node.
+ * createExercisePage({ i18n, win, storage, exercise, makeEngine, seed, embedded }) -> { element, dispose() }, or null
+ * when the exercise cannot be generated. `makeEngine` and `storage` are injectable so the page runs against fakes under
+ * node. `embedded` ({ options, onState }) is how the routine uses the page for one block: the page opens with those
+ * options, in that key only (no rotation), without its own title bar, choices, key picker, fold or progress, and tells
+ * `onState` the session state after every change.
  */
-export function createExercisePage({ i18n, win, storage, exercise, makeEngine, seed = (Date.now() & 0xffff) + 1 }) {
+export function createExercisePage({ i18n, win, storage, exercise, makeEngine, seed = (Date.now() & 0xffff) + 1, embedded = null }) {
   const t = i18n.t;
   const doc = win.document ?? globalThis.document;
   let progress = readPracticeProgress(storage);
-  let state = initSession({ exerciseId: exercise.id, progress, seed });
+  let state = initSession({ exerciseId: exercise.id, progress, seed, options: embedded?.options, ...(embedded ? { rotation: "same" } : {}) });
   if (!state) return null;
   const inputs = createPracticeInputs({ i18n, win, storage, makeEngine });
   const { bus, engine, panel } = inputs;
@@ -57,7 +60,7 @@ export function createExercisePage({ i18n, win, storage, exercise, makeEngine, s
   const card = el("section", { class: "learn-card practice-card" }, progressLine, instruction, sub, notice, flag, el("div", { class: "learn-feedback" }, chip, detail), actions);
   const keyboardMount = el("div", { class: "learn-keyboard-slot" });
   const langSelect = createLanguageSelect({ i18n });
-  const view = el("section", { class: "practice practice-run", "data-exercise": exercise.id }, top, el("div", { class: "practice-setup" }, options, keys), summary, fold, card, keyboardMount, panel.element);
+  const view = el("section", { class: `practice practice-run${embedded ? " practice-compact" : ""}`, "data-exercise": exercise.id }, ...(embedded ? [] : [top]), el("div", { class: "practice-setup" }, options, keys), summary, fold, card, keyboardMount, panel.element);
   const keyboard = createLearnKeyboard({ mount: keyboardMount, i18n, bus, doc });
 
   // ---- keyboard ------------------------------------------------------------------------------------
@@ -269,6 +272,7 @@ export function createExercisePage({ i18n, win, storage, exercise, makeEngine, s
     const r = reduceSession(state, action);
     state = r.state;
     runEffects(r.effects);
+    embedded?.onState?.(state);
     // A press that changed nothing on screen (a release, an ignored key) is not worth redrawing the keyboard for.
     if (r.effects.length === 0 && (action.type === "NOTE_ON" || action.type === "NOTE_OFF")) return;
     refresh();
@@ -284,11 +288,12 @@ export function createExercisePage({ i18n, win, storage, exercise, makeEngine, s
   const offLegend = inputs.onLegend(() => paintKeyboard());
   const onResize = () => paintKeyboard();
   win.addEventListener("resize", onResize);
-  win.document?.body?.setAttribute("data-route", "practice-run");
+  if (!embedded) win.document?.body?.setAttribute("data-route", "practice-run");
 
   paintTop();
   paintFold();
   refresh();
+  embedded?.onState?.(state);
 
   return {
     element: view,
@@ -301,7 +306,7 @@ export function createExercisePage({ i18n, win, storage, exercise, makeEngine, s
       offLang();
       offLegend();
       win.removeEventListener("resize", onResize);
-      win.document?.body?.removeAttribute("data-route");
+      if (!embedded) win.document?.body?.removeAttribute("data-route");
       bus.releaseAll();
       keyboard.dispose();
       langSelect.dispose();
