@@ -129,8 +129,8 @@ The portfolio's `docs/STACK_TECNOLOGICO.md` prints the core hash with 65 charact
 
 **Choice**:
 - Background near-black blue (`#0b0d12`) with linear `Fog` softening the horizon.
-- Environment reflections: `PMREMGenerator.fromScene()` over a tiny procedural studio (two dim emissive softboxes and a ceiling strip); lacquered black keys and the floor reflect it.
-- Lights: warm `SpotLight` key light (wide penumbra, 1024 shadow map on High), cool rim `DirectionalLight`, low `HemisphereLight` fill.
+- Environment reflections: `PMREMGenerator.fromScene()` over a tiny procedural studio (two dim emissive softboxes and a ceiling strip); lacquered black keys and the floor reflect it. The studio has a long strip behind at the height a key top mirrors from the camera, a warm and a cool softbox and a ceiling strip. Keys take `scene.environment` (`scene.environmentIntensity`); the floor holds its own `envMap` because `material.envMapIntensity` only counts for a material's own map in three r186.
+- Lights: warm `SpotLight` key light (wide penumbra, 1024 shadow map on High), cool `DirectionalLight` from nearly overhead (a low one is mirrored by the glossy floor into a hot spot on wide screens, measured at 844 x 390), low `HemisphereLight` fill. A faint radial backdrop and a warm additive pool of light under the keyboard add depth on High and Medium.
 - Materials: white keys `MeshPhysicalMaterial` (roughness 0.35, clearcoat 0.3); black keys roughness 0.18, clearcoat 0.8; floor black `MeshStandardMaterial` roughness 0.22.
 - Colors: left hand `#3b82f6` blue, right hand `#f59e0b` orange; falling notes slightly emissive with a brighter leading edge.
 - `ACESFilmicToneMapping`, sRGB output. Effects never draw over the note field or the markers (markers render last with `depthTest: false`).
@@ -152,11 +152,11 @@ Pure `decideTier(frameTimesMs, currentTier, state)` in `src/core/quality.js` ste
 
 ### Decision: Reduced motion removes decoration only
 
-**Choice**: Live `matchMedia("(prefers-reduced-motion: reduce)")` listener. When it matches: no section camera tweens (the camera cuts once to the framed range), no idle sway, no glow pulse, no smoothing flourishes; the score cursor steps per beat (see the score decision); lesson-card swaps have no transition (CSS `@media (prefers-reduced-motion: reduce)`). Essential motion stays: falling notes advance and keys still depress. When the preference clears, camera tweens resume at the next section boundary.
+**Choice**: Live `matchMedia("(prefers-reduced-motion: reduce)")` listener. When it matches: no section camera tweens (the camera cuts once to the framed range), no idle sway, no glow pulse, no smoothing flourishes; the score cursor steps per beat (see the score decision); lesson-card swaps have no transition (CSS `@media (prefers-reduced-motion: reduce)`). Essential motion stays: falling notes advance and keys still depress. When the preference clears, camera tweens resume at the next section boundary. Section framing: a pure `camera-director.js` keeps one framing per song section (the section's pitched notes padded by 3 semitones and 4 white keys, never narrower than 60 percent of the keyboard width, `focusPose` = `framePose` slid sideways) and eases between them with a 1.4 s smoothstep when the tick crosses a boundary, also on a seek while paused (the scene keeps asking for frames while `animating()`); a song with one section never moves. Under reduced motion every boundary is a cut; turning the preference on finishes a move at once. The camera is limited by the height of the note wall, so a narrower focus mostly pans rather than zooms.
 
 ### Decision: Finger markers, shift hints and a non-color hand cue
 
-**Choice**: Pooled `Sprite`s with `CanvasTexture`s. Shape encodes the hand independently of color: right-hand markers are circles, left-hand markers are rounded squares, each with a small "R" or "L" corner mark. The finger number is drawn only when the event has `finger`; an event without `finger` lights its key and shows no marker. Current notes: full opacity. Notes starting within the next beat: ghost markers at 40 percent opacity. Shift hint: pure `shiftHints(notes, hand, 5)` in `src/core/timeline.js` marks an event as a shift when its pitch lies more than 5 semitones outside the span (lowest to highest MIDI) of the previous onset group of the same hand; the scene draws a pulsing outline ring (static under reduced motion) on the destination key starting one beat before the shift.
+**Choice**: One instanced billboard mesh over a `CanvasTexture` atlas (a single draw call for every marker and ring; separate `Sprite`s reached 27 draw calls per frame on the Nocturne and broke the budget). Shape encodes the hand independently of color: right-hand markers are circles, left-hand markers are rounded squares, each with a small "R" or "L" corner mark. The finger number is drawn only when the event has `finger`; an event without `finger` lights its key and shows no marker. Current notes: full opacity. Notes starting within the next beat: ghost markers at 40 percent opacity. Shift hint: pure `shiftHints(notes, hand, 5)` in `src/core/timeline.js` marks an event as a shift when its pitch lies more than 5 semitones outside the span (lowest to highest MIDI) of the previous onset group of the same hand; the scene draws a pulsing outline ring (static under reduced motion) on the destination key starting one beat before the shift.
 
 ### Decision: Custom SVG score, single continuous system, pure layout
 
@@ -257,7 +257,8 @@ All files are new except `README.md`.
 | `src/scene/index.js` | Create | `createScene` facade and null-scene fallback |
 | `src/scene/keyboard.js` | Create | Instanced keys, press state, glow quads, `highlightNotes` |
 | `src/scene/falling-notes.js` | Create | Instanced field, clipping planes |
-| `src/scene/markers.js` | Create | Finger sprites with hand shapes, ghosts, shift rings |
+| `src/scene/marker-plan.js` | Create | Pure plan of which keys carry a marker or ring at a tick |
+| `src/scene/markers.js` | Create | One instanced billboard mesh: finger markers with hand shapes, ghosts, shift rings |
 | `src/scene/stage.js` | Create | Lights, PMREM studio env, floor, fog, tone mapping |
 | `src/scene/camera.js` | Create | Range framing, section tweens, reduced-motion cut |
 | `src/scene/quality.js` | Create | Frame sampling, applies tiers |
@@ -310,7 +311,7 @@ Normative source: `specs/song-data-model/spec.md`. Summary:
 | `chords` | `[{ tick, dur, symbol, roman?, function? }]` | sorted, `tick + dur` inside length |
 | `levels` | map, keys `beginner` / `original` | at least one |
 | `defaultLevel` | string | key of `levels` |
-| `lesson` | map by level id | `{ summary, chordsUsed[], handPositions[{ tick, hand, anchor, text }], posture, practicePlan[], interpretation?: { rubato, dynamics }, arrangementNote? }` |
+| `lesson` | map by level id | `{ summary, chordsUsed[], handPositions[{ tick, hand, anchor, text }], posture, practicePlan[], interpretation?: { rubato, dynamics }, ornaments?: [{ tick, name, text }], arrangementNote? }` (added in PR 20b: the card lists each ornament with its bar, as `specs/lesson-guide/spec.md` requires) |
 | `sources` | `[{ url, what, accessed, kind, license?, sha256? }]` | at least one; kind in `public-domain-score`, `user-submitted`, `original-arrangement`, `reference` |
 | `confidence` | `[{ scope, level, note }]` | at least one; level `high`, `medium`, `low` |
 
@@ -517,7 +518,7 @@ TDD mode: `strict_tdd: false` (`openspec/config.yaml`); tests land with each cor
 | Draw calls | under 20 (keys 2, note field 1, glow 1, markers pooled, floor 1) |
 | Frame time desktop, High tier | average under 12 ms, p95 under 16.7 ms |
 | Frame time phone landscape (844 x 390) | p95 under 33 ms on Low or Minimum |
-| Audio/visual drift | under 20 ms (`?debug=1` overlay) |
+| Clock jitter | under 20 ms (`?debug=1` overlay): per frame, the gap between the audio clock's advance and the frame clock's advance, the largest over each 10-frame window. Measured 8.5 to 9 ms on 2026-10-10 (RTX 3050, Chrome, 20 s of each song). It is NOT the offset between what is heard and what is seen: output and display latency are invisible to a page, so no figure is claimed for them. The first definition (the step between two drawn positions) could not read below one frame period, 16.7 ms, and was replaced in PR 22f. |
 | Scheduler | 25 ms timer, 120 ms look-ahead visible, 1.5 s hidden; no gaps at loop seams |
 | Level switch while playing | gap under 250 ms |
 | Per-frame allocations in render paths | zero |
@@ -530,7 +531,7 @@ TDD mode: `strict_tdd: false` (`openspec/config.yaml`); tests land with each cor
 3. Docker (primary): `docker build -t piano-guide .`, then `docker run --rm -p 8790:8080 piano-guide` after the same port check; `curl -I http://localhost:8790/src/main.js` returns `application/javascript`.
 4. Browser at `http://localhost:8790/`:
    - Catalog lists both songs with key and BPM; no three.js request on the catalog; a locally renamed song file shows an "Unavailable" card; a broken `index.json` shows the error panel.
-   - Cancer Beginner at 72 then 50 BPM: falling notes, keys, cursor and audio agree; drift under 20 ms; typing 500 shows 240.
+   - Cancer Beginner at 72 then 50 BPM: falling notes, keys, cursor and audio agree; clock jitter under 20 ms; typing 500 shows 240.
    - Pause/resume, stop, seek mid-note (no stuck notes), end of song returns to 0.
    - Slow mode, metronome accent, count-in, loop by section with a clean seam, inverted A-B gets swapped, ramp steps per pass and stops at target, ramp without loop says "Needs a loop", Hold freezes it.
    - Hands: mute left (silent, visible), hide right (gone from scene and score), both muted with metronome only.

@@ -1,0 +1,838 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b0d12;
+  --panel: #141823;
+  --line: #262c3b;
+  --text: #e8eaf0;
+  --muted: #a3abbd;
+  --accent: #f59e0b;
+  --accent-text: #0b0d12;
+  --warn: #fca5a5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+header,
+main {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+header {
+  border-bottom: 1px solid var(--line);
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.brand {
+  color: inherit;
+  text-decoration: none;
+}
+
+.meta {
+  margin: 0.25rem 0;
+  color: var(--muted);
+}
+
+.panel {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.card-unavailable {
+  border-style: dashed;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.chip {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.chip-warn {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.button {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a:focus-visible {
+  outline: 3px solid var(--text);
+  outline-offset: 2px;
+}
+
+.button:hover {
+  filter: brightness(1.1);
+  transition: filter 120ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.transport {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.transport-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn {
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: #1c2230;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.btn:focus-visible,
+.seek:focus-visible,
+.bpm:focus-visible {
+  outline: 3px solid var(--text);
+  outline-offset: 2px;
+}
+
+.readout {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.seek {
+  flex: 1 1 12rem;
+  accent-color: var(--accent);
+}
+
+.field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+}
+
+.bpm {
+  width: 5rem;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.hands-note {
+  margin: 0;
+  color: var(--warn);
+}
+
+/* The score: an SVG on a paper background, sized by the renderer to fit this slot. */
+.slot[data-slot="score"] {
+  height: clamp(13rem, 34vh, 21rem);
+  overflow: hidden;
+  padding: 0;
+  border-style: solid;
+  background: #fafaf7;
+}
+
+.score-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.score-svg .paper {
+  fill: #fafaf7;
+}
+
+.score-svg .staff-line,
+.score-svg .barline,
+.score-svg .stem,
+.score-svg .ledger,
+.score-svg .beam,
+.score-svg .tie,
+.score-svg .tuplet {
+  stroke: #1b1b1f;
+}
+
+.score-svg .staff-line {
+  stroke-width: 1;
+}
+
+.score-svg .barline {
+  stroke-width: 1.2;
+}
+
+.score-svg .barline.thick {
+  stroke-width: 3;
+}
+
+.score-svg .stem,
+.score-svg .ledger {
+  stroke-width: 1.4;
+}
+
+.score-svg .tuplet {
+  fill: none;
+  stroke-width: 1.2;
+}
+
+.score-svg .tie {
+  fill: #1b1b1f;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
+.score-svg .glyph-stroke {
+  fill: none;
+  stroke: #1b1b1f;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.score-svg .glyph-fill,
+.score-svg .dot,
+.score-svg .head {
+  fill: #1b1b1f;
+}
+
+.score-svg .head.hollow {
+  fill: #fafaf7;
+  stroke: #1b1b1f;
+  stroke-width: 1.6;
+}
+
+/* Beginner: noteheads take the hand color and carry the note name. */
+.score-labelled .head-R {
+  fill: #f59e0b;
+}
+
+.score-labelled .head-L {
+  fill: #3b82f6;
+}
+
+.score-labelled .head-R.hollow {
+  fill: #fafaf7;
+  stroke: #f59e0b;
+  stroke-width: 2.4;
+}
+
+.score-labelled .head-L.hollow {
+  fill: #fafaf7;
+  stroke: #3b82f6;
+  stroke-width: 2.4;
+}
+
+.score-svg .note-name {
+  fill: #0b0d12;
+  font-weight: 700;
+}
+
+.score-svg text {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.score-svg .time-sig {
+  fill: #1b1b1f;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+}
+
+.score-svg .bar-number {
+  fill: #6b7280;
+}
+
+.score-svg .chord {
+  fill: #111827;
+  font-weight: 700;
+}
+
+.score-svg .finger {
+  font-weight: 600;
+}
+
+.score-svg .finger-R {
+  fill: #b45309;
+}
+
+.score-svg .finger-L {
+  fill: #1d4ed8;
+}
+
+.score-svg .ornament-text,
+.score-svg .roman {
+  fill: #1b1b1f;
+  font-style: italic;
+}
+
+.score-svg .ornament-text {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+}
+
+.score-svg .callout-box {
+  fill: #e0e7ff;
+  stroke: #6366f1;
+}
+
+.score-svg .callout-text {
+  fill: #111827;
+}
+
+.score-svg .callout-span {
+  stroke: #6366f1;
+  stroke-width: 1.5;
+}
+
+.score-svg .playhead {
+  stroke: #dc2626;
+  stroke-width: 2;
+}
+
+/* Level selector and view switch. */
+.player-head > .level-select {
+  flex: 0 1 auto;
+}
+
+.level-select {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.seg {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.level-select .btn {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.875rem;
+}
+
+.stage[data-view="scene"],
+.stage[data-view="score"] {
+  grid-template-columns: 1fr;
+}
+
+.stage[data-view="scene"] > [data-slot="score"],
+.stage[data-view="score"] > [data-slot="scene"] {
+  display: none;
+}
+
+.stage[data-view="scene"] .slot[data-slot="scene"] {
+  height: clamp(16rem, 52vh, 34rem);
+}
+
+.stage[data-view="score"] .slot[data-slot="score"] {
+  height: clamp(16rem, 52vh, 30rem);
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .transport {
+    gap: 0.25rem;
+    padding: 0.5rem;
+  }
+
+  .btn {
+    padding: 0.25rem 0.625rem;
+  }
+}
+
+.player {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.player-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.player-head > div {
+  flex: 1 1 14rem;
+}
+
+.player-head h2 {
+  margin: 0;
+}
+
+.stage {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 9rem;
+  border: 1px dashed var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+/* The 3D scene: the canvas fills the slot; its pixel size is set by the scene, never inline. */
+.slot[data-slot="scene"] {
+  height: clamp(14rem, 36vh, 28rem);
+  overflow: hidden;
+  border-style: solid;
+  background: #0b0d12;
+}
+
+.scene-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.debug {
+  position: fixed;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  margin: 0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background: rgba(0, 0, 0, 0.75);
+  color: #86efac;
+  font: 12px/1.4 ui-monospace, Consolas, monospace;
+  pointer-events: none;
+}
+
+.debug button {
+  margin-left: 0.5rem;
+  padding: 0 0.375rem;
+  border: 1px solid #86efac;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.debug button[aria-pressed="true"] {
+  background: #86efac;
+  color: #000;
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  header,
+  main {
+    padding: 0.5rem 0.75rem;
+  }
+
+  h1 {
+    font-size: 1.125rem;
+  }
+
+  .player {
+    gap: 0.5rem;
+  }
+
+  .player-head > div {
+    flex-basis: 8rem;
+  }
+
+  .player-head .meta {
+    margin: 0;
+    font-size: 0.8125rem;
+  }
+
+  main {
+    padding-block: 0.25rem;
+  }
+
+  .stage {
+    grid-template-columns: 3fr 2fr;
+    gap: 0.5rem;
+  }
+
+  .slot {
+    min-height: 3.5rem;
+  }
+
+  /* Phone landscape: the keyboard keeps a fixed 9rem band so the transport stays on screen. */
+  .slot[data-slot="scene"],
+  .slot[data-slot="score"] {
+    height: 9rem;
+  }
+
+  /* One view alone gets the whole stage width and a taller band. */
+  .stage[data-view="scene"] .slot[data-slot="scene"],
+  .stage[data-view="score"] .slot[data-slot="score"] {
+    height: 12rem;
+  }
+}
+
+/* Practice panel: same card as the transport, a little denser. */
+.practice .btn {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.875rem;
+}
+
+.practice select.bpm {
+  width: auto;
+}
+
+.practice input.bpm {
+  width: 4rem;
+}
+
+.loop-text {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lesson card: no transitions or animations, so it swaps instantly with or without reduced motion. */
+.lesson {
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.lesson h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.lesson-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 0.75rem 1.5rem;
+}
+
+.lesson-section h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.lesson-section p,
+.lesson-section ul,
+.lesson-section ol {
+  margin: 0.25rem 0;
+}
+
+.lesson-section ul,
+.lesson-section ol {
+  padding-left: 1.25rem;
+}
+
+.lesson-section a {
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.chord-chip {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.875rem;
+}
+
+.low {
+  color: var(--warn);
+}
+
+/* Catalog landing: a hero with falling notes over a drawn keyboard (CSS only), and polished cards. */
+body {
+  background: radial-gradient(120% 55% at 50% -8%, #151b2b, var(--bg) 60%) no-repeat fixed var(--bg);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  letter-spacing: 0.01em;
+}
+
+.brand::before {
+  content: "";
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 0.3rem;
+  background: linear-gradient(90deg, #f59e0b 0 33%, #1c2230 33% 38%, #3b82f6 38% 71%, #e9e3d6 71%);
+  box-shadow: 0 0 0.9rem rgba(245, 158, 11, 0.35);
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 1.5rem;
+  padding: 2.5rem 1.5rem 8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.875rem;
+  background:
+    radial-gradient(55% 90% at 12% 0%, rgba(245, 158, 11, 0.17), transparent 62%),
+    radial-gradient(55% 90% at 92% 8%, rgba(59, 130, 246, 0.17), transparent 62%),
+    linear-gradient(180deg, #111522, #0b0d12);
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero h2 {
+  max-width: 16ch;
+  margin: 0.75rem 0 0.5rem;
+  font-size: clamp(1.75rem, 5vw, 2.875rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
+.hero-lead {
+  max-width: 34rem;
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+}
+
+.hero-badge {
+  display: inline-block;
+  margin: 0;
+  padding: 0.125rem 0.625rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.hero .button {
+  box-shadow: 0 0.5rem 1.5rem rgba(245, 158, 11, 0.25);
+}
+
+/* The notes fall inside the stage and land on the drawn keys at its lower edge. */
+.hero-stage {
+  position: absolute;
+  inset: 0 0 4.5rem;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-note {
+  position: absolute;
+  width: 1.3rem;
+  border-radius: 0.3rem;
+  animation: hero-fall 7s linear infinite;
+}
+
+.hero-note.hand-r {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+  box-shadow: 0 0 1.25rem rgba(245, 158, 11, 0.5);
+}
+
+.hero-note.hand-l {
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  box-shadow: 0 0 1.25rem rgba(59, 130, 246, 0.5);
+}
+
+/* With animations off (reduced motion) the notes rest where they are listed here. */
+.hero-note.n1 { left: 62%; top: 46%; height: 3.5rem; animation-delay: -0.5s; }
+.hero-note.n2 { left: 67%; top: 22%; height: 4.75rem; animation-delay: -3s; }
+.hero-note.n3 { left: 72%; top: 58%; height: 2.25rem; animation-delay: -5.5s; }
+.hero-note.n4 { left: 77%; top: 12%; height: 4rem; animation-delay: -1.8s; }
+.hero-note.n5 { left: 82%; top: 40%; height: 2.75rem; animation-delay: -4.2s; }
+.hero-note.n6 { left: 87%; top: 6%; height: 3.25rem; animation-delay: -6.2s; }
+.hero-note.n7 { left: 92%; top: 30%; height: 2.5rem; animation-delay: -2.4s; }
+
+@keyframes hero-fall {
+  from {
+    top: -6rem;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* A drawn keyboard: white keys 2.15rem wide, black keys over the 1st, 2nd, 4th, 5th and 6th joints. */
+.hero-keys {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 0;
+  height: 4.5rem;
+  border-top: 2px solid #05060a;
+  background: repeating-linear-gradient(90deg, #ece6d9 0 2.1rem, #8c877c 2.1rem 2.15rem);
+  box-shadow: 0 -1.5rem 3rem rgba(245, 158, 11, 0.12);
+  pointer-events: none;
+}
+
+.hero-keys::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 58%;
+  background: linear-gradient(90deg, transparent 0 1.5rem, #0c0d11 1.5rem 2.8rem, transparent 2.8rem 3.65rem, #0c0d11 3.65rem 4.95rem, transparent 4.95rem 7.95rem, #0c0d11 7.95rem 9.25rem, transparent 9.25rem 10.1rem, #0c0d11 10.1rem 11.4rem, transparent 11.4rem 12.25rem, #0c0d11 12.25rem 13.55rem, transparent 13.55rem);
+  background-size: 15.05rem 100%;
+}
+
+.hero-keys::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 13, 18, 0), rgba(11, 13, 18, 0.55));
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, #f59e0b, #3b82f6);
+  opacity: 0.8;
+}
+
+.card:not(.card-unavailable):hover {
+  transform: translateY(-3px);
+  border-color: #3a4358;
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.5);
+}
+
+.card h3 {
+  margin-top: 0.25rem;
+}
+
+.chip-beginner {
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fcd34d;
+}
+
+.chip-original {
+  border-color: rgba(147, 197, 253, 0.45);
+  color: #bfdbfe;
+}
+
+@media (max-width: 40rem) {
+  .hero {
+    padding: 1.75rem 1rem 6.5rem;
+  }
+
+  .hero-keys {
+    height: 3.5rem;
+  }
+
+  .hero-stage {
+    inset: 0 0 3.5rem;
+    opacity: 0.4; /* behind the text on a narrow screen */
+  }
+}
