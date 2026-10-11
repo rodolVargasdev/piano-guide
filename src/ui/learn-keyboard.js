@@ -170,7 +170,7 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     // A hint is a dashed outline (not color alone) around a key the learner should look at.
     for (const midi of hints) {
       const g = geom.get(midi);
-      if (g) parts.push(make("rect", { class: "lk-hint-outline", x: g.x + 1.5, y: top + 1.5, width: g.w - 3, height: (g.black ? m.blackH : m.keyH) - 3, rx: 3, fill: "none" }));
+      if (g) parts.push(make("rect", { class: "lk-hint-outline", x: g.x + 1.5, y: top + 1.5, width: Math.max(0, g.w - 3), height: (g.black ? m.blackH : m.keyH) - 3, rx: 3, fill: "none" }));
     }
     for (const k of stepKeys) {
       const g = geom.get(k.midi);
@@ -180,8 +180,8 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
       const w = together ? m.badge + 10 : m.badge;
       const cy = badgeY(g);
       // The outline: one line for the right hand, a double line for the left.
-      parts.push(make("rect", { class: `lk-outline lk-hand-${k.hand}`, x: g.x + 1.5, y: top + 1.5, width: g.w - 3, height: (g.black ? m.blackH : m.keyH) - 3, rx: 3, fill: "none" }));
-      if (left) parts.push(make("rect", { class: `lk-outline lk-outline-inner lk-hand-${k.hand}`, x: g.x + 5, y: top + 5, width: g.w - 10, height: (g.black ? m.blackH : m.keyH) - 10, rx: 2, fill: "none" }));
+      parts.push(make("rect", { class: `lk-outline lk-hand-${k.hand}`, x: g.x + 1.5, y: top + 1.5, width: Math.max(0, g.w - 3), height: (g.black ? m.blackH : m.keyH) - 3, rx: 3, fill: "none" }));
+      if (left) parts.push(make("rect", { class: `lk-outline lk-outline-inner lk-hand-${k.hand}`, x: g.x + 5, y: top + 5, width: Math.max(0, g.w - 10), height: (g.black ? m.blackH : m.keyH) - 10, rx: 2, fill: "none" }));
       parts.push(
         left
           ? make("rect", { class: `lk-badge lk-badge-L`, x: g.cx - w / 2, y: cy - m.badge / 2, width: w, height: m.badge, rx: 5 })

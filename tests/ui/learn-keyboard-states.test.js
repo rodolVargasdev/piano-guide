@@ -230,3 +230,17 @@ test("a release anywhere on the page ends the note, so a key never stays down wh
   keyboard.dispose();
   assert.deepEqual(docListeners.pointerup, [], "dispose removes the document listener");
 });
+
+test("a region wider than the room (both hands far apart on a phone) never draws a rectangle with a negative size", () => {
+  const { keyboard, svg } = setup({ width: 390 });
+  keyboard.setRegion({ low: 36, high: 91 }); // C2 to G6: more than thirty white keys in 390 px
+  keyboard.setStepKeys([{ midi: 39, finger: 5, hand: "L" }, { midi: 91, finger: 5, hand: "R" }, { midi: 61, finger: 1, hand: "R" }]);
+  keyboard.setHints([61, 63]);
+  const rects = all(svg, (n) => n.tag === "rect");
+  assert.ok(rects.length > 40);
+  for (const r of rects) {
+    for (const name of ["width", "height"]) if (r.attrs[name] !== undefined) assert.ok(Number(r.attrs[name]) >= 0, `${r.attrs.class}: ${name} = ${r.attrs[name]}`);
+  }
+  // Counter-proof of the check: a negative size is detected by the same comparison.
+  assert.ok(!(Number("-2") >= 0));
+});
