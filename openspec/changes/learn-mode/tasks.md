@@ -386,3 +386,30 @@ Each phase was split at a coherent boundary to keep PR slices near the review bu
 | 10 | `feat/learn-mode-pr4a2-fingering` | 4.3, 4.4 | 367 |
 
 Next in the chain: pr5a-phrases-steps, based on `feat/learn-mode-pr4a2-fingering`.
+
+## Batch 2: Milestone A phases 5 to 8 (chain as built, local branches, nothing pushed)
+
+Same rule as batch 1: each phase split at a coherent boundary, each branch based on the previous one (descriptions in `openspec/changes/learn-mode/prs/`). The first branch is based on `feat/learn-mode-pr4a2-fingering`.
+
+| Order | Branch | Tasks | Changed lines excluding openspec docs |
+|-------|--------|-------|---------------------------------------|
+| 11 | `feat/learn-mode-pr5a-phrases` | 5.1, 5.4 | 187 |
+| 12 | `feat/learn-mode-pr5a2-steps-instructions` | 5.2, 5.3, 5.5 | 320 |
+| 13 | `feat/learn-mode-pr6a-matcher-progress` | 6.1, 6.2 | 342 |
+| 14 | `feat/learn-mode-pr6a2-region` | 6.3 | 147 |
+| 15 | `feat/learn-mode-pr6a3-lesson-reducer` | 6.4, 6.5 | 424 (24 over the budget, see its description) |
+| 16 | `feat/learn-mode-pr7a-synth-held` | 7.1 | 196 |
+| 17 | `feat/learn-mode-pr7a2-engine-range` | 7.2 to 7.4 | 419 (19 over the budget, see its description) |
+| 18 | `feat/learn-mode-pr8a-bus` | 8.1 | 170 |
+| 19 | `feat/learn-mode-pr8a2-computer-keys` | 8.2 | 272 |
+| 20 | `feat/learn-mode-pr8a3-midi` | 8.3 | 314 |
+| 21 | `feat/learn-mode-pr8a4-learner-sound` | 8.4, 8.5 | 172 |
+
+Full suite on every branch of the chain: 1004 tests at the base, 1152 at the tip, 0 failures.
+
+Findings recorded for the user:
+
+- Runtime harness of 5.5 on the local private file (counts only, see the pr5a2 description): the first two automatic phrases are left-hand intro phrases without a melody; the first phrase with a right-hand melody is phrase 3, with 11 steps and one hand move. The automatic cuts give uneven phrases (1 to 14 right-hand steps); authoring `learn.phrases` for the private song would even them out. The fingerings and instructions of the real song still need the by-hand review on screen (pr11a).
+- Still user-only and NOT verified here: the Casio MIDI connection (the Web MIDI module is tested only with a fake navigator), the audible check of Listen and of the learner's own presses, and the key legend on a non-US keyboard.
+
+Next in the chain: pr9a-learn-keyboard, based on `feat/learn-mode-pr8a4-learner-sound`.
