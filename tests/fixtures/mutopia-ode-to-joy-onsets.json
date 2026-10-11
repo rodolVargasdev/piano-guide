@@ -1,0 +1,20 @@
+{
+  "_what": "Soprano voice (sop) of Ode to Joy as typeset in Mutopia piece 528 (Mutopia-2009/08/05-528), read from the LilyPond file with a small script that resolves each note to a spelled pitch and an onset tick (480 ticks per quarter). The file writes the notes an octave below sounding pitch and the voice is wrapped in \\transpose c c', so b is B4. G major, 4/4, 16 bars, tempo 4=100. Public Domain by the typesetter's dedication, so no attribution is required; the source is recorded anyway. Each note is tick:pitch:duration.",
+  "source": {
+    "pieceUrl": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=528",
+    "fileUrl": "https://www.mutopiaproject.org/ftp/BeethovenLv/ode/ode.ly",
+    "mutopiaId": "Mutopia-2009/08/05-528",
+    "license": "Public Domain",
+    "licenseUrl": "http://creativecommons.org/licenses/publicdomain",
+    "maintainer": "Peter Chubb",
+    "sha256": "a0c865aa9f71221605362622d281405071e0734540e86ce131131757cc803a71",
+    "bytes": 2907,
+    "accessed": "2026-10-11",
+    "voice": "sop",
+    "key": "G major",
+    "meter": "4/4",
+    "tempo": "4=100",
+    "bars": 16
+  },
+  "notes": "0:B4:480 480:B4:480 960:C5:480 1440:D5:480 1920:D5:480 2400:C5:480 2880:B4:480 3360:A4:480 3840:G4:480 4320:G4:480 4800:A4:480 5280:B4:480 5760:B4:720 6480:A4:240 6720:A4:960 7680:B4:480 8160:B4:480 8640:C5:480 9120:D5:480 9600:D5:480 10080:C5:480 10560:B4:480 11040:A4:480 11520:G4:480 12000:G4:480 12480:A4:480 12960:B4:480 13440:A4:720 14160:G4:240 14400:G4:960 15360:A4:480 15840:A4:480 16320:B4:480 16800:G4:480 17280:A4:480 17760:B4:240 18000:C5:240 18240:B4:480 18720:G4:480 19200:A4:480 19680:B4:240 19920:C5:240 20160:B4:480 20640:A4:480 21120:G4:480 21600:A4:480 22080:D4:960 23040:B4:480 23520:B4:480 24000:C5:480 24480:D5:480 24960:D5:480 25440:C5:480 25920:B4:480 26400:A4:480 26880:G4:480 27360:G4:480 27840:A4:480 28320:B4:480 28800:A4:720 29520:G4:240 29760:G4:960"
+}
