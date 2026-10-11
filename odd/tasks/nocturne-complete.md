@@ -45,12 +45,12 @@ Delivery: a feature-branch-chain of ten branches, each of about 400 authored lin
 - [x] T2 Original level, bars 5 to 34 (app bars 5 to 37), in slices, each pinned by the MIDI onset fixture.
 - [x] T3 Beginner level for the same bars.
 - [x] T4 Lesson, ornaments and analysis for the new sections; lengthTicks, sections and loops.
-- [ ] T5 Browser verification, README and STACK/content-sources update. Orchestrator pushes.
+- [x] T5 Browser verification, README and STACK/content-sources update. Orchestrator pushes.
 
 ## Progress
 - 2026-10-11: branch created from main 9f33fab.
 - 2026-10-11: slice 0 on `feat/nocturne-complete`: the Nocturne tests measure lengthTicks and the MIDI fixture pins the whole piece. About 200 authored lines: tests/songs.test.js +195 and -47, the fixture (4 long lines) and tests/core/timeline.test.js +2 and -1. The 68 song tests pass on the unchanged four-bar file.
-- 2026-10-11: slice 1 on `feat/nocturne-complete-pr1-content-tests`: the tests of the later bars (sections, forms, tuplets, graces, cadenza), each one skipped until the file reaches its bar. About 250 authored test lines, all in tests/songs.test.js; 18 of the 89 song tests are skipped on the four-bar file and run from the slice that reaches their bar.
+- 2026-10-11: slice 1 on `feat/nocturne-complete-pr1-content-tests`: the tests of the later bars (sections, forms, tuplets, graces, cadenza), each one skipped until the file reaches its bar. About 250 authored test lines, all in tests/songs.test.js; 18 tests are skipped on the four-bar file and run from the slice that reaches their bar.
 - 2026-10-11: slice 2 on `feat/nocturne-complete-pr2-bars-5-8`: bars 5 to 8, both levels, with chords, analysis and lesson text. Authored lines (song file, licence note and stack row): +399 and -40.
 - 2026-10-11: slice 3 on `feat/nocturne-complete-pr3-bars-9-12`: bars 9 to 12, both levels, with chords, analysis and lesson text. Authored lines (song file, licence note and stack row): +374 and -24.
 - 2026-10-11: slice 4 on `feat/nocturne-complete-pr4-bars-13-16`: bars 13 to 16, both levels, with chords, analysis and lesson text. Authored lines (song file, licence note and stack row): +324 and -20.
@@ -59,4 +59,7 @@ Delivery: a feature-branch-chain of ten branches, each of about 400 authored lin
 - 2026-10-11: slice 7 on `feat/nocturne-complete-pr7-bars-25-28`: bars 25 to 28, both levels, with chords, analysis and lesson text. Authored lines (song file, licence note and stack row): +353 and -23.
 - 2026-10-11: slice 8 on `feat/nocturne-complete-pr8-bars-29-31`: bars 29 to 31, both levels, with chords, analysis and lesson text. Authored lines (song file, licence note and stack row): +294 and -20.
 - 2026-10-11: slice 9 on `feat/nocturne-complete-pr9-cadenza-end`: the cadenza and the last printed bars (app bars 32 to 37) and the README, both levels, with chords, analysis and lesson text. Authored lines (song file, README, licence note and stack row): +315 and -24.
-
+- 2026-10-11: commits, one per slice, in chain order: 57c76ee (0), d39bc60 (1), 9589641 (2), ae78796 (3), 709f2e0 (4), 05a1843 (5), d0161bb (6), 4cf2a81 (7), b68cc6b (8), a914e98 (9). Each branch starts at the tip of the one before; none was pushed and no pull request exists.
+- Observed checks. Full suite (node --test) at every slice: 0 failures; passes 1694 (0 skipped), 1697 (18), 1702 (13), 1705 (10), 1706 (9), 1708 (7), 1709 (6), 1710 (5), 1711 (4) and 1715 (0 skipped) at the last slice, 1715 tests. Skips are the Nocturne tests that wait for their bar. Docker build of the last slice: exit 0, and the test stage inside the image ran 1715 tests with 1692 passing, 0 failing and 23 skipped (tests of files that the test stage does not copy: tools, songs-private and a .git folder).
+- Observed MIDI match. At every slice the Original onsets of both hands equal the MIDI onsets before lengthTicks, and the grace groups equal the fixture: 406 right-hand groups, 396 left-hand groups and 15 grace notes at the whole piece (the pieces: Original 1259 notes, Beginner 747, 73 pedal ranges, 93 chord entries, 58 analysis entries).
+- Observed in the browser (tools/serve.mjs on port 8791, headless Chrome of its own): both levels draw the whole piece, including the B section (bars 9 and 10) and the cadenza (bars 32 to 35); the sections list has nine entries and each one sets its loop range (for example bar 5 beat 1 to bar 8 beat 4, bar 32 beat 1 to bar 35 beat 4); Learn mode starts with 54 phrases in Beginner and 77 in Original; no console error (the only message is a THREE.WebGLProgram shader warning of the headless renderer). Screenshots were saved as noc-*.png in the session scratch folder and read.
