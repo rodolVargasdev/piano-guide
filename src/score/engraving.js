@@ -1,10 +1,12 @@
-// Engraving rules applied on top of the base layout: stems, beams and rests computed from gaps. Pure, no DOM. Same units as layout.js:
+// Engraving rules applied on top of the base layout: stems, beams, rests computed from gaps,
+// ties, tuplet brackets, grace notes and ornament signs. Pure, no DOM. Same units as layout.js:
 // x in staff spaces, vertical `pos` in half-spaces above the bottom line of the staff.
 
 import { ticksPerBar } from "../core/timing.js";
 
 export const STEM_LENGTH = 7; // half-spaces (3.5 sp)
 const MIDDLE = 4; // pos of the middle line
+const GRACE_DX = 1.5;
 const STUB = 1;
 const REST_VALUES = [2880, 1920, 1440, 960, 720, 480, 360, 240, 180, 120, 60];
 
@@ -134,6 +136,85 @@ export function computedRests(events, tl, shapeOf) {
       cursor = Math.max(cursor, e.tick + e.dur);
     }
     if (cursor < tl.lengthTicks) fill(cursor, tl.lengthTicks);
+  }
+  return out;
+}
+
+/** A tie runs from a note marked `tie: true` to the next note of the same pitch in the same voice. */
+export function placeTies(events, metrics) {
+  const ties = [];
+  for (const list of perVoice(events, (e) => !e.grace && e.kind === "note")) {
+    list.forEach((e, i) => {
+      for (const n of e.notes) {
+        if (!n.tie) continue;
+        const next = list.find((f, j) => j > i && f.tick >= e.tick + e.dur && f.notes.some((m) => m.midi === n.midi));
+        if (!next) continue;
+        const m = next.notes.find((q) => q.midi === n.midi);
+        ties.push({ staff: e.staff, from: e.id, to: next.id, midi: n.midi, x1: e.x + n.dx + metrics.headW / 2, x2: next.x + m.dx - metrics.headW / 2, pos: n.pos, dir: e.dir === "up" ? "down" : "up" });
+      }
+    });
+  }
+  return ties;
+}
+
+/** Brackets for runs of `n` consecutive events sharing a tuplet ratio, on the stem side of the first event. */
+export function placeTuplets(events, metrics) {
+  const out = [];
+  for (const list of perVoice(events, (e) => !e.grace)) {
+    let run = [];
+    const flush = () => {
+      const n = run[0]?.tuplet.n;
+      for (let i = 0; n && i + n <= run.length; i += n) {
+        const group = run.slice(i, i + n);
+        const dir = group[0].dir ?? "up";
+        const reach = group.map((e) => (e.kind === "rest" ? MIDDLE : (e.stem?.toPos ?? (dir === "up" ? e.notes[e.notes.length - 1].pos : e.notes[0].pos))));
+        out.push({ staff: group[0].staff, voice: group[0].voice, n, inSpaceOf: group[0].tuplet.inSpaceOf, dir, x1: group[0].x - metrics.headW / 2, x2: group[n - 1].x + metrics.headW / 2, pos: dir === "up" ? Math.max(...reach) + 1.5 : Math.min(...reach) - 1.5, beamed: group.every((e) => e.stem?.beamed === true) });
+      }
+      run = [];
+    };
+    for (const e of list) {
+      const same = run.length > 0 && run[0].tuplet.n === e.tuplet?.n && run[0].tuplet.inSpaceOf === e.tuplet?.inSpaceOf;
+      if (e.tuplet && (run.length === 0 || same)) run.push(e);
+      else {
+        flush();
+        if (e.tuplet) run.push(e);
+      }
+    }
+    flush();
+  }
+  return out;
+}
+
+/** Grace notes keep their written tick; they are small and drawn just before the main note. */
+export function placeGraces(events) {
+  const groups = new Map();
+  for (const e of events) {
+    if (!e.grace) continue;
+    e.small = true;
+    const k = `${e.staff}|${e.tick}`;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(e);
+  }
+  for (const list of groups.values()) list.forEach((e, i) => (e.x -= (list.length - i) * GRACE_DX));
+}
+
+/**
+ * Ornament signs above the note (or above its stem). A `fioritura` bracket also spans the
+ * following notes of the same voice whose `role` is "ornament".
+ */
+export function placeOrnaments(events, metrics) {
+  const out = [];
+  for (const list of perVoice(events, (e) => e.kind === "note")) {
+    list.forEach((e, i) => {
+      const n = e.notes.find((q) => q.ornament);
+      if (!n) return;
+      let x2 = e.x + metrics.headW / 2;
+      if (n.ornament === "fioritura") {
+        for (let j = i + 1; j < list.length && list[j].notes.every((q) => q.role === "ornament"); j += 1) x2 = list[j].x + metrics.headW / 2;
+      }
+      const top = e.dir === "up" && e.stem ? e.stem.toPos : e.notes[e.notes.length - 1].pos;
+      out.push({ kind: n.ornament, staff: e.staff, event: e.id, x: e.x, x1: e.x - metrics.headW / 2, x2, pos: Math.max(8, top) + 3 });
+    });
   }
   return out;
 }

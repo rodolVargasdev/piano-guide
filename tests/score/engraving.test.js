@@ -101,3 +101,45 @@ test("a pickup bar with a gap is rested only up to the barline", () => {
   const l = layoutScore(timelineOf([R(0, 240, "C5"), R(480, 1920, "D5")], { strictBars: false, pickupTicks: 480, lengthTicks: 2400 }));
   assert.deepEqual(l.events.filter((e) => e.kind === "rest").map((r) => [r.tick, r.dur, r.base]), [[240, 240, "eighth"]]);
 });
+
+test("a tie joins a note to the next note of the same pitch, and a tie to nowhere is dropped", () => {
+  const l = layoutScore(timelineOf([R(0, 960, "C5", { tie: true }), R(960, 960, "C5")]));
+  assert.equal(l.ties.length, 1);
+  assert.equal(l.ties[0].from, 0);
+  assert.equal(l.ties[0].to, 1);
+  assert.ok(l.ties[0].x2 > l.ties[0].x1);
+  assert.equal(l.ties[0].dir, "up", "a stem-down note ties above");
+  const low = layoutScore(timelineOf([R(0, 960, "E4", { tie: true }), R(960, 960, "E4")]));
+  assert.equal(low.ties[0].dir, "down", "a stem-up note ties below");
+  const none = layoutScore(timelineOf([R(0, 960, "C5", { tie: true }), R(960, 960, "D5")]));
+  assert.equal(none.ties.length, 0);
+});
+
+test("a tuplet bracket groups n events and carries the ratio", () => {
+  const t = { n: 3, inSpaceOf: 2 };
+  const l = layoutScore(timelineOf([R(0, 160, "C5", { tuplet: t }), R(160, 160, "D5", { tuplet: t }), R(320, 160, "E5", { tuplet: t }), R(480, 1440, "C5")]));
+  assert.equal(l.tuplets.length, 1);
+  assert.deepEqual([l.tuplets[0].n, l.tuplets[0].inSpaceOf, l.tuplets[0].dir], [3, 2, "down"]);
+  assert.equal(l.events[0].base, "eighth", "the written value, not the shortened one");
+  const incomplete = layoutScore(timelineOf([R(0, 160, "C5", { tuplet: t }), R(160, 160, "D5", { tuplet: t }), R(480, 1440, "C5")]));
+  assert.equal(incomplete.tuplets.length, 0, "counter-proof: two of three is not a closed bracket");
+});
+
+test("grace notes are small, keep their written tick and sit before the main note", () => {
+  const l = layoutScore(timelineOf([R(480, 60, "D5", { grace: true }), R(480, 960, "C5")]));
+  const [grace, main] = l.events;
+  assert.equal(grace.small, true);
+  assert.equal(grace.tick, 480);
+  assert.ok(grace.x < main.x);
+  assert.equal(main.small, undefined);
+});
+
+test("ornament signs sit above the note, and a fioritura spans the ornament-role notes after it", () => {
+  const l = layoutScore(timelineOf([R(0, 480, "C5", { ornament: "turn" }), R(480, 480, "E4", { ornament: "fioritura" }), R(960, 240, "F4", { role: "ornament" }), R(1200, 240, "G4", { role: "ornament" }), R(1440, 480, "C5")]));
+  assert.deepEqual(l.ornaments.map((o) => o.kind), ["turn", "fioritura"]);
+  assert.ok(l.ornaments[0].pos >= 11, "above the staff");
+  const f = l.ornaments[1];
+  assert.equal(f.x2, l.events[3].x + l.metrics.headW / 2, "the bracket ends at the last ornament note, not at the next ordinary note");
+  const single = layoutScore(timelineOf([R(0, 1920, "C5", { ornament: "fioritura" })])).ornaments[0];
+  assert.ok(single.x2 - single.x1 < 2, "contra-case: no ornament-role notes, the bracket stays on its note");
+});

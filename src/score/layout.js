@@ -8,7 +8,7 @@
 
 import { parsePitch, keyFifths } from "../core/pitch.js";
 import { ticksPerBar } from "../core/timing.js";
-import { placeStems, placeBeams, computedRests } from "./engraving.js";
+import { placeStems, placeBeams, computedRests, placeTies, placeTuplets, placeGraces, placeOrnaments } from "./engraving.js";
 
 const LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
 // Diatonic step of the bottom line: E4 for the treble clef, G2 for the bass clef.
@@ -180,7 +180,7 @@ function placeLedgers(events) {
 /**
  * Lays out a resolved timeline (see core/timeline.resolveLevel; `key` is required for the
  * signature). Returns { notation, metrics, keySignature, meter, measures, anchors, tickToX,
- * events, beams, width }. Each event is one chord or rest of one
+ * events, beams, ties, tuplets, ornaments, width }. Each event is one chord or rest of one
  * hand and voice with its x (staff spaces), stem, ledger lines and notes (pos, accidental).
  * `anchors` is the complete tick to x table: every onset, bar start, chord, analysis entry,
  * tick 0 and the end.
@@ -216,8 +216,12 @@ export function layoutScore(tl, { notation = tl.notation } = {}) {
   placeLedgers(events);
   placeStems(events, metrics);
   for (const e of events) e.x = tickToX(e.tick);
+  placeGraces(events);
   const beams = placeBeams(events, tl, metrics);
+  const ties = placeTies(events, metrics);
+  const tuplets = placeTuplets(events, metrics);
+  const ornaments = placeOrnaments(events, metrics);
   for (const m of measures) m.x = tickToX(m.startTick) - BAR_OFFSET;
 
-  return { notation, metrics, keySignature: sig, meter: tl.meter, measures, anchors, tickToX, events, beams, width: x };
+  return { notation, metrics, keySignature: sig, meter: tl.meter, measures, anchors, tickToX, events, beams, ties, tuplets, ornaments, width: x };
 }
