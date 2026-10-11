@@ -11,7 +11,7 @@ test("the catalog is the route for empty, # and #/", () => {
 });
 
 test("#/song/<id> gives the song route with defaults", () => {
-  assert.deepEqual(parseHash("#/song/cancer"), { route: "song", ...DEFAULTS, songId: "cancer" });
+  assert.deepEqual(parseHash("#/song/example-song"), { route: "song", ...DEFAULTS, songId: "example-song" });
 });
 
 test("query parameters level, names and view are read", () => {
@@ -25,12 +25,12 @@ test("query parameters level, names and view are read", () => {
 });
 
 test("invalid parameter values fall back to defaults", () => {
-  const r = parseHash("#/song/cancer?level=Be%20Ginner&names=numbers&view=3d");
-  assert.deepEqual(r, { route: "song", ...DEFAULTS, songId: "cancer" });
+  const r = parseHash("#/song/example-song?level=Be%20Ginner&names=numbers&view=3d");
+  assert.deepEqual(r, { route: "song", ...DEFAULTS, songId: "example-song" });
 });
 
 test("unknown routes and malformed song paths are unknown", () => {
-  for (const h of ["#/nope", "#/song", "#/song/", "#/song/a/b", "#/songs/cancer", "#song/cancer"]) {
+  for (const h of ["#/nope", "#/song", "#/song/", "#/song/a/b", "#/songs/example-song", "#song/example-song"]) {
     assert.equal(parseHash(h).route, "unknown", h);
   }
 });
@@ -52,16 +52,16 @@ test("malformed percent-encoding does not throw", () => {
 });
 
 test("counter-proof: well-formed ids are accepted by isSongId", () => {
-  assert.equal(isSongId("cancer"), true);
+  assert.equal(isSongId("example-song"), true);
   assert.equal(isSongId("chopin-nocturne-op9-no2"), true);
   assert.equal(isSongId(""), false);
-  assert.equal(isSongId("Cancer"), false);
+  assert.equal(isSongId("Example-Song"), false);
   assert.equal(isSongId(null), false);
 });
 
 test("a second question mark in the hash does not leak into the id", () => {
-  const r = parseHash("#/song/cancer?level=beginner?x");
-  assert.equal(r.songId, "cancer");
+  const r = parseHash("#/song/example-song?level=beginner?x");
+  assert.equal(r.songId, "example-song");
 });
 
 test("#/learn/<id> is the Learn route, with an optional level", () => {

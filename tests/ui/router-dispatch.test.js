@@ -41,15 +41,15 @@ test("the previous view is disposed BEFORE the next one is mounted", () => {
   const log = [];
   const h = harness(recordingViews(log));
   h.router.start();
-  h.go("#/song/cancer");
-  assert.deepEqual(log, ["mount catalog", "dispose catalog", "mount song:cancer"]);
+  h.go("#/song/example-song");
+  assert.deepEqual(log, ["mount catalog", "dispose catalog", "mount song:example-song"]);
 });
 
 test("going back (a hash change to the catalog) disposes the player first", () => {
   const log = [];
   const h = harness(recordingViews(log));
   h.router.start();
-  h.go("#/song/cancer");
+  h.go("#/song/example-song");
   log.length = 0;
   h.go("#/");
   assert.deepEqual(log, ["dispose song", "mount catalog"]);
@@ -70,7 +70,7 @@ test("stop disposes the current view and removes the listener (counter-proof: no
   h.router.stop();
   assert.deepEqual(log, ["mount catalog", "dispose catalog"]);
   assert.equal(h.listeners.size, 0);
-  h.go("#/song/cancer");
+  h.go("#/song/example-song");
   assert.equal(log.length, 2);
 });
 
@@ -90,12 +90,12 @@ test("lazyView shows loading, loads once the view is opened, then mounts the rea
     log.push(`mount ${route.songId} ${mount === root}`);
     return { dispose: () => log.push("dispose") };
   }, { show: (r, kind) => log.push(kind) });
-  const handle = view({ songId: "cancer" }, root);
+  const handle = view({ songId: "example-song" }, root);
   assert.deepEqual(log, ["loading"], "nothing is loaded before the view is opened, and the message shows at once");
   await tick();
-  assert.deepEqual(log, ["loading", "mount cancer true"]);
+  assert.deepEqual(log, ["loading", "mount example-song true"]);
   handle.dispose();
-  assert.deepEqual(log, ["loading", "mount cancer true", "dispose"]);
+  assert.deepEqual(log, ["loading", "mount example-song true", "dispose"]);
 });
 
 test("lazyView: leaving before the module arrives mounts nothing", async () => {
@@ -137,10 +137,10 @@ test("lazyView wired in the router: the previous view is disposed before the laz
   }, { show: () => {} });
   const h = harness(views);
   h.router.start();
-  h.go("#/song/cancer");
+  h.go("#/song/example-song");
   await tick();
   h.go("#/");
-  assert.deepEqual(log, ["mount catalog", "dispose catalog", "mount lazy:cancer", "dispose lazy", "mount catalog"]);
+  assert.deepEqual(log, ["mount catalog", "dispose catalog", "mount lazy:example-song", "dispose lazy", "mount catalog"]);
 });
 
 test("the learn route reaches its own view with the raw id, and a route with no view falls to unknown", () => {

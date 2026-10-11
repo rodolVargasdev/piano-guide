@@ -18,7 +18,7 @@ function timelineOf(notes, { notation = "labelled", meter = M44, tempo = { bpm: 
 function mount(tl, size = [1000, 330], opts = {}) {
   const doc = fakeDoc();
   const slot = fakeSlot(doc, ...size);
-  const score = createScore(slot, { timeline: tl, title: "Cancer", doc, ...opts });
+  const score = createScore(slot, { timeline: tl, title: "Example Song", doc, ...opts });
   return { doc, slot, score, svg: () => slot.children[0], scroll: () => all(slot, (n) => n.tag === "g" && n.attrs.transform)[0] };
 }
 const bars = (slot) => all(slot, (n) => n.attrs["data-bar"] !== undefined).map((n) => Number(n.attrs["data-bar"]));
@@ -52,7 +52,7 @@ test("the SVG has role img with a title naming the song and level and a descript
   const { svg } = mount(timelineOf([R(0, 1920, "E4")], { lengthTicks: 1920 }));
   assert.equal(svg().attrs.role, "img");
   assert.equal(svg().children[0].tag, "title");
-  assert.equal(svg().children[0].textContent, "Cancer, Beginner score");
+  assert.equal(svg().children[0].textContent, "Example Song, Beginner score");
   assert.equal(svg().children[1].tag, "desc");
   assert.equal(svg().children[1].textContent, "E major, 4/4, 72 quarter beats per minute, 1 bar.");
   assert.ok(scoreText("X", timelineOf([R(0, 480, "E4")], { pickupTicks: 480, lengthTicks: 2400 })).desc.endsWith("after a pickup."));
@@ -60,8 +60,8 @@ test("the SVG has role img with a title naming the song and level and a descript
 
 test("setTimeline updates the title and description for the new level", () => {
   const { svg, score } = mount(timelineOf([R(0, 1920, "E4")], { lengthTicks: 1920 }));
-  score.setTimeline({ ...timelineOf([R(0, 1920, "E4")], { notation: "engraved", lengthTicks: 1920 }), label: "Original" }, { title: "Cancer" });
-  assert.equal(svg().children[0].textContent, "Cancer, Original score");
+  score.setTimeline({ ...timelineOf([R(0, 1920, "E4")], { notation: "engraved", lengthTicks: 1920 }), label: "Original" }, { title: "Example Song" });
+  assert.equal(svg().children[0].textContent, "Example Song, Original score");
   assert.equal(svg().attrs.class, "score-svg score-engraved");
 });
 

@@ -51,10 +51,10 @@ test("counter-proof: with a different pickup the same bar and beat is a differen
 });
 
 test("updateHash writes level, names and view, keeps other parameters and encodes values", () => {
-  assert.equal(updateHash("#/song/cancer", { level: "original" }), "#/song/cancer?level=original");
-  assert.equal(updateHash("#/song/cancer?level=beginner&debug=1", { level: "original", names: "letters" }), "#/song/cancer?level=original&debug=1&names=letters");
-  assert.equal(updateHash("#/song/cancer?view=both", { view: "score" }), "#/song/cancer?view=score");
-  assert.equal(updateHash("#/song/cancer", { names: "a&b=c" }), "#/song/cancer?names=a%26b%3Dc", "a hostile value cannot add a parameter");
+  assert.equal(updateHash("#/song/example-song", { level: "original" }), "#/song/example-song?level=original");
+  assert.equal(updateHash("#/song/example-song?level=beginner&debug=1", { level: "original", names: "letters" }), "#/song/example-song?level=original&debug=1&names=letters");
+  assert.equal(updateHash("#/song/example-song?view=both", { view: "score" }), "#/song/example-song?view=score");
+  assert.equal(updateHash("#/song/example-song", { names: "a&b=c" }), "#/song/example-song?names=a%26b%3Dc", "a hostile value cannot add a parameter");
   assert.equal(updateHash("", {}), "#");
 });
 
@@ -75,15 +75,15 @@ function fakeStorage(initial = {}, fail = false) {
 
 test("session memory is per song and survives a blocked or missing storage", () => {
   const s = fakeStorage();
-  assert.equal(readRemembered(s, "cancer"), null);
-  assert.equal(remember(s, "cancer", "original"), true);
-  assert.equal(s.data[levelKey("cancer")], "original");
-  assert.equal(levelKey("cancer"), "piano-guide:level:cancer");
-  assert.equal(readRemembered(s, "cancer"), "original");
+  assert.equal(readRemembered(s, "example-song"), null);
+  assert.equal(remember(s, "example-song", "original"), true);
+  assert.equal(s.data[levelKey("example-song")], "original");
+  assert.equal(levelKey("example-song"), "piano-guide:level:example-song");
+  assert.equal(readRemembered(s, "example-song"), "original");
   assert.equal(readRemembered(s, "chopin-nocturne-op9-no2"), null, "another song is unaffected");
-  assert.equal(readRemembered(fakeStorage({}, true), "cancer"), null, "a throwing storage reads as nothing");
-  assert.equal(remember(fakeStorage({}, true), "cancer", "original"), false);
-  assert.equal(readRemembered(undefined, "cancer"), null);
+  assert.equal(readRemembered(fakeStorage({}, true), "example-song"), null, "a throwing storage reads as nothing");
+  assert.equal(remember(fakeStorage({}, true), "example-song", "original"), false);
+  assert.equal(readRemembered(undefined, "example-song"), null);
 });
 
 // ---- the selector controls, run against the small fake DOM ----
