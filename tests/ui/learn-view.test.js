@@ -96,7 +96,7 @@ test("a private song: Start goes straight to My turn, there is no Listen anywher
   const v = await open({ song: privateSong() });
   assert.equal(v.text("learn-instruction").startsWith("Press Start."), true);
   assert.match(v.text("learn-sub"), /The app does not play this song/);
-  assert.deepEqual(v.actions(), ["START"]);
+  assert.deepEqual(v.actions(), ["START", "LESSON_ZERO"]);
   v.click("START");
   assert.equal(v.phase(), "yourTurn");
   assert.equal(v.text("learn-instruction"), "Right hand: thumb on C (Do).");
@@ -219,13 +219,13 @@ test("progress is saved and the next visit offers Continue at that phrase, with 
   first.click("NEXT_PHRASE");
   first.handle.dispose();
   const second = await open({ song: privateSong(), storage });
-  assert.deepEqual(second.actions(), ["CONTINUE", "START", "RESET"]);
+  assert.deepEqual(second.actions(), ["CONTINUE", "START", "LESSON_ZERO", "RESET"]);
   second.click("CONTINUE");
   assert.equal(second.text("learn-progress"), "Phrase 2 of 2. Step 1 of 1");
   second.handle.dispose();
   const third = await open({ song: privateSong(), storage });
   third.click("RESET");
-  assert.deepEqual(third.actions(), ["START"], "after Reset progress it is a fresh start");
+  assert.deepEqual(third.actions(), ["START", "LESSON_ZERO"], "after Reset progress it is a fresh start");
 });
 
 test("typing in a text box plays nothing; a Ctrl combination plays nothing; a mapped key plays and a blur releases it", async () => {
@@ -293,4 +293,95 @@ test("static guard: the Learn view and screen never call playNotes, and only the
   assert.equal(uses(read("learn-screen.js"), "playRange") + uses(read("learn-screen.js"), "playNotes"), 0);
   assert.equal(uses(read("learn-view.js"), "playRange"), 1, "one call site: the listen effect");
   assert.equal(uses("engine.playNotes(x)", "playNotes"), 1, "counter-proof: the scan sees a call");
+});
+
+// ---- lesson zero in the view (pr1b2) ------------------------------------------------------------------------
+
+const hintedKeys = (v) => v.root && all(v.root, (n) => n.tag === "rect" && hasClass(n, "lk-hint")).map((n) => Number(n.attrs["data-midi"]));
+const imageSrc = (v) => all(v.root, (n) => n.tag === "img").map((n) => n.attrs.src);
+const listLines = (v) => all(v.root, (n) => n.tag === "li").map(textOfNode);
+
+test("lesson zero: find any C by the black keys, posture, five fingers, inputs, then it is saved as done and the first screen no longer offers it", async () => {
+  const storage = memory();
+  const v = await open({ storage });
+  assert.deepEqual(v.actions(), ["START", "LESSON_ZERO"]);
+  assert.match(v.text("learn-sub"), /New to the piano\? Try lesson zero first/);
+  v.click("LESSON_ZERO");
+  assert.equal(v.phase(), "lessonZero");
+  assert.equal(v.text("learn-instruction"), "Find a C: it is the white key just left of the two black keys.");
+  assert.deepEqual(v.actions(), ["ZERO_SKIP"]);
+  assert.deepEqual(hintedKeys(v), [49, 51, 61, 63], "the groups of two black keys are outlined");
+  assert.deepEqual(v.expected(), [], "nothing is shaded: the learner finds the C");
+  assert.equal(v.text("learn-progress"), "Lesson zero, part 1 of 4");
+  v.press(62); // D4 is not a C
+  assert.equal(v.text("learn-chip"), "Try again");
+  assert.match(v.text("learn-chip-detail"), /Look for a group of 2 black keys/);
+  v.press(48); // a different C than the one nearest the middle still counts
+  assert.equal(v.text("learn-chip"), "Correct");
+  assert.equal(v.text("learn-instruction"), "Sit tall and curve your fingers.");
+  assert.deepEqual(imageSrc(v), ["assets/img/posture.svg"]);
+  assert.deepEqual(v.actions(), ["ZERO_NEXT", "ZERO_SKIP"]);
+  v.click("ZERO_NEXT");
+  assert.deepEqual(imageSrc(v), [], "the drawing is only on the posture part");
+  assert.equal(v.text("learn-instruction"), "Right hand: thumb on C (Do).");
+  assert.deepEqual(v.expected(), [60]);
+  assert.equal(v.text("learn-progress"), "Lesson zero, part 3 of 4. Finger 1 of 5");
+  for (const midi of [60, 62, 64, 65, 67]) v.press(midi);
+  assert.equal(v.text("learn-instruction"), "You can play in three ways.");
+  assert.equal(listLines(v).length, 4);
+  assert.match(listLines(v)[2], /USB TO HOST/);
+  assert.deepEqual(v.actions(), ["ZERO_NEXT"], "the last part has no skip, only Done");
+  v.click("ZERO_NEXT");
+  assert.equal(v.phase(), "start");
+  assert.deepEqual(v.actions(), ["START"], "done: the first screen no longer offers it");
+  assert.equal(JSON.parse(storage.data["piano-guide:learn:v1"]).lessonZero, "done");
+  v.handle.dispose();
+  assert.deepEqual((await open({ storage })).actions(), ["START"], "and it does not come back after a reload");
+});
+
+test("lesson zero: the five finger steps wait for the right key and say Try again for another one (counter-proof)", async () => {
+  const v = await open();
+  v.click("LESSON_ZERO");
+  v.press(60);
+  v.click("ZERO_NEXT");
+  v.press(64); // E4 before C4
+  assert.equal(v.text("learn-chip"), "Try again");
+  assert.match(v.text("learn-chip-detail"), /Use the shaded key/);
+  assert.deepEqual(v.expected(), [60], "the finger 1 key stays shaded");
+  assert.equal(v.text("learn-progress"), "Lesson zero, part 3 of 4. Finger 1 of 5");
+});
+
+test("lesson zero: Skip saves it as skipped, goes back to the first screen and keeps offering it without the long offer text", async () => {
+  const storage = memory();
+  const v = await open({ storage });
+  v.click("LESSON_ZERO");
+  v.click("ZERO_SKIP");
+  assert.equal(v.phase(), "start");
+  assert.equal(JSON.parse(storage.data["piano-guide:learn:v1"]).lessonZero, "skipped");
+  assert.deepEqual(v.actions(), ["START", "LESSON_ZERO"]);
+  assert.equal(v.text("learn-sub"), "", "the offer sentence is only for someone who never opened it");
+  v.click("START");
+  assert.equal(v.phase(), "phraseIntro", "the song starts normally after a skip");
+});
+
+test("lesson zero: Spanish text, and no hand, key or level selector while it is open", async () => {
+  const v = await open({ lang: "es" });
+  v.click("LESSON_ZERO");
+  assert.equal(v.text("learn-instruction"), "Busque un Do: es la tecla blanca justo a la izquierda de las dos teclas negras.");
+  assert.equal(v.text("learn-progress"), "Lección cero, parte 1 de 4");
+  assert.equal(v.segment("learn-hands"), undefined);
+  assert.equal(v.segment("learn-keys"), undefined);
+  v.press(60);
+  v.click("ZERO_NEXT");
+  assert.equal(v.text("learn-instruction"), "Mano derecha: pulgar en Do (C).");
+});
+
+test("lesson zero: a language switch in the middle keeps the part", async () => {
+  const v = await open();
+  v.click("LESSON_ZERO");
+  v.press(60);
+  v.i18n.setLang("es");
+  await later();
+  assert.equal(v.text("learn-instruction"), "Siéntese derecho y curve los dedos.");
+  assert.equal(v.phase(), "lessonZero");
 });

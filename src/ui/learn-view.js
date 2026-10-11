@@ -11,7 +11,8 @@ import { createLearnerSound } from "../input/learner-sound.js";
 import { createMidiInput } from "../input/midi.js";
 import { handHasNotes, initLesson, reduce } from "../learn/lesson.js";
 import { positionKeys } from "../learn/position.js";
-import { clearSong, positionOf, readProgress, withPosition, withTranspose, writeProgress } from "../learn/progress.js";
+import { zeroKeyboard } from "../learn/lesson-zero.js";
+import { clearSong, positionOf, readProgress, withLessonZero, withPosition, withTranspose, writeProgress } from "../learn/progress.js";
 import { learnRegion } from "../learn/region.js";
 import { canLearn, loadCatalog } from "./catalog.js";
 import { el } from "./dom.js";
@@ -96,10 +97,11 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
       const progressLine = el("p", { class: "learn-progress meta" });
       const instruction = el("p", { class: "learn-instruction" });
       const sub = el("p", { class: "learn-sub meta" });
+      const extra = el("div", { class: "learn-extra" });
       const chip = el("span", { class: "learn-chip", hidden: true });
       const detail = el("span", { class: "learn-chip-detail meta" });
       const actions = el("div", { class: "learn-actions" });
-      const card = el("section", { class: "learn-card" }, progressLine, instruction, sub, el("div", { class: "learn-feedback" }, chip, detail), actions);
+      const card = el("section", { class: "learn-card" }, progressLine, instruction, sub, extra, el("div", { class: "learn-feedback" }, chip, detail), actions);
       const keyboardMount = el("div", { class: "learn-keyboard-slot" });
       const langSelect = createLanguageSelect({ i18n });
       const midi = createMidiInput({ navigator: win.navigator, isSecureContext: win.isSecureContext, bus, onState: (st) => panel?.setMidiState(st) });
@@ -124,7 +126,33 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
         return { avail, maxWhite: Math.min(15, Math.floor(avail / minPx)), h };
       };
 
+      // Lesson zero draws its own keyboard: no song, no key context, hints on the black keys.
+      function paintZeroKeyboard() {
+        const z = zeroKeyboard(state.zero);
+        const { avail, h } = sizes();
+        if (contextSig !== "zero") {
+          contextSig = "zero";
+          keyboard.setKeyContext(null);
+          keyboard.setSpellings([]);
+        }
+        const kbTop = keyboardMount.getBoundingClientRect?.().top ?? 0;
+        const below = (panel.element.offsetHeight ?? 0) + 16;
+        keyboard.fit({ width: avail, height: Math.max(140, h - kbTop - below) });
+        if (!region || region.low !== z.region.low || region.high !== z.region.high) {
+          region = { low: z.region.low, high: z.region.high };
+          keyboard.setRegion(region);
+        }
+        keyboard.setHints(z.hints);
+        keyboard.setStepKeys(z.stepKeys);
+        keyboard.setPositionKeys(z.positionKeys);
+        keyMap = keyMapFor(region, 60);
+        keyboard.setLetters(new Map([...keyMap].map(([code, m]) => [m, legend.get(code) ?? ""])));
+        panel.setComputerKeys(true);
+      }
+
       function paintKeyboard() {
+        if (state.phase === "lessonZero") return paintZeroKeyboard();
+        keyboard.setHints([]);
         const s = state;
         const step = s.phase === "yourTurn" ? s.steps[s.stepIndex] : null;
         const first = step ?? s.steps[0];
@@ -157,10 +185,11 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
       let correctTimer = null;
       let correctHidden = false;
       function paintCard() {
-        const model = screenModel(state, { i18n, hasSaved: Boolean(positionOf(progress, song.id, levelId, state.keyTonic)), showProgressReset: Boolean(progress.songs[song.id]) });
+        const model = screenModel(state, { i18n, hasSaved: Boolean(positionOf(progress, song.id, levelId, state.keyTonic)), showProgressReset: Boolean(progress.songs[song.id]), lessonZero: progress.lessonZero });
         progressLine.textContent = model.progress;
         instruction.textContent = model.heading;
         sub.textContent = model.sub;
+        extra.replaceChildren(...(model.image ? [el("img", { class: "lz-posture", src: model.image.src, alt: model.image.alt })] : []), ...(model.items?.length ? [el("ul", { class: "lz-items" }, model.items.map((line) => el("li", {}, line)))] : []));
         const showChip = model.chip && !(model.chip.kind === "correct" && correctHidden);
         chip.hidden = !showChip;
         chip.textContent = showChip ? model.chip.text : "";
@@ -187,7 +216,11 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
         return b;
       };
       function paintTop() {
-        const parts = [el("a", { class: "button button-secondary learn-back", href: "#/" }, t("common.catalog")), el("h2", { class: "learn-title" }, song.title)];
+        const parts = [el("a", { class: "button button-secondary learn-back", href: "#/" }, t("common.catalog")), el("h2", { class: "learn-title" }, state.phase === "lessonZero" ? t("learn.lessonZero") : song.title)];
+        if (state.phase === "lessonZero") {
+          parts.push(langSelect.element);
+          return top.replaceChildren(...parts);
+        }
         const hands = ["R", "L"].filter((h) => handHasNotes(state.timeline, h));
         if (hands.length > 1) parts.push(el("div", { class: "seg learn-hands", role: "group", "aria-label": t("learn.hand") }, hands.map((h) => segment(t(`hand.${h}`), state.hand === h, () => dispatch({ type: "SET_HAND", hand: h })))));
         const tonics = [song.key.tonic, ...(learnBlock().transposeTo ?? [])];
@@ -240,6 +273,17 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
         writeProgress(storage, progress);
       }
       function announce(e, prev) {
+        if (prev.phase === "lessonZero" && e.kind === "correct") {
+          keyboard.flashCorrect([e.midi]);
+          keyboard.announce(`${t("common.correct")}. ${screenModel(state, { i18n }).heading}`);
+          correctHidden = false;
+          win.clearTimeout?.(correctTimer);
+          correctTimer = win.setTimeout?.(() => {
+            correctHidden = true;
+            paintCard();
+          }, 700);
+          return;
+        }
         if (e.kind === "wrong" || e.kind === "octave") {
           keyboard.flashWrong(e.midi);
           keyboard.announce(`${t("common.tryAgain")}. ${t(e.kind === "octave" ? "learn.octave" : "learn.useShaded")}`);
@@ -263,6 +307,9 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
             listenToken += 1;
             stopFrames();
             engine.stopRange?.();
+          } else if (e.type === "lessonZero") {
+            progress = withLessonZero(progress, e.value);
+            writeProgress(storage, progress);
           } else if (e.type === "save") save(e);
           else if (e.type === "announce") announce(e, prev);
           else if (e.type === "releaseAll") bus.releaseAll();

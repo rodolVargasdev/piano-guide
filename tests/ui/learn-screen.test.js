@@ -16,18 +16,18 @@ const ids = (m) => m.actions.map((a) => a.id);
 const sentences = (text) => text.split(/(?<=[.!?])\s+/).filter(Boolean);
 
 test("start: one plain instruction and one action; with saved progress Continue is first and Start over second", () => {
-  const m = screenModel(lesson(), { i18n: i18nFor() });
+  const m = screenModel(lesson(), { i18n: i18nFor(), lessonZero: "done" });
   assert.equal(m.heading, "Press Start. The screen tells you which finger goes on which key, one step at a time.");
   assert.deepEqual(ids(m), ["START"]);
   assert.equal(m.sub, "", "a public song says nothing about silence");
-  const saved = screenModel(lesson(), { i18n: i18nFor(), hasSaved: true });
+  const saved = screenModel(lesson(), { i18n: i18nFor(), hasSaved: true, lessonZero: "done" });
   assert.deepEqual(saved.actions.map((a) => [a.id, a.primary]), [["CONTINUE", true], ["START", false]]);
   assert.deepEqual(saved.actions.map((a) => a.label), ["Continue", "Start over"]);
 });
 
 test("a private song says at the start that the app does not play it, and is never offered Listen in any phase", () => {
   let s = lesson({}, { visibility: "private" });
-  assert.equal(screenModel(s, { i18n: i18nFor() }).sub, "The app does not play this song. It only tells you what to play.");
+  assert.equal(screenModel(s, { i18n: i18nFor(), lessonZero: "done" }).sub, "The app does not play this song. It only tells you what to play.");
   const seen = new Set();
   for (const a of ["START", "NOTE_ON:60", "NOTE_ON:62", "NOTE_ON:60", "NOTE_ON:64", "NOTE_ON:67", "NEXT_PHRASE", "REPEAT"]) {
     s = a.startsWith("NOTE_ON") ? reduce(s, { type: "NOTE_ON", midi: Number(a.split(":")[1]) }).state : step(s, a);

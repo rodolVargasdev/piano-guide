@@ -959,6 +959,17 @@ body {
   fill: #1d4ed8;
 }
 
+.lk-black.lk-hint {
+  fill: #0f766e;
+}
+
+.lk-hint-outline {
+  fill: none;
+  stroke: #5eead4;
+  stroke-width: 3;
+  stroke-dasharray: 7 4;
+}
+
 .lk-white.lk-pressed {
   fill: #d6cfba;
 }
@@ -1198,6 +1209,23 @@ body[data-route="learn"] header .language-select {
   justify-content: center;
 }
 
+.lz-posture {
+  width: min(100%, 16rem);
+  height: auto;
+  max-height: 9rem;
+  border-radius: 0.5rem;
+  background: #f4efe2;
+}
+
+.lz-items {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.lz-items li {
+  margin: 0.125rem 0;
+}
+
 .input-panel {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--line);
@@ -1293,6 +1321,10 @@ body[data-route="learn"] header .language-select {
 
   .learn-card[data-phase="yourTurn"] .learn-sub {
     display: none;
+  }
+
+  .lz-posture {
+    max-height: 5rem;
   }
 
   .learn-feedback {
