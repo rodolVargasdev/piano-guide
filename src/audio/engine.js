@@ -1,16 +1,17 @@
 // Playback engine: the single owner of musical time. The Web Audio clock is the only clock;
 // views read engine.position() once per frame and never keep time of their own.
 //
-// A 25 ms timer schedules every note that falls inside a short look-ahead window, using the
-// pure helpers in core/schedule and core/timing. A transport anchor (ctx time, abs tick,
-// ticks per second) maps ticks to audio time; seek re-anchors and re-queues everything that
-// has not started yet in the same call, so there are no stuck or doubled notes.
+// A 25 ms timer schedules every note and click that falls inside a short look-ahead window,
+// using the pure helpers in core/schedule and core/timing. A transport anchor
+// (ctx time, abs tick, ticks per second) maps ticks to audio time; BPM change and seek
+// re-anchor and re-queue everything that has not started yet in the same call.
 
 import { makeAnchor, tickAt, timeAt, windowEvents } from "../core/schedule.js";
-import { barBeatOf, ticksPerSecond, ticksToSeconds } from "../core/timing.js";
-import { clampBpm } from "../core/practice.js";
+import { beatGrid, barBeatOf, ticksPerBar, ticksPerBeatUnit, ticksPerSecond, ticksToSeconds } from "../core/timing.js";
+import { clampBpm, effectiveBpm } from "../core/practice.js";
 import { createAudio } from "./context.js";
 import { createSynth } from "./synth.js";
+import { createMetronome } from "./metronome.js";
 
 const TIMER_MS = 25;
 const LOOKAHEAD_S = 0.12;
@@ -20,20 +21,26 @@ export function createEngine({
   audio = createAudio(),
   timers = { set: (fn, ms) => setTimeout(fn, ms), clear: (id) => clearTimeout(id) },
   makeSynth = createSynth,
+  makeMetronome = createMetronome,
 } = {}) {
   let tl = null; // resolved timeline from core/timeline
-  let bpm = null; // BPM counted in tl.tempo.beatUnit, from the song until PR 8d adds setBpm
+  let grid = []; // metronome beats as pseudo-notes
+  let userBpm = null;
+  let slow = false;
+  let metro = { enabled: false, countIn: false, subdivision: false };
   let synth = null;
+  let click = null;
   let playing = false;
   let heldTick = 0; // song tick while not playing
   let anchor = null;
-  let origin = 0; // tick where this run of scheduling started
+  let origin = 0; // tick where this run of scheduling started (count-in clicks lie before it)
   let scanned = 0; // everything before this abs tick is already scheduled
   let timer = null;
   const listeners = {};
   const pos = { tick: 0, bar: 1, beat: 1, seconds: 0 };
 
-  const tps = () => ticksPerSecond(tl.tempo, bpm);
+  const bpm = () => effectiveBpm({ userBpm, slowMode: slow });
+  const tps = () => ticksPerSecond(tl.tempo, bpm());
   const clampTick = (t) => Math.min(tl.lengthTicks, Math.max(0, t));
   const emit = (name, data) => (listeners[name] ?? []).slice().forEach((fn) => fn(data));
   const pedalAt = (tick) => tl.pedal.some((r) => tick >= r.startTick && tick < r.endTick);
@@ -41,12 +48,14 @@ export function createEngine({
   /** Song tick at the audio clock (`heard` subtracts output latency: what is audible now). */
   function tickNow(heard) {
     if (!playing) return heldTick;
-    const t = audio.context.currentTime - (heard ? audio.outputLatency() : 0);
+    const ctx = audio.context;
+    const t = ctx.currentTime - (heard ? audio.outputLatency() : 0);
     return clampTick(Math.max(tickAt(anchor, t), origin));
   }
 
   function schedule(from, to, now) {
-    for (const e of windowEvents(tl.notes, Math.max(from, origin), to, null)) {
+    const lo = Math.max(from, origin);
+    for (const e of windowEvents(tl.notes, lo, to, null)) {
       const dur = e.absEnd - e.absTick;
       synth.playNote({
         midi: e.note.midi,
@@ -56,11 +65,27 @@ export function createEngine({
         pedal: pedalAt(e.note.tick + dur),
       });
     }
+    const beatTicks = ticksPerBeatUnit(tl.tempo.beatUnit);
+    if (metro.enabled) {
+      for (const e of windowEvents(grid, lo, to, null)) {
+        const when = Math.max(timeAt(anchor, e.absTick), now);
+        click.click(when, { accent: e.note.accent });
+        if (metro.subdivision) click.click(when + beatTicks / 2 / anchor.tps, { sub: true });
+      }
+    }
+    if (metro.countIn && anchor.tick < origin) {
+      const beats = Math.ceil(ticksPerBar(tl.meter) / beatTicks);
+      for (let k = 0; k < beats; k += 1) {
+        const abs = anchor.tick + k * beatTicks;
+        if (abs >= from && abs < Math.min(to, origin)) click.click(Math.max(timeAt(anchor, abs), now), { accent: k === 0 });
+      }
+    }
   }
 
   function pump() {
     if (!playing) return;
-    const now = audio.context.currentTime;
+    const ctx = audio.context;
+    const now = ctx.currentTime;
     if (tickAt(anchor, now - audio.outputLatency()) >= tl.lengthTicks) {
       stop();
       emit("ended", {});
@@ -74,11 +99,12 @@ export function createEngine({
 
   /**
    * Re-anchor at `songTick` right now: cancel what has not started, optionally fade what sounds,
-   * and queue again from the new anchor in the same call.
+   * and queue again from the new anchor in the same call (no stuck or doubled notes).
    */
   function retime(songTick, { releaseSounding = false } = {}) {
     const now = audio.context.currentTime;
     synth.cancelPending(now, { releaseSounding });
+    click.cancelPending(now);
     origin = clampTick(songTick);
     anchor = makeAnchor(now, origin, tps());
     scanned = origin;
@@ -89,17 +115,23 @@ export function createEngine({
   function halt() {
     playing = false;
     timers.clear(timer);
-    synth.cancelPending(audio.context.currentTime, { releaseSounding: true });
+    const now = audio.context.currentTime;
+    synth.cancelPending(now, { releaseSounding: true });
+    click.cancelPending(now);
   }
 
   function play() {
     if (!tl || playing) return;
     const ctx = audio.ensure(); // inside the user gesture, so autoplay policy lets it run
-    synth ??= makeSynth(ctx);
+    if (!synth) {
+      synth = makeSynth(ctx);
+      click = makeMetronome(ctx);
+    }
     if (heldTick >= tl.lengthTicks) heldTick = 0;
     origin = heldTick;
-    anchor = makeAnchor(ctx.currentTime + START_DELAY_S, origin, tps());
-    scanned = origin;
+    const lead = metro.countIn ? ticksPerBar(tl.meter) : 0;
+    anchor = makeAnchor(ctx.currentTime + START_DELAY_S, origin - lead, tps());
+    scanned = anchor.tick;
     playing = true;
     emit("state", { state: "playing" });
     pump();
@@ -125,19 +157,44 @@ export function createEngine({
     else heldTick = t;
   }
 
+  /** Apply a change that alters timing or the note set: keep the musical position. */
+  function refresh(opts) {
+    if (playing) retime(tickNow(false), opts);
+  }
+
   return {
     play,
     pause,
     stop,
     seek,
 
-    /** Set the timeline; keeps the current position unless `tick` is given. The BPM comes from the song. */
+    /** Set the timeline; keeps the current position unless `tick` is given. Default BPM comes from the song. */
     setTimeline(timeline, { tick } = {}) {
       const keep = tick ?? (tl ? tickNow(false) : 0);
       tl = timeline;
-      bpm ??= clampBpm(tl.tempo.bpm);
+      if (userBpm === null) userBpm = clampBpm(tl.tempo.bpm);
+      grid = beatGrid(tl.meter, tl.pickupTicks, tl.tempo.beatUnit, 0, tl.lengthTicks).map((g) => ({ tick: g.tick, dur: 1, accent: g.accent }));
       heldTick = clampTick(keep);
       if (playing) retime(heldTick, { releaseSounding: true });
+    },
+
+    /** Set the user BPM (clamped to 20-240) and return the clamped value. */
+    setBpm(n) {
+      userBpm = clampBpm(n);
+      if (tl) refresh();
+      return userBpm;
+    },
+    getBpm: () => userBpm,
+
+    setSlow(on) {
+      slow = Boolean(on);
+      if (tl) refresh();
+    },
+
+    /** Merge { enabled, countIn, subdivision }. The count-in applies to the next play(). */
+    setMetronome(cfg) {
+      metro = { ...metro, ...cfg };
+      if (tl) refresh();
     },
 
     /** { tick, bar, beat, seconds } at the heard audio position. The same object is reused. */
@@ -148,7 +205,7 @@ export function createEngine({
       pos.tick = tick;
       pos.bar = b.bar;
       pos.beat = b.beat;
-      pos.seconds = ticksToSeconds(tick, tl.tempo, bpm);
+      pos.seconds = ticksToSeconds(tick, tl.tempo, bpm());
       return pos;
     },
 
@@ -165,6 +222,7 @@ export function createEngine({
     dispose() {
       if (playing) halt();
       synth?.dispose();
+      click?.dispose();
       audio.suspend();
       Object.keys(listeners).forEach((k) => delete listeners[k]);
     },
