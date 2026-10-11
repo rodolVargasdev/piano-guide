@@ -50,4 +50,5 @@ Delivery: a feature-branch-chain of ten branches, each of about 400 authored lin
 ## Progress
 - 2026-10-11: branch created from main 9f33fab.
 - 2026-10-11: slice 0 on `feat/nocturne-complete`: the Nocturne tests measure lengthTicks and the MIDI fixture pins the whole piece. About 200 authored lines: tests/songs.test.js +195 and -47, the fixture (4 long lines) and tests/core/timeline.test.js +2 and -1. The 68 song tests pass on the unchanged four-bar file.
+- 2026-10-11: slice 1 on `feat/nocturne-complete-pr1-content-tests`: the tests of the later bars (sections, forms, tuplets, graces, cadenza), each one skipped until the file reaches its bar. About 250 authored test lines, all in tests/songs.test.js; 18 of the 89 song tests are skipped on the four-bar file and run from the slice that reaches their bar.
 

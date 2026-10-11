@@ -736,6 +736,254 @@ test("the Original lesson carries the attribution, the pedal and the interpretat
   assert.match(lessonO.interpretation.dynamics, /marked f/);
 });
 
+// ---- Chopin: sections, forms and the claims of the lessons and the analysis, read from the data bar by bar ----
+// A test about bar N runs once the file reaches that bar (`has(N)`), so it holds for every state between the opening and the whole piece.
+const has = (bar) => BARS >= bar;
+const T = (bar, rel = 0) => barStart(bar) + rel;
+const rightNotes = (from, to, filter = () => true) => chopinNotes.filter((n) => n.hand === "R" && !n.rest && !n.grace && n.tick >= from && n.tick < to && filter(n));
+const names = (notes) => notes.map((n) => n.pitch);
+const chordsFromBar = (bar, bars) => chopinChords.filter((c) => c.tick >= T(bar) && c.tick < T(bar + bars)).map((c) => [c.tick - T(bar), c.dur, c.symbol]);
+
+test("the sections tile the song from tick 0 to its end, on bar lines, with distinct ids, and the first two cover the opening and the second phrase", () => {
+  const s = chopin.sections;
+  assert.equal(s[0].startTick, 0);
+  assert.equal(s.at(-1).endTick, chopin.lengthTicks);
+  s.forEach((x, i) => {
+    if (i > 0) assert.equal(x.startTick, s[i - 1].endTick, `${x.id} starts where ${s[i - 1].id} ends`);
+    assert.ok(x.startTick === 0 || (x.startTick - PICKUP) % BAR === 0, `${x.id} starts on a bar line`);
+  });
+  assert.equal(new Set(s.map((x) => x.id)).size, s.length);
+  assert.deepEqual([s[0].id, s[0].endTick], ["opening", T(5)]);
+  if (has(8)) assert.deepEqual([s[1].id, s[1].startTick, s[1].endTick], ["second", T(5), T(9)]);
+  assert.ok(new Set(s.map((x) => x.name)).size === s.length, "every section has its own name");
+});
+
+test("the whole piece has nine sections: A, A second phrase, the B-flat episode, the return, the episode again, the second return, the coda, the cadenza and the close", { skip: !has(37) }, () => {
+  assert.deepEqual(chopin.sections.map((x) => x.id), ["opening", "second", "episode", "return", "episode-again", "return-again", "coda", "cadenza", "close"]);
+  assert.deepEqual(chopin.sections.map((x) => [x.startTick, x.endTick]).filter((_, i) => [2, 6, 7, 8].includes(i)), [[T(9), T(11)], [T(25), T(32)], [T(32), T(36)], [T(36), T(38)]]);
+});
+
+test("the harmony of bars 5 to 8 is the harmony of bars 1 to 4, and bars 13 to 16 and 21 to 24 repeat it, except beat 2 of bars 13 and 21", { skip: !has(8) }, () => {
+  assert.deepEqual(chordsFromBar(5, 4), chordsFromBar(1, 4));
+  if (has(16)) {
+    const first = chordsFromBar(1, 4);
+    const second = chordsFromBar(13, 4);
+    assert.equal(second.length, first.length);
+    const different = second.filter((c, i) => c[2] !== first[i][2]);
+    assert.deepEqual(different.map((c) => c[2]), ["Bb7/Eb"], "bar 13 holds a B flat 7 over the E flat bass where bar 1 has the diminished seventh");
+  }
+  if (has(24)) assert.deepEqual(chordsFromBar(21, 4), chordsFromBar(13, 4));
+  assert.notDeepEqual(chordsFromBar(9, 2), chordsFromBar(1, 2), "counter-proof: the episode is not the opening");
+});
+
+test("the B-flat major episode of bars 9 and 10 returns as bars 17 and 18 over the same chords, and bars 11 and 12 as bars 19 and 20", { skip: !has(18) }, () => {
+  assert.deepEqual(chordsFromBar(17, 2), chordsFromBar(9, 2));
+  if (has(20)) assert.deepEqual(chordsFromBar(19, 2).map((c) => c[2]), chordsFromBar(11, 2).map((c) => c[2]), "the chain of chords of bars 11 and 12 is the same, bar 19 beat 3 only adds the A of F7");
+});
+
+test("bar 9 is B flat major: a B flat chord over a B flat bass, the melody F, G, F on the fifth and sixth degrees, then F over A", { skip: !has(10) }, () => {
+  assert.equal(chordAtC(T(9)).symbol, "Bb");
+  assert.deepEqual(leftAt(T(9), "bass"), ["Bb2"]);
+  assert.deepEqual([T(9) + 240, T(9) + 480].flatMap((t) => leftAt(t, "accompaniment")).map((p) => p.replace(/\d/, "")).sort(), ["Bb", "D", "D", "F", "F"]);
+  assert.deepEqual(names(rightNotes(T(9), T(9) + 1440)), ["F5", "G5", "F5"]);
+  assert.equal(chordAtC(T(9, 1440)).symbol, "F/A");
+  assert.deepEqual(leftAt(T(9, 1440), "bass"), ["A2"]);
+});
+
+test("bar 10: the major IV (Ab, C, Eb) becomes minor (Ab, Cb, Eb) and then the music resolves to E flat; the bass runs Ab2, Ab1, Eb2", { skip: !has(10) }, () => {
+  const pcs = (t) => [...new Set([t + 240, t + 480].flatMap((x) => leftAt(x, "accompaniment")).map((p) => pitchClass(p)))].sort((a, b) => a - b);
+  assert.deepEqual(pcs(T(10)), [0, 3, 8], "Ab major: C, Eb, Ab");
+  assert.deepEqual(pcs(T(10, 720)), [3, 8, 11], "Ab minor: Eb, Ab, B (written Cb)");
+  assert.deepEqual([T(10), T(10, 720), T(10, 1440)].map((t) => leftAt(t, "bass")[0]), ["Ab2", "Ab1", "Eb2"]);
+  assert.deepEqual([chordAtC(T(10)).symbol, chordAtC(T(10, 720)).symbol, chordAtC(T(10, 1440)).symbol], ["Ab", "Abm", "Eb"]);
+});
+
+test("bars 11 and 12 climb by half steps in the bass: E, E, F, G, then C and F, under a melody that starts B flat 5, A5, G5", { skip: !has(12) }, () => {
+  assert.deepEqual([T(11), T(11, 720), T(11, 1440), T(11, 2160), T(12), T(12, 720)].map(bassMidi), [40, 40, 41, 43, 36, 41]);
+  assert.deepEqual(names(rightNotes(T(11), T(11, 1440))), ["Bb5", "A5", "G5"]);
+  assert.deepEqual(rightNotes(T(11, 1440), T(11, 2880)).map((n) => n.pitch).sort(), ["A4", "Bb4", "D5", "F5"]);
+  assert.deepEqual([T(11), T(11, 720)].map((t) => chordAtC(t).symbol), ["Edim7", "C7/E"]);
+});
+
+test("the inverted mordents of bar 5, the trills of bars 7, 15 and 23 and the trill of bar 21 are signs on the notes the analysis names", { skip: !has(8) }, () => {
+  const sign = (tick) => chopinNotes.find((n) => n.hand === "R" && n.tick === tick && n.ornament)?.ornament;
+  assert.deepEqual([sign(T(5, 960)), sign(T(5, 2400))], ["inverted-mordent", "inverted-mordent"]);
+  assert.equal(chopinNotes.find((n) => n.tick === T(5, 960) && n.hand === "R").pitch, "F5");
+  assert.equal(chopinNotes.find((n) => n.tick === T(5, 2400) && n.hand === "R").pitch, "Eb5");
+  assert.equal(sign(T(7)), "trill");
+  assert.equal(chopinNotes.find((n) => n.tick === T(7) && n.hand === "R").pitch, "F5");
+  // the ending of the trill is written out: the small notes E5 and F5 end where the G5 starts
+  const graces = chopinNotes.filter((n) => n.hand === "R" && n.grace && n.tick >= T(7) && n.tick < T(8));
+  assert.deepEqual(names(graces), ["E5", "F5"]);
+  assert.equal(graces.at(-1).tick + graces.at(-1).dur, T(7, 720));
+  assert.equal(chopinNotes.find((n) => n.hand === "R" && n.tick === T(7, 720) && !n.grace).pitch, "G5");
+  if (has(24)) assert.deepEqual([T(15), T(23)].map(sign), ["trill", "trill"]);
+  if (has(22)) assert.deepEqual([sign(T(13, 2400)), sign(T(21, 2400))], ["inverted-mordent", "trill"]);
+});
+
+test("the run of bar 6 rises from G5 to D flat 6 in twelve sixteenths, and its accents sit on the Db5, F5 and Ab5 the analysis names", { skip: !has(6) }, () => {
+  const run = rightNotes(T(6), T(6, 1440));
+  assert.deepEqual(names(run), ["G5", "B4", "C5", "Db5", "C5", "F5", "E5", "Ab5", "G5", "Db6", "C6", "G5"]);
+  assert.ok(run.every((n) => n.dur === 120));
+  assert.equal(Math.max(...run.map((n) => midiOf(n.pitch))), midiOf("Db6"));
+  assert.deepEqual(chopinAnalysis.find((a) => a.tick === T(6)).title, "Rising run");
+});
+
+test("the fioritura entries name the notes that are really there: bar 8 (Bb5 Ab5 G5 Ab5 C5 D5), bar 13, bar 16 and the grace notes", { skip: !has(8) }, () => {
+  const run = (bar, from, to) => names(rightNotes(T(bar, from), T(bar, to), (n) => n.dur <= 180));
+  assert.deepEqual(run(8, 720, 1440), ["Bb5", "Ab5", "G5", "Ab5", "C5", "D5"]);
+  const grace8 = chopinNotes.find((n) => n.grace && n.tick >= T(8) && n.tick < T(9));
+  assert.deepEqual([grace8.pitch, grace8.finger, grace8.tick + grace8.dur], ["Ab5", 4, T(8, 1200)], "the slashed A flat leads into the C5 with finger 4");
+  assert.equal(chopinNotes.find((n) => n.hand === "R" && n.tick === T(8, 1200) && !n.grace).pitch, "C5");
+  if (has(13)) {
+    assert.deepEqual(run(13, 480, 1440), ["A4", "Bb4", "Cb5", "Bb4", "C#5", "D5", "G5", "F5"]);
+    assert.deepEqual(names(chopinNotes.filter((n) => n.grace && n.tick >= T(13) - 200 && n.tick < T(13))), ["G4", "Bb4", "Eb5"]);
+  }
+  if (has(16)) assert.deepEqual(run(16, 720, 1440), ["C6", "B5", "Bb5", "A5", "Ab5", "F5", "D5", "Cb5", "Bb4", "D5", "G5", "F5", "Eb5"]);
+  // a fioritura sign is on the first note and the notes after it are ornament notes
+  for (const f of chopinNotes.filter((n) => n.ornament === "fioritura")) {
+    assert.equal(f.hand, "R");
+    assert.equal(f.role, "ornament");
+  }
+});
+
+test("bar 16 and bar 24 end a flourish with a triplet G5, F5, E flat 5 (three notes in the space of two)", { skip: !has(16) }, () => {
+  for (const bar of [16, 24].filter(has)) {
+    const triplet = rightNotes(T(bar, 1320), T(bar, 1440));
+    assert.deepEqual(names(triplet), ["G5", "F5", "Eb5"]);
+    assert.ok(triplet.every((n) => n.tuplet?.n === 3 && n.tuplet.inSpaceOf === 2 && n.dur === 40));
+  }
+  assert.deepEqual(names(rightNotes(T(16, 1440), T(17))).slice(0, 1), ["Eb5"]);
+});
+
+test("bar 18 squeezes four E flats into the time of three eighths (4 in the space of 3) and bar 29 eight sixteenths into the time of six", { skip: !has(18) }, () => {
+  const four = rightNotes(T(18), T(18, 720));
+  assert.deepEqual(names(four), ["Eb5", "Eb5", "Eb5", "Eb5"]);
+  assert.ok(four.every((n) => n.tuplet?.n === 4 && n.tuplet.inSpaceOf === 3 && n.dur === 180));
+  assert.equal(four.reduce((a, n) => a + n.dur, 0), 720);
+  if (has(29)) {
+    const eight = rightNotes(T(29, 720), T(29, 1440));
+    assert.deepEqual(names(eight), ["Eb5", "F5", "Eb5", "F5", "Eb5", "F5", "Eb5", "F5"]);
+    assert.ok(eight.every((n) => n.tuplet?.n === 8 && n.tuplet.inSpaceOf === 6 && n.dur === 90));
+  }
+  assert.equal(chopinNotes.filter((n) => n.tuplet).every((n) => Number.isInteger(n.dur)), true);
+});
+
+test("bar 24 climbs by half steps from A4 to D5 before its triplet, and bar 22 has the slashed G5 before the B flat 5", { skip: !has(22) }, () => {
+  const g22 = chopinNotes.find((n) => n.grace && n.tick >= T(22, 1300) && n.tick < T(23));
+  assert.deepEqual([g22.pitch, g22.tick + g22.dur], ["G5", T(22, 1440)]);
+  assert.equal(chopinNotes.find((n) => n.hand === "R" && n.tick === T(22, 1440) && !n.grace).pitch, "Bb5");
+  if (has(24)) {
+    const climb = rightNotes(T(24, 960), T(24, 1320));
+    assert.deepEqual(names(climb), ["A4", "Bb4", "B4", "C5", "C#5", "D5"]);
+    assert.deepEqual(climb.slice(1).map((n, i) => midiOf(n.pitch) - midiOf(climb[i].pitch)), [1, 1, 1, 1, 1], "each step is a half step");
+    assert.equal(chopinNotes.find((n) => n.hand === "R" && n.tick === T(24, 1440)).dur, 1440, "the E flat 5 is held for two beats");
+  }
+});
+
+test("the cadential bass of bars 4, 8, 16, 24 and 28 goes Bb2 or Bb1 up to Eb2: the suspended E flat steps down to D on beat 2 in each", { skip: !has(8) }, () => {
+  for (const bar of [4, 8, 16, 24, 28].filter(has)) {
+    const t = T(bar);
+    const beat1 = [t, t + 240, t + 480].flatMap((x) => leftAt(x, "accompaniment"));
+    const beat2 = [t + 960, t + 1200].flatMap((x) => leftAt(x, "accompaniment"));
+    assert.ok(beat1.includes("Eb4") && !beat1.includes("D4"), `bar ${bar} beat 1 holds the Eb`);
+    assert.ok(beat2.includes("D4") && !beat2.includes("Eb4"), `bar ${bar} beat 2 has the D`);
+    assert.equal(bassMidi(t + 720), 34, `bar ${bar} beat 2 bass is Bb1`);
+    assert.equal(bassMidi(t + 1440), 39, `bar ${bar} beat 3 bass is Eb2`);
+  }
+});
+
+test("the coda: Abm over an E flat bass in bars 25 and 26, B flat 7 over E flat in bar 27, and a descending line in bar 28", { skip: !has(28) }, () => {
+  for (const bar of [25, 26]) {
+    assert.equal(chordAtC(T(bar)).symbol, "Abm/Eb");
+    assert.deepEqual([T(bar), T(bar, 720)].map((t) => leftAt(t, "bass")[0]), ["Eb2", "Eb3"]);
+  }
+  assert.equal(chordAtC(T(27)).symbol, "Bb7/Eb");
+  assert.deepEqual(names(rightNotes(T(25, 720), T(25, 1440))), ["F5", "Eb5", "F5"]);
+  assert.equal(chopinNotes.find((n) => n.hand === "R" && n.tick === T(25, 1440)).dur, 1440, "the G5 of the coda is held for two beats");
+  const line = names(rightNotes(T(28), T(28, 1440))).filter((p, i, all) => p !== all[i - 1]);
+  assert.deepEqual(line, ["Cb6", "Bb5", "Bbb5", "Ab5", "G5", "F5"]);
+  assert.equal(chopinNotes.find((n) => n.hand === "R" && n.tick === T(28, 1440)).pitch, "Eb5");
+  assert.equal(chopinNotes.find((n) => n.hand === "R" && n.tick === T(26, 1920)).ornament, "turn");
+  assert.deepEqual(names(rightNotes(T(26, 1920), T(27))), ["Eb5", "Eb6", "D6", "C6"]);
+  const grace27 = chopinNotes.find((n) => n.grace && n.tick >= T(27, 2000) && n.tick < T(28));
+  assert.deepEqual([grace27.pitch, grace27.tick + grace27.dur], ["Eb5", T(27, 2160)]);
+  assert.equal(chopinNotes.find((n) => n.hand === "R" && n.tick === T(27, 2160) && !n.grace).pitch, "G6");
+});
+
+test("bar 30 plays octaves from the E flat on, bar 31 an octave line that falls from C flat 6, and the left hand of bar 31 repeats the cadential chords", { skip: !has(31) }, () => {
+  const octave = (tick) => rightNotes(tick, tick + 1).map((n) => n.pitch);
+  assert.deepEqual([T(30, 1920), T(30, 2400), T(30, 2640)].map(octave), [["Eb6", "Eb7"], ["D6", "D7"], ["C6", "C7"]]);
+  assert.deepEqual([0, 240, 480, 720, 960, 1200, 1440].map((r) => octave(T(31, r))[0]), ["Cb6", "Bb5", "Bbb5", "Ab5", "G5", "D5", "Eb5"]);
+  for (const r of [0, 240, 480, 720, 960, 1200, 1440]) {
+    const [low, high] = octave(T(31, r));
+    assert.equal(midiOf(high) - midiOf(low), 12, `an octave at ${r}`);
+  }
+  assert.deepEqual([0, 720, 1440, 2160].map((r) => chordAtC(T(31, r)).symbol), ["Bb7", "G7/B", "Cm", "F7/A"]);
+  assert.equal(chopinNotes.find((n) => n.hand === "R" && n.tick === T(31, 1680) && n.pitch === "Eb6").dur, 720, "the accented long octave");
+});
+
+test("the cadenza fills four bars: right-hand octaves, a left-hand B flat 7 arpeggio with the printed fingers, and a figure that repeats", { skip: !has(35) }, () => {
+  const cadenzaEnd = T(36);
+  const arpeggio = chopinNotes.filter((n) => n.hand === "L" && !n.rest && n.tick >= T(32) && n.tick < T(32, 2880)).sort((a, b) => a.tick - b.tick);
+  assert.deepEqual(names(arpeggio), ["Bb1", "Bb2", "F3", "Ab3", "D4", "Bb3", "F4", "Ab4", "D5"]);
+  assert.deepEqual(arpeggio.map((n) => n.finger), [undefined, 1, 3, 2, 1, 5, 3, 2, 1], "the printed fingers 1 3 2 1 5 3 2 1");
+  assert.ok(arpeggio.every((n) => n.finger === undefined || n.fingeringSource === "source"));
+  assert.deepEqual(rightNotes(T(32), T(32, 1)).map((n) => n.pitch), ["Cb6", "Cb7"]);
+  assert.equal(chopinNotes.find((n) => n.hand === "R" && n.pitch === "Cb6" && n.tick === T(32)).dur, 1440);
+  const figure = rightNotes(T(33, 480), T(35, 720));
+  assert.ok(figure.length > 40 && figure.every((n) => n.dur === 120 && n.role === "ornament"));
+  const cycle = ["Cb7", "Bb6", "C7", "A6"];
+  assert.ok(figure.every((n, i) => n.pitch === cycle[i % 4]), "the figure Cb7 Bb6 C7 A6 repeats without a break");
+  assert.deepEqual(figure.slice(0, 4).map((n) => n.finger), [3, 2, 4, 1]);
+  const descent = rightNotes(T(35, 720), T(35, 1920));
+  assert.deepEqual(names(descent), ["D7", "C7", "Bb6", "A6", "Ab6", "G6", "F6", "D6", "Eb6", "Cb6"]);
+  assert.deepEqual(names(rightNotes(T(35, 1920), cadenzaEnd)), ["Bb5", "Ab5", "C5", "D5"]);
+  assert.equal(Math.max(...chopinNotes.filter((n) => n.tick < cadenzaEnd && n.hand === "R").map((n) => n.tick + n.dur)), cadenzaEnd, "the cadenza ends exactly where printed bar 33 starts");
+});
+
+test("the last two printed bars rock E flat chords softly and end on a held E flat chord; the final pedal is released at the end of the song", { skip: !has(37) }, () => {
+  assert.deepEqual(chopinNotes.filter((n) => n.hand === "R" && n.tick === T(36)).map((n) => n.pitch).sort(), ["Eb5", "G4"]);
+  assert.ok(chopinNotes.some((n) => n.hand === "R" && n.tick === T(36) && n.pitch === "Eb5" && n.finger === 4), "the printed finger 4 on the E flat");
+  const last = chopinNotes.filter((n) => n.tick >= T(37, 1440) && !n.rest).map((n) => `${n.hand}${n.pitch}`).sort();
+  assert.deepEqual(last, ["LBb2", "LEb2", "RG3", "REb4"].sort());
+  assert.equal(chopin.levels.original.pedal.at(-1).endTick, chopin.lengthTicks);
+  assert.equal(chopin.lengthTicks, PICKUP + 37 * BAR, "37 bars of the app's count are the 34 printed bars");
+  assert.equal(printedBar(37), 34);
+});
+
+test("no event of either level crosses a barline, and the validator would notice one that did (strictBars is off for the Original with a second voice)", () => {
+  const barIndex = (tick) => Math.floor((tick - PICKUP) / BAR);
+  const crossing = (notes) => notes.filter((n) => !n.grace && barIndex(n.tick) !== barIndex(n.tick + n.dur - 1));
+  assert.deepEqual(crossing(chopinNotes), []);
+  assert.deepEqual(crossing(chopin.levels.beginner.notes), []);
+  const bad = structuredClone(chopin);
+  const first = bad.levels.original.notes.find((n) => n.hand === "R" && n.tick === barStart(1));
+  first.dur += BAR;
+  assert.equal(crossing(bad.levels.original.notes).length, 1);
+  bad.levels.original.strictBars = true;
+  assert.ok(validateSong(bad).errors.some((e) => e.rule === "R10" || e.rule === "R9"), "with strictBars the validator rejects it too");
+});
+
+test("the analysis and the lessons use only words their data can back: every entry's ticks sit on a bar of the song and Beginner has none", () => {
+  for (const a of chopinAnalysis) assert.ok(a.tick < chopin.lengthTicks, a.title);
+  assert.equal(chopin.levels.beginner.analysis, undefined);
+  for (const h of [...lessonB.handPositions, ...lessonO.handPositions]) assert.ok(h.tick < chopin.lengthTicks && ["L", "R"].includes(h.hand), h.text);
+  const ticks = lessonO.ornaments.map((o) => o.tick);
+  assert.deepEqual(ticks, [...ticks].sort((a, b) => a - b), "the ornaments are listed in order");
+  const handTicks = lessonO.handPositions.map((h) => h.tick);
+  assert.deepEqual(handTicks, [...handTicks].sort((a, b) => a - b), "the hand positions are listed in order");
+});
+
+test("the lessons describe the cadenza and the last bars with the app's bar numbers: bar 32 is four bars long and printed bars 33 and 34 are bars 36 and 37", { skip: !has(37) }, () => {
+  const texts = [lessonO.arrangementNote, lessonO.summary, ...chopinAnalysis.map((a) => a.text)].join(" ");
+  assert.match(texts, /counts it as bars 32 to 35/);
+  assert.match(texts, /printed bars 33 and 34 are bars 36 and 37/);
+  assert.match(lessonB.summary, /bar counter reaches 37/);
+  assert.match(chopin.confidence.find((c) => c.scope === "structure").note, /three lower/);
+  assert.equal(chopin.confidence.find((c) => c.scope === "cadenza").level, "low");
+});
+
 // ---- the public set after the catalog swap -------------------------------------------------------------------
 
 const EXPECTED_PUBLIC = ["chopin-nocturne-op9-no2", "ode-to-joy"];
