@@ -5,6 +5,7 @@
 
 import { el } from "./dom.js";
 import { barBeatOf, tickOfBarBeat } from "../core/timing.js";
+import { textOf } from "../core/text.js";
 
 const ORDER = ["beginner", "original"];
 const prefixKey = "piano-guide:level:";
@@ -89,12 +90,13 @@ const NAMES = [
 ];
 
 /**
- * createLevelSelect({ song, state, onLevel, onNames, onAnalysis, onView }) returns { element, update(patch) }.
+ * createLevelSelect({ song, state, onLevel, onNames, onAnalysis, onView, lang }) returns { element, update(patch) }.
+ * Level labels and descriptions may be LocalizedText; `lang` ("en" by default) picks the text.
  * state is { levelId, names, view, analysis }. A single-level song shows its level as a static chip;
  * the names toggle appears only on the labelled notation and the Analysis toggle only when the
  * active level has analysis entries. Every control calls its callback and redraws immediately.
  */
-export function createLevelSelect({ song, state, onLevel, onNames, onAnalysis, onView }) {
+export function createLevelSelect({ song, state, onLevel, onNames, onAnalysis, onView, lang = "en" }) {
   const st = { ...state };
   const element = el("div", { class: "level-select" });
   const pick = (label, pressed, title, onClick) => {
@@ -109,8 +111,8 @@ export function createLevelSelect({ song, state, onLevel, onNames, onAnalysis, o
     const controls = controlsFor(song, st.levelId);
     const parts = [
       single
-        ? el("span", { class: "chip", title: "The only level of this song" }, song.levels[ids[0]].label)
-        : group("Level", ...ids.map((id) => pick(song.levels[id].label, id === st.levelId, song.levels[id].description ?? "", () => change({ levelId: id }, () => onLevel(id))))),
+        ? el("span", { class: "chip", title: "The only level of this song" }, textOf(song.levels[ids[0]].label, lang))
+        : group("Level", ...ids.map((id) => pick(textOf(song.levels[id].label, lang), id === st.levelId, textOf(song.levels[id].description ?? "", lang), () => change({ levelId: id }, () => onLevel(id))))),
     ];
     if (controls.names) parts.push(group("Note names", ...NAMES.map(([id, text, title]) => pick(text, id === st.names, title, () => change({ names: id }, () => onNames(id))))));
     if (controls.analysis) parts.push(pick("Analysis", st.analysis, "Roman numerals and notes on the harmony", () => {

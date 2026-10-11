@@ -5,6 +5,7 @@ export function fakeDoc() {
     const e = {
       tag,
       attrs: {},
+      dataset: {},
       children: [],
       parent: null,
       translate: null,

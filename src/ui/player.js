@@ -17,6 +17,8 @@ import { FULL_RANGE } from "../core/keyboard-layout.js";
 import { createAudio } from "../audio/context.js";
 import { createEngine } from "../audio/engine.js";
 import { createScore } from "../score/render.js";
+import { createI18n } from "../i18n/i18n.js";
+import { STRINGS } from "../i18n/strings.js";
 
 /** The level to open: the hash level, then the session memory, then the song's default (see level-select.js). */
 export const pickLevel = resolveLevelId;
@@ -100,7 +102,7 @@ const defaultLoadScene = () => import("../scene/index.js");
  * The dependencies are injectable so the view can run against fakes. `loadScene` resolves to the
  * scene module ({ createScene }); a rejection leaves the message and the null scene.
  */
-export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine, win = window, loadScene = defaultLoadScene } = {}) {
+export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine, win = window, loadScene = defaultLoadScene, i18n } = {}) {
   return (route, root) => {
     let disposed = false;
     let session = null;
@@ -147,7 +149,11 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
         if (raf === null && !closed) raf = win.requestAnimationFrame(frame);
       }
 
-      const transport = createTransport({ engine, timeline, onChange: requestFrame });
+      const words = i18n ?? createI18n({ table: STRINGS, navigatorLanguage: "en", warn: () => {} });
+      const transport = createTransport({ engine, timeline, onChange: requestFrame, i18n: words });
+      // A private song moves the cursor and the falling bars but never sounds: say so next to the controls.
+      const silentNote = engine.isSilent() ? el("p", { class: "meta silent-note", role: "status" }, words.t("learn.silent")) : null;
+      const offLang = silentNote ? words.onChange(() => (silentNote.textContent = words.t("learn.silent"))) : () => {};
       // Practice state (loop, ramp, hands, range) lives in the controller; these effects fan it out.
       // Hand flags are kept by the engine, scene and score, so they survive a seek, a loop wrap and a level change.
       const practice = createPractice({
@@ -200,6 +206,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
       const applyMode = () => score.setMode({ names: ui.names, analysis: ui.analysis && controlsFor(song, levelId).analysis });
       const levelSelect = createLevelSelect({
         song,
+        lang: words.lang(),
         state: { levelId, ...ui },
         onLevel: switchLevel,
         onNames: (names) => {
@@ -258,6 +265,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
             levelSelect.element,
             el("a", { class: "button", href: "#/" }, "Catalog"),
           ),
+          silentNote,
           stage,
           transport.element,
           panel.element,
@@ -315,6 +323,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
           raf = null;
           scene.dispose(); // frees geometry, materials, textures and the renderer
           offPass();
+          offLang();
           panel.dispose();
           transport.dispose();
           engine.dispose(); // stops audio, releases voices and suspends the context

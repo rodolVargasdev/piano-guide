@@ -181,3 +181,13 @@ test("song text in labels is inserted as text, never as markup", () => {
   assert.ok(button(root, "<img src=x onerror=alert(1)>"), "shown literally");
   assert.equal(all(root, (n) => n.tag === "img").length, 0);
 });
+
+test("a level label that is LocalizedText shows in the chosen language, never as [object Object]", () => {
+  const song = { defaultLevel: "beginner", levels: { beginner: { label: { en: "Beginner", es: "Principiante" }, notation: "labelled" }, original: { label: { en: "Original", es: "Original" }, notation: "engraved" } } };
+  const es = make({ song, lang: "es" }).root;
+  assert.equal(pressed(es, "Principiante"), "true");
+  const en = make({ song }).root;
+  assert.equal(pressed(en, "Beginner"), "true", "English by default");
+  const one = make({ song: { defaultLevel: "beginner", levels: { beginner: song.levels.beginner } }, lang: "es" }).root;
+  assert.ok(one.children.some((c) => (c._text || c.children.map((k) => k.text ?? k._text).join("")) === "Principiante"), "the single-level chip too");
+});

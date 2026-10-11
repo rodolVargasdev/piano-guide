@@ -1048,3 +1048,39 @@ body {
     margin-block: 0.125rem;
   }
 }
+
+/* Catalog cards: Learn and Play along as two buttons, a Private chip and a note on private songs. */
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.button-secondary {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+}
+
+.button-secondary:hover {
+  border-color: var(--accent);
+}
+
+.chip-private {
+  border-color: rgba(167, 139, 250, 0.6);
+  color: #ddd6fe;
+}
+
+.card-note {
+  font-size: 0.875rem;
+}

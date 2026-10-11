@@ -4,6 +4,8 @@
 
 import { el } from "./dom.js";
 import { clampBpm, effectiveBpm, BPM_MIN, BPM_MAX } from "../core/practice.js";
+import { createI18n } from "../i18n/i18n.js";
+import { STRINGS } from "../i18n/strings.js";
 
 /** Whole seconds as m:ss. */
 export function formatTime(seconds) {
@@ -39,6 +41,11 @@ export function slowNote(userBpm, slowMode) {
   return slowMode ? `Slow: ${Math.round(effectiveBpm({ userBpm, slowMode }) * 10) / 10} BPM` : "";
 }
 
+/** The text of the play button: "Play", or "Play (no sound)" when the song is silent (a private song). */
+export function playLabel({ silent, t }) {
+  return t(silent ? "common.playNoSound" : "common.play");
+}
+
 const button = (label, onClick) => {
   const b = el("button", { type: "button", class: "btn" }, label);
   b.addEventListener("click", onClick);
@@ -46,10 +53,11 @@ const button = (label, onClick) => {
 };
 
 /**
- * createTransport({ engine, timeline, onChange }) returns { element, update(pos), syncBpm(), setHandModes(modes), dispose() }.
- * `onChange` runs after any control changes the engine so the player can draw a frame at once.
+ * createTransport({ engine, timeline, onChange, i18n }) returns { element, update(pos), syncBpm(), setHandModes(modes), dispose() }.
+ * `onChange` runs after any control changes the engine so the player can draw a frame at once. The play
+ * button says "Play (no sound)" while the engine reports the song as silent, in the language of `i18n`.
  */
-export function createTransport({ engine, timeline, onChange = () => {} }) {
+export function createTransport({ engine, timeline, onChange = () => {}, i18n = createI18n({ table: STRINGS, navigatorLanguage: "en", warn: () => {} }) }) {
   let slow = false;
   let dragging = false;
   let lastReadout = "";
@@ -58,7 +66,14 @@ export function createTransport({ engine, timeline, onChange = () => {} }) {
     fn();
     onChange();
   };
-  const play = button("Play", act(() => engine.play()));
+  let playedSilent = false; // engine.play() said the song is silent
+  const play = button("", act(() => {
+    playedSilent = engine.play()?.silent === true || playedSilent;
+    refreshPlay();
+  }));
+  const refreshPlay = () => (play.textContent = playLabel({ silent: playedSilent || engine.isSilent?.() === true, t: i18n.t }));
+  refreshPlay();
+  const offLang = i18n.onChange(refreshPlay);
   const pause = button("Pause", act(() => engine.pause()));
   const stop = button("Stop", act(() => engine.stop()));
 
@@ -137,6 +152,7 @@ export function createTransport({ engine, timeline, onChange = () => {} }) {
     },
     dispose() {
       off();
+      offLang();
       element.remove();
     },
   };
