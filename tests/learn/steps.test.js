@@ -108,3 +108,39 @@ test("every instruction of a step list renders in both languages with no placeho
     }
   }
 });
+
+// ---- both hands (stages) -----------------------------------------------------------------------------------
+
+test("hands together: one step per tick where either hand starts, holding the keys of both hands, lowest first", () => {
+  // Right hand E4 F4 G4 on beats 1 to 3; left hand C3 held from beat 1 and G2 on beat 3.
+  const { timeline, phrase } = stepsOf([...line(["E4", "F4", "G4"]), note(0, 2 * Q, "C3", "L"), note(2 * Q, Q, "G2", "L")], "R");
+  const steps = deriveSteps(timeline, phrase, "T", { key: C_MAJOR });
+  assert.deepEqual(steps.map((s) => s.tick), [0, Q, 2 * Q]);
+  assert.ok(steps.every((s) => s.hand === "T"));
+  assert.deepEqual(steps[0].keys.map((k) => [k.pitch, k.hand]), [["C3", "L"], ["E4", "R"]]);
+  assert.deepEqual(steps[2].keys.map((k) => [k.pitch, k.hand]), [["G2", "L"], ["G4", "R"]]);
+  assert.equal(new Set(steps.map((s) => s.id)).size, 3);
+  assert.deepEqual(steps.map((s) => s.keys.every((k) => k.finger >= 1 && k.finger <= 5)), [true, true, true]);
+  assert.ok(steps[0].positions.R && steps[0].positions.L, "each hand has its own position");
+});
+
+test("hands together: a step with both hands says both, a step with one hand keeps that hand's own sentence", () => {
+  const { timeline, phrase } = stepsOf([...line(["E4", "F4"]), note(0, Q, "C3", "L")], "R");
+  const steps = deriveSteps(timeline, phrase, "T", { key: C_MAJOR });
+  assert.equal(steps[0].instruction.key, "step.both");
+  assert.match(renderInstruction(i18n.t, steps[0].instruction, "en"), /^Both hands: .+ right, .+ left\.$/);
+  assert.equal(steps[1].instruction.key, "step.one");
+  assert.equal(steps[1].instruction.params.hand, "R");
+  assert.equal(renderInstruction(i18n.t, steps[1].instruction, "en"), "Right hand: index finger on F (Fa).", "only the right hand plays on beat 2");
+  assert.deepEqual(steps[1].positions.L, null);
+});
+
+test("hands together with one hand silent gives the steps of the other hand; the single-hand steps are unchanged by it (counter-proof)", () => {
+  const melody = line(["C4", "D4", "E4"]);
+  const { timeline, phrase } = stepsOf(melody, "R");
+  const alone = deriveSteps(timeline, phrase, "R", { key: C_MAJOR });
+  const together = deriveSteps(timeline, phrase, "T", { key: C_MAJOR });
+  assert.deepEqual(together.map((s) => s.keys.map((k) => k.midi)), alone.map((s) => s.keys.map((k) => k.midi)));
+  assert.deepEqual(together.map((s) => s.instruction), alone.map((s) => s.instruction));
+  assert.deepEqual(deriveSteps(timeline, phrase, "L", { key: C_MAJOR }), [], "the other hand alone is still empty");
+});
