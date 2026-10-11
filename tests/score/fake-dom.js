@@ -8,9 +8,19 @@ export function fakeDoc() {
       children: [],
       parent: null,
       translate: null,
+      listeners: {},
       _text: "",
       setAttribute(k, v) {
         this.attrs[k] = String(v);
+      },
+      getAttribute(k) {
+        return k in this.attrs ? this.attrs[k] : null;
+      },
+      addEventListener(type, fn) {
+        (this.listeners[type] ??= []).push(fn);
+      },
+      click() {
+        for (const fn of this.listeners.click ?? []) fn({ type: "click" });
       },
       append(...kids) {
         for (const k of kids) {

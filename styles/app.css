@@ -375,6 +375,46 @@ a:focus-visible {
   stroke-width: 2;
 }
 
+/* Level selector and view switch. */
+.player-head > .level-select {
+  flex: 0 1 auto;
+}
+
+.level-select {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.seg {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.level-select .btn {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.875rem;
+}
+
+.stage[data-view="scene"],
+.stage[data-view="score"] {
+  grid-template-columns: 1fr;
+}
+
+.stage[data-view="scene"] > [data-slot="score"],
+.stage[data-view="score"] > [data-slot="scene"] {
+  display: none;
+}
+
+.stage[data-view="scene"] .slot[data-slot="scene"] {
+  height: clamp(16rem, 52vh, 34rem);
+}
+
+.stage[data-view="score"] .slot[data-slot="score"] {
+  height: clamp(16rem, 52vh, 30rem);
+}
+
 @media (max-height: 480px) and (orientation: landscape) {
   .transport {
     gap: 0.25rem;
@@ -507,5 +547,11 @@ a:focus-visible {
   .slot[data-slot="scene"],
   .slot[data-slot="score"] {
     height: 9rem;
+  }
+
+  /* One view alone gets the whole stage width and a taller band. */
+  .stage[data-view="scene"] .slot[data-slot="scene"],
+  .stage[data-view="score"] .slot[data-slot="score"] {
+    height: 12rem;
   }
 }

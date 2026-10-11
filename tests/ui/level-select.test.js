@@ -85,3 +85,99 @@ test("session memory is per song and survives a blocked or missing storage", () 
   assert.equal(remember(fakeStorage({}, true), "cancer", "original"), false);
   assert.equal(readRemembered(undefined, "cancer"), null);
 });
+
+// ---- the selector controls, run against the small fake DOM ----
+const { fakeDoc, all } = await import("../score/fake-dom.js");
+const { createLevelSelect, controlsFor } = await import("../../src/ui/level-select.js");
+
+function install() {
+  const doc = fakeDoc();
+  globalThis.document = { createElement: (t) => doc.make(t), createTextNode: (text) => ({ tag: "#text", text, attrs: {}, children: [] }) };
+}
+const textOf = (n) => (n.tag === "#text" ? n.text : n.children.map(textOf).join(""));
+const button = (root, label) => all(root, (n) => n.tag === "button" && textOf(n) === label)[0];
+const pressed = (root, label) => button(root, label).attrs["aria-pressed"];
+
+const levels = {
+  beginner: { label: "Beginner", notation: "labelled", description: "Names in the heads." },
+  original: { label: "Original", notation: "engraved", analysis: [{ tick: 0, kind: "harmony", title: "t", text: "x" }] },
+};
+const twoLevels = { defaultLevel: "beginner", levels };
+function make(overrides = {}, state = {}) {
+  install();
+  const calls = [];
+  const sel = createLevelSelect({
+    song: twoLevels,
+    state: { levelId: "beginner", names: "solfege", view: "both", analysis: false, ...state },
+    onLevel: (v) => calls.push(["level", v]),
+    onNames: (v) => calls.push(["names", v]),
+    onAnalysis: (v) => calls.push(["analysis", v]),
+    onView: (v) => calls.push(["view", v]),
+    ...overrides,
+  });
+  return { sel, calls, root: sel.element };
+}
+
+test("controlsFor: names only on the labelled notation, Analysis only with entries", () => {
+  assert.deepEqual(controlsFor(twoLevels, "beginner"), { names: true, analysis: false });
+  assert.deepEqual(controlsFor(twoLevels, "original"), { names: false, analysis: true });
+  assert.deepEqual(controlsFor({ levels: { x: { notation: "engraved", analysis: [] } } }, "x"), { names: false, analysis: false }, "an empty list is no analysis");
+  assert.deepEqual(controlsFor(twoLevels, "missing"), { names: false, analysis: false });
+});
+
+test("two levels: a button each, the active one pressed; clicking switches, reports once and redraws", () => {
+  const { root, calls } = make();
+  assert.equal(pressed(root, "Beginner"), "true");
+  assert.equal(pressed(root, "Original"), "false");
+  button(root, "Original").click();
+  assert.deepEqual(calls, [["level", "original"]]);
+  assert.equal(pressed(root, "Original"), "true");
+  assert.equal(pressed(root, "Beginner"), "false");
+});
+
+test("a single-level song shows a static chip and no level buttons", () => {
+  const { root } = make({ song: { defaultLevel: "beginner", levels: { beginner: levels.beginner } } });
+  assert.equal(all(root, (n) => n.attrs.class === "chip").map(textOf)[0], "Beginner");
+  assert.equal(button(root, "Beginner"), undefined);
+  assert.equal(button(root, "Original"), undefined);
+});
+
+test("the names toggle is immediate and exists only on the labelled level", () => {
+  const { root, calls } = make();
+  assert.equal(pressed(root, "Do Re Mi"), "true");
+  button(root, "C D E").click();
+  assert.deepEqual(calls, [["names", "letters"]]);
+  assert.equal(pressed(root, "C D E"), "true");
+  assert.equal(pressed(root, "Do Re Mi"), "false");
+  button(root, "Original").click();
+  assert.equal(button(root, "C D E"), undefined, "no note names on the engraved level");
+});
+
+test("Analysis appears only when the active level has entries and toggles on then off", () => {
+  const { root, calls } = make();
+  assert.equal(button(root, "Analysis"), undefined, "Beginner has no analysis");
+  button(root, "Original").click();
+  assert.equal(pressed(root, "Analysis"), "false");
+  button(root, "Analysis").click();
+  button(root, "Analysis").click();
+  assert.deepEqual(calls.filter((c) => c[0] === "analysis"), [["analysis", true], ["analysis", false]], "a second click turns it off");
+  assert.equal(pressed(root, "Analysis"), "false");
+});
+
+test("the view control reports both, keyboard and score, and update() redraws from outside", () => {
+  const { root, calls, sel } = make();
+  assert.equal(pressed(root, "Both"), "true");
+  button(root, "Score").click();
+  button(root, "Keyboard").click();
+  assert.deepEqual(calls, [["view", "score"], ["view", "scene"]]);
+  sel.update({ view: "both", levelId: "original" });
+  assert.equal(pressed(root, "Both"), "true");
+  assert.equal(pressed(root, "Original"), "true");
+});
+
+test("song text in labels is inserted as text, never as markup", () => {
+  const hostile = { defaultLevel: "beginner", levels: { beginner: { ...levels.beginner, label: "<img src=x onerror=alert(1)>" }, original: levels.original } };
+  const { root } = make({ song: hostile });
+  assert.ok(button(root, "<img src=x onerror=alert(1)>"), "shown literally");
+  assert.equal(all(root, (n) => n.tag === "img").length, 0);
+});

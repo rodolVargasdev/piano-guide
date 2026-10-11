@@ -9,15 +9,14 @@ import { loadCatalog } from "./catalog.js";
 import { notFoundView } from "./router.js";
 import { createTransport } from "./transport.js";
 import { resolveLevel } from "../core/timeline.js";
+import { createLevelSelect, resolveLevelId, controlsFor, readRemembered, remember, mapPosition, updateHash } from "./level-select.js";
 import { FULL_RANGE } from "../core/keyboard-layout.js";
 import { createAudio } from "../audio/context.js";
 import { createEngine } from "../audio/engine.js";
 import { createScore } from "../score/render.js";
 
-/** The requested level when the song has it, otherwise the song's default level. */
-export function pickLevel(song, requested) {
-  return requested && Object.hasOwn(song.levels, requested) ? requested : song.defaultLevel;
-}
+/** The level to open: the hash level, then the session memory, then the song's default (see level-select.js). */
+export const pickLevel = resolveLevelId;
 
 /** True only for `debug=1` in the page query (`/?debug=1#/song/id`) or in the hash query. */
 export function debugRequested(search, hash) {
@@ -114,8 +113,9 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
     });
 
     function mount(song) {
-      const levelId = pickLevel(song, route.level);
-      const timeline = resolveLevel(song, levelId);
+      let levelId = pickLevel(song, route.level, readRemembered(win.sessionStorage, song.id));
+      let timeline = resolveLevel(song, levelId);
+      const ui = { names: route.names, view: route.view, analysis: false };
       const engine = makeEngine();
       engine.setTimeline(timeline);
 
@@ -131,8 +131,8 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
         raf = null;
         const pos = engine.position(); // the only read of the audio clock per frame
         transport.update(pos);
-        score.render(pos.tick);
-        scene.render(pos.tick, engine.isPlaying());
+        if (ui.view !== "scene") score.render(pos.tick);
+        if (ui.view !== "score") scene.render(pos.tick, engine.isPlaying());
         debug?.update(pos, ts, engine.isPlaying());
         if (engine.isPlaying()) requestFrame();
       }
@@ -144,6 +144,49 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
       const key = `${song.key.tonic} ${song.key.mode}`;
       const sceneSlot = el("div", { class: "slot", "data-slot": "scene" }, el("p", { class: "meta", role: "status" }, "Loading keyboard view"));
       const scoreSlot = el("div", { class: "slot", "data-slot": "score" });
+      const replaceHash = (changes) => win.history?.replaceState(null, "", updateHash(win.location.hash, changes));
+      const stage = el("div", { class: "stage", "data-view": ui.view }, sceneSlot, scoreSlot);
+      const applyMode = () => score.setMode({ names: ui.names, analysis: ui.analysis && controlsFor(song, levelId).analysis });
+      const levelSelect = createLevelSelect({
+        song,
+        state: { levelId, ...ui },
+        onLevel: switchLevel,
+        onNames: (names) => {
+          ui.names = names;
+          replaceHash({ names });
+          applyMode();
+          requestFrame();
+        },
+        onAnalysis: (on) => {
+          ui.analysis = on;
+          applyMode();
+          requestFrame();
+        },
+        onView: (view) => {
+          ui.view = view;
+          stage.setAttribute("data-view", view);
+          replaceHash({ view });
+          scene.resize();
+          score.resize();
+          requestFrame();
+        },
+      });
+      // A level switch keeps the bar and beat, BPM, loop, metronome and hand state; while playing the
+      // engine drops pending voices and schedules the new notes from that tick in the same call.
+      function switchLevel(id) {
+        if (id === levelId || !Object.hasOwn(song.levels, id)) return;
+        const next = resolveLevel(song, id);
+        engine.setTimeline(next, { tick: mapPosition(engine.position().tick, timeline, next) });
+        scene.setTimeline(next);
+        score.setTimeline(next, { title: song.title });
+        timeline = next;
+        levelId = id;
+        applyMode();
+        levelSelect.update({ levelId });
+        remember(win.sessionStorage, song.id, id);
+        replaceHash({ level: id });
+        requestFrame();
+      }
       const onResize = () => {
         scene.resize();
         score.resize();
@@ -157,22 +200,17 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
             "div",
             { class: "player-head" },
             el("div", {}, el("h2", {}, song.title), el("p", { class: "meta" }, `${song.composer} | ${key} | ${song.meter.num}/${song.meter.den}`)),
-            el("span", { class: "chip" }, timeline.label),
+            levelSelect.element,
             el("a", { class: "button", href: "#/" }, "Catalog"),
           ),
-          el(
-            "div",
-            { class: "stage" },
-            sceneSlot,
-            scoreSlot,
-          ),
+          stage,
           transport.element,
           debug?.element,
         ),
       );
       win.addEventListener("resize", onResize);
       // The slot must be in the page before the score measures it.
-      score = createScore(scoreSlot, { timeline, title: song.title, names: route.names });
+      score = createScore(scoreSlot, { timeline, title: song.title, names: ui.names });
       const motion = win.matchMedia?.("(prefers-reduced-motion: reduce)");
       const onMotion = () => score.setReducedMotion(motion.matches);
       if (motion) {
@@ -185,11 +223,13 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
       (async () => {
         try {
           const { createScene } = await loadScene();
-          const created = await createScene(sceneSlot, { timeline });
+          const built = timeline;
+          const created = await createScene(sceneSlot, { timeline: built });
           if (closed) {
             created.dispose();
             return;
           }
+          if (timeline !== built) created.setTimeline(timeline); // the level changed while the scene loaded
           scene = created;
         } catch {
           if (closed) return;

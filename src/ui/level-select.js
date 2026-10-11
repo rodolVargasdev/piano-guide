@@ -1,7 +1,9 @@
 // Level selection: which level opens, which levels the selector offers, where the musical
 // position lands when the level changes, and how the choices live in the hash and in the
-// session. The functions here are pure (storage is injected) and covered by node tests.
+// session. The functions are pure (storage is injected) and covered by node tests;
+// createLevelSelect at the end only wires buttons to callbacks.
 
+import { el } from "./dom.js";
 import { barBeatOf, tickOfBarBeat } from "../core/timing.js";
 
 const ORDER = ["beginner", "original"];
@@ -68,4 +70,67 @@ export function remember(storage, songId, levelId) {
   } catch {
     return false;
   }
+}
+
+/** Which controls the selector shows for a level: names only on the labelled notation, Analysis only with entries. */
+export function controlsFor(song, levelId) {
+  const level = song.levels[levelId] ?? {};
+  return { names: level.notation === "labelled", analysis: Array.isArray(level.analysis) && level.analysis.length > 0 };
+}
+
+const VIEWS = [
+  ["both", "Both", "Keyboard and score"],
+  ["scene", "Keyboard", "Keyboard only"],
+  ["score", "Score", "Score only"],
+];
+const NAMES = [
+  ["solfege", "Do Re Mi", "Note names in solfege"],
+  ["letters", "C D E", "Note names as letters"],
+];
+
+/**
+ * createLevelSelect({ song, state, onLevel, onNames, onAnalysis, onView }) returns { element, update(patch) }.
+ * state is { levelId, names, view, analysis }. A single-level song shows its level as a static chip;
+ * the names toggle appears only on the labelled notation and the Analysis toggle only when the
+ * active level has analysis entries. Every control calls its callback and redraws immediately.
+ */
+export function createLevelSelect({ song, state, onLevel, onNames, onAnalysis, onView }) {
+  const st = { ...state };
+  const element = el("div", { class: "level-select" });
+  const pick = (label, pressed, title, onClick) => {
+    const b = el("button", { type: "button", class: "btn", "aria-pressed": String(pressed), title }, label);
+    b.addEventListener("click", onClick);
+    return b;
+  };
+  const group = (name, ...items) => el("div", { class: "seg", role: "group", "aria-label": name }, ...items);
+
+  function render() {
+    const { ids, single } = levelChoices(song);
+    const controls = controlsFor(song, st.levelId);
+    const parts = [
+      single
+        ? el("span", { class: "chip", title: "The only level of this song" }, song.levels[ids[0]].label)
+        : group("Level", ...ids.map((id) => pick(song.levels[id].label, id === st.levelId, song.levels[id].description ?? "", () => change({ levelId: id }, () => onLevel(id))))),
+    ];
+    if (controls.names) parts.push(group("Note names", ...NAMES.map(([id, text, title]) => pick(text, id === st.names, title, () => change({ names: id }, () => onNames(id))))));
+    if (controls.analysis) parts.push(pick("Analysis", st.analysis, "Roman numerals and notes on the harmony", () => {
+      const next = !st.analysis;
+      change({ analysis: next }, () => onAnalysis(next));
+    }));
+    parts.push(group("View", ...VIEWS.map(([id, text, title]) => pick(text, id === st.view, title, () => change({ view: id }, () => onView(id))))));
+    element.replaceChildren(...parts);
+  }
+  function change(patch, notify) {
+    Object.assign(st, patch);
+    notify();
+    render();
+  }
+  render();
+  return {
+    element,
+    update(patch) {
+      Object.assign(st, patch);
+      render();
+    },
+  };
 }
