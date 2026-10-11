@@ -51,3 +51,24 @@ An id that is not in the index shows "Song not found". The browser back button a
 ## Content security policy
 
 `nginx.conf` allows the inline import map in `index.html` by its SHA-256 hash. If the import map text changes, update the hash in `nginx.conf`; `tests/csp.test.js` fails until both agree. Inline scripts and inline styles are not allowed.
+
+## Engine contract
+
+`src/audio/engine.js` owns musical time. `createEngine()` returns:
+
+| Method | What it does |
+|--------|--------------|
+| `setTimeline(timeline, { tick? })` | Loads a resolved level (`core/timeline`); keeps the position unless `tick` is given; the BPM defaults to the song's |
+| `play()` | Creates and resumes the audio context inside the call (call it from the Play click), optionally after a one-bar count-in |
+| `pause()` / `stop()` | Pause keeps the position; stop goes to 0 (the loop start when a loop is set) |
+| `seek(tick)` | Cancels pending voices and re-queues from the new tick in the same call |
+| `setBpm(n)` / `getBpm()` | User BPM clamped to 20 to 240; returns the shown value |
+| `setSlow(on)` | Plays half of the user BPM |
+| `setLoop(range or null)` | Loop `{ startTick, endTick }`, already normalized by `core/practice` |
+| `setHandModes({ L, R })` | Per hand `{ muted, hidden }`; muting silences it, hiding is for the views |
+| `setMetronome({ enabled, countIn, subdivision })` | Clicks follow the song's beat unit and the effective BPM; they play even with both hands muted |
+| `position()` | `{ tick, bar, beat, seconds }` at the heard audio position (`currentTime - outputLatency`); the same object each call |
+| `on(name, fn)` | Events `state` (`{ state }`), `loop-pass` (once per completed pass) and `ended` (end of song, position back to 0); returns an unsubscribe function |
+| `dispose()` | Stops, disposes the voices and clicks, suspends the context and drops listeners |
+
+The scheduler runs every 25 ms with a 120 ms look-ahead (1.5 s while the tab is hidden). Everything is deterministic given the audio clock, so `node --test` covers it with a fake context (`tests/audio/`). Sound itself can only be judged by listening.

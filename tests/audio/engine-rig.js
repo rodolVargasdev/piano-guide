@@ -5,7 +5,7 @@ import { resolveLevel } from "../../src/core/timeline.js";
 import { validSong } from "../fixtures/helpers.js";
 import { FakeAudioContext } from "./fake-audio.js";
 
-export function rig({ timeline = resolveLevel(validSong(), "beginner"), bpm, latency = 0 } = {}) {
+export function rig({ timeline = resolveLevel(validSong(), "beginner"), bpm, latency = 0, document } = {}) {
   const ctx = new FakeAudioContext();
   ctx.outputLatency = latency;
   const notes = [];
@@ -32,7 +32,7 @@ export function rig({ timeline = resolveLevel(validSong(), "beginner"), bpm, lat
     },
   };
   const audio = createAudio({ AudioContextCtor: function Ctor() { return ctx; } });
-  const engine = createEngine({ audio, timers, makeSynth, makeMetronome });
+  const engine = createEngine({ audio, timers, makeSynth, makeMetronome, document });
   engine.setTimeline(timeline);
   if (bpm) engine.setBpm(bpm);
   /** Move the audio clock forward in 25 ms timer steps, like the real look-ahead loop. */
@@ -43,7 +43,7 @@ export function rig({ timeline = resolveLevel(validSong(), "beginner"), bpm, lat
       pending?.();
     }
   };
-  return { ctx, engine, notes, clicks, cancels, run, hasTimer: () => pending !== null };
+  return { ctx, engine, notes, clicks, cancels, run, fire: () => pending?.(), hasTimer: () => pending !== null };
 }
 
 /** A bare 12/8 timeline (dotted-quarter beats) with no notes, 2 bars long. */
