@@ -122,8 +122,8 @@ Conventions for every task below: TDD mode is `strict_tdd: false`, tests land in
 
 ## Phase 10 (PR 10, S3): Keyboard layout and quality cores
 
-- [ ] 10.1 Create `tests/core/keyboard-layout.test.js` (RED first): `keyGeometry` for white and black keys across A0 to C8, black keys between the right whites; `fittedRange` pads 3 semitones, snaps outward to C and B, minimum span 36, always contains every note; the full 88 range A0 to C8.
-- [ ] 10.2 Create `src/core/keyboard-layout.js` per the design signatures. Check: `node --test tests/core/keyboard-layout.test.js`.
+- [x] 10.1 Create `tests/core/keyboard-layout.test.js` (RED first): `keyGeometry` for white and black keys across A0 to C8, black keys between the right whites; `fittedRange` pads 3 semitones, snaps outward to C and B, minimum span 36, always contains every note; the full 88 range A0 to C8.
+- [x] 10.2 Create `src/core/keyboard-layout.js` per the design signatures. Check: `node --test tests/core/keyboard-layout.test.js`.
 - [ ] 10.3 Create `tests/core/quality.test.js` (RED first): average over 22 ms for 2 consecutive seconds steps down exactly one tier in order high, medium, low, minimum; never below minimum; step up only after 20 s under 10 ms and at most once per session; no oscillation over a synthetic noisy trace (counter-proof: a trace hovering at 22 ms for 1 s never steps down).
 - [ ] 10.4 Create `src/core/quality.js`: `TIERS`, `decideTier(frameTimesMs, currentTier, state)`, initial-tier helper (High on desktop, Medium when `hardwareConcurrency <= 4` or coarse pointer). Check: `node --test tests/core/quality.test.js`.
 
