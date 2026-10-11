@@ -59,6 +59,22 @@ export class FakeOscillator extends FakeNode {
   }
 }
 
+/** A buffer source: records its buffer, playback rate, start and stop like FakeOscillator. */
+export class FakeBufferSource extends FakeNode {
+  constructor(ctx) {
+    super(ctx, { playbackRate: 1 });
+    this.buffer = null;
+    this.startTime = null;
+    this.stopTime = null;
+  }
+  start(t) {
+    this.startTime = t;
+  }
+  stop(t) {
+    this.stopTime = this.stopTime === null ? t : Math.min(this.stopTime, t);
+  }
+}
+
 export class FakeAudioContext {
   constructor(options = {}) {
     this.options = options;
@@ -67,6 +83,8 @@ export class FakeAudioContext {
     this.outputLatency = 0;
     this.destination = new FakeNode(this);
     this.oscillators = [];
+    this.bufferSources = [];
+    this.decodeFails = () => false; // (byteLength) => true makes decodeAudioData reject for that file
     this.resumed = 0;
     this.suspended = 0;
   }
@@ -84,6 +102,15 @@ export class FakeAudioContext {
     const o = new FakeOscillator(this);
     this.oscillators.push(o);
     return o;
+  }
+  createBufferSource() {
+    const s = new FakeBufferSource(this);
+    this.bufferSources.push(s);
+    return s;
+  }
+  decodeAudioData(arrayBuffer) {
+    if (this.decodeFails(arrayBuffer.byteLength)) return Promise.reject(new Error("EncodingError"));
+    return Promise.resolve({ decodedBytes: arrayBuffer.byteLength, duration: 4 });
   }
   createGain() {
     return new FakeNode(this, { gain: 1 });

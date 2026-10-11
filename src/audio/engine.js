@@ -15,7 +15,7 @@ import { makeAnchor, tickAt, timeAt, windowEvents, songTickOf } from "../core/sc
 import { beatGrid, barBeatOf, ticksPerBar, ticksPerBeatUnit, ticksPerSecond, ticksToSeconds } from "../core/timing.js";
 import { clampBpm, effectiveBpm, passesBetween, schedulableNotes } from "../core/practice.js";
 import { createAudio } from "./context.js";
-import { createSynth } from "./synth.js";
+import { createVoice } from "./voice.js";
 import { createMetronome } from "./metronome.js";
 
 const TIMER_MS = 25;
@@ -26,7 +26,7 @@ const START_DELAY_S = 0.05;
 export function createEngine({
   audio = createAudio(),
   timers = { set: (fn, ms) => setTimeout(fn, ms), clear: (id) => clearTimeout(id) },
-  makeSynth = createSynth,
+  makeSynth = createVoice, // the sampled piano with the oscillator synth as fallback (same interface as the synth)
   makeMetronome = createMetronome,
   document = globalThis.document,
 } = {}) {
