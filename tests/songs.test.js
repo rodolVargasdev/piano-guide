@@ -237,14 +237,23 @@ test("counter-proof: an analysis entry with the wrong numeral does not match the
   assert.notEqual(wrong.roman, chordAt(chordsOnly, wrong.tick).roman);
 });
 
-// ---- Chopin Nocturne Op. 9 No. 2: pickup and bars 1 to 4, transcribed from the Mutopia LilyPond source ----
+// ---- Chopin Nocturne Op. 9 No. 2: transcribed from the Mutopia LilyPond source ----
+// The tests below hold for every state of the file between the opening (pickup and four bars) and the whole piece: they
+// measure `chopin.lengthTicks` instead of assuming a number of bars, and the MIDI fixture always covers the whole piece.
 const chopin = read("chopin-nocturne-op9-no2.json");
 const chopinNotes = chopin.levels.original.notes;
 const onsets = JSON.parse(readFileSync(new URL("./fixtures/mutopia-chopin-op9n2-onsets.json", import.meta.url), "utf8"));
 const PICKUP = 240;
 const BAR = 2880;
+const BARS = (chopin.lengthTicks - PICKUP) / BAR; // bars transcribed, counted the way the app counts them
+// The cadenza of printed bar 32 lasts four bars of time in the MIDI, so the app counts bars 32 to 35 for it and the
+// printed bars 33 and 34 are bars 36 and 37 here.
+const CADENZA = [32, 35];
+const printedBar = (bar) => (bar < CADENZA[0] ? bar : bar <= CADENZA[1] ? CADENZA[0] : bar - (CADENZA[1] - CADENZA[0]));
 const barStart = (bar) => (bar === 0 ? 0 : PICKUP + (bar - 1) * BAR);
 const midiOf = (pitch) => parsePitch(pitch).midi;
+/** The part of an onset string of the fixture that lies inside the transcribed length. */
+const insideSong = (text) => text.split(" ").filter((x) => Number(x.split(":")[0]) < chopin.lengthTicks).join(" ");
 // First event of a hand at the start of a bar: the lowest pitch, or "rest".
 const firstOf = (notes, hand, bar) => {
   const at = notes.filter((n) => n.hand === hand && n.tick === barStart(bar));
@@ -253,37 +262,46 @@ const firstOf = (notes, hand, bar) => {
 const bassOnBeat = (notes, bar, beat) => notes.find((n) => n.hand === "L" && n.role === "bass" && n.tick === barStart(bar) + (beat - 1) * 720)?.pitch;
 // Onsets as "tick:midi+midi" strings per hand, ties collapsed (a tied continuation has no onset).
 function onsetsOf(notes, hand) {
-  const heads = notes.filter((n) => n.hand === hand && !n.rest);
+  const heads = notes.filter((n) => n.hand === hand && !n.rest && !n.grace);
   const continuation = (n) => heads.some((h) => h.tie === true && h.pitch === n.pitch && h.tick + h.dur === n.tick);
   const byTick = new Map();
   for (const n of heads) if (!continuation(n)) (byTick.get(n.tick) ?? byTick.set(n.tick, []).get(n.tick)).push(midiOf(n.pitch));
   return [...byTick].sort((a, b) => a[0] - b[0]).map(([t, m]) => `${t}:${m.sort((a, b) => a - b).join("+")}`).join(" ");
 }
 
-test("Chopin validates, is transcribed and strict", () => {
+test("Chopin validates, is transcribed, and is strict about its bars while it has one voice per hand", () => {
   const r = validateSong(chopin);
   assert.deepEqual(r.errors, []);
   assert.equal(chopin.levels.original.transcribed, true);
-  assert.equal(chopin.levels.original.strictBars, true);
+  // strictBars asks for every bar of every used voice to be covered: a second voice that exists in only a few bars
+  // (the left hand of the cadenza bars and of the last printed bars) cannot satisfy it, so the level turns it off then.
+  assert.equal(chopin.levels.original.strictBars, !chopinNotes.some((n) => n.voice === 2));
   assert.equal(chopin.levels.original.notation, "engraved");
   assert.equal(chopin.defaultLevel, "original");
   assert.equal(chopin.contentPolicy, "open");
 });
 
-test("Chopin timing: E-flat major, 12/8 counted in dotted quarters at 44 (the printed eighth = 132), a one-eighth pickup and four bars", () => {
+test("Chopin timing: E-flat major, 12/8 counted in dotted quarters at 44 (the printed eighth = 132), a one-eighth pickup and whole bars", () => {
   assert.deepEqual(chopin.key, { tonic: "Eb", mode: "major" });
   assert.deepEqual(chopin.meter, { num: 12, den: 8 });
   assert.equal(chopin.tempo.beatUnit, "dotted-quarter");
   assert.equal(chopin.tempo.bpm * 3, 132);
   assert.equal(chopin.pickupTicks, PICKUP);
-  assert.equal(chopin.lengthTicks, PICKUP + 4 * BAR);
+  assert.equal(chopin.lengthTicks, PICKUP + BARS * BAR);
+  assert.ok(Number.isInteger(BARS) && BARS >= 4 && BARS <= 37, `${BARS} bars`);
+});
+
+test("the printed bar numbers map onto the app's bars: the cadenza of bar 32 takes bars 32 to 35, so printed 33 and 34 are 36 and 37", () => {
+  assert.deepEqual([1, 31, 32, 35, 36, 37].map(printedBar), [1, 31, 32, 32, 33, 34]);
 });
 
 test("the Mutopia source entry names the transcribed bars and records URL, ID, license, SHA-256, date and maintainer", () => {
   const s = chopin.sources.find((x) => x.kind === "public-domain-score");
   assert.match(s.what, /pickup/i);
-  assert.match(s.what, /bars? 1/i);
-  assert.match(s.what, /4/);
+  assert.match(s.what, new RegExp(`bars 1 to ${printedBar(BARS)}\\b`));
+  const mid = chopin.sources.find((x) => x.kind === "reference" && /\.mid$/.test(x.url));
+  const counts = [insideSong(onsets.upper), insideSong(onsets.lower)].map((t) => t.split(" ").length);
+  assert.match(mid.what, new RegExp(`\\(${counts[0]} right-hand and ${counts[1]} left-hand onsets`), "the MIDI entry counts the onsets it pinned");
   assert.equal(new URL(s.url).hostname, "www.mutopiaproject.org");
   assert.equal(new URL(s.fileUrl).hostname, "www.mutopiaproject.org");
   assert.match(s.fileUrl, /chopin_nocturne_op9_n2\.ly$/);
@@ -329,11 +347,56 @@ test("bar 1 melody descends G, F, Eb, and the pickup is the Bb below", () => {
   assert.equal(chopinNotes.find((n) => n.tick === 0 && n.hand === "R").pitch, "Bb4");
 });
 
-test("every onset of both hands equals the onsets of the Mutopia MIDI file (30 right-hand, 48 left-hand)", () => {
-  assert.equal(onsetsOf(chopinNotes, "R"), onsets.upper);
-  assert.equal(onsetsOf(chopinNotes, "L"), onsets.lower);
-  assert.equal(onsets.upper.split(" ").length, 30);
-  assert.equal(onsets.lower.split(" ").length, 48);
+test("every onset of both hands, over the whole transcribed length, equals the onsets of the Mutopia MIDI file", () => {
+  assert.equal(onsetsOf(chopinNotes, "R"), insideSong(onsets.upper));
+  assert.equal(onsetsOf(chopinNotes, "L"), insideSong(onsets.lower));
+  assert.ok(insideSong(onsets.upper).split(" ").length >= 30 && insideSong(onsets.lower).split(" ").length >= 48, "at least the opening is pinned");
+});
+
+test("the fixture pins the whole piece: 406 right-hand and 396 left-hand onset groups, and 15 grace notes before 8 main notes", () => {
+  assert.equal(onsets.upper.split(" ").length, 406);
+  assert.equal(onsets.lower.split(" ").length, 396);
+  assert.equal(onsets.upperGraces.split(" ").length, 8);
+  assert.equal(onsets.upperGraces.split(" ").flatMap((g) => g.split(":")[1].split(",")).length, 15);
+  assert.equal(onsets.lowerGraces, undefined, "the left hand has no grace note");
+  assert.ok(Number(onsets.upper.split(" ").at(-1).split(":")[0]) < PICKUP + 37 * BAR, "the last onset is inside the piece (37 bars of the app's count)");
+});
+
+// Grace notes: the MIDI gives each one LilyPond's own tiny duration, so only their pitches and the main note they lead to
+// are pinned. The data writes each as a 32nd (60 ticks) so that the last one ends exactly where its main note starts.
+function gracesOf(notes) {
+  const graces = notes.filter((n) => n.hand === "R" && n.grace).sort((a, b) => a.tick - b.tick);
+  const groups = [];
+  for (const g of graces) {
+    const last = groups.at(-1);
+    if (last && last.end === g.tick) {
+      last.pitches.push(midiOf(g.pitch));
+      last.end = g.tick + g.dur;
+    } else groups.push({ end: g.tick + g.dur, pitches: [midiOf(g.pitch)] });
+  }
+  return groups.map((g) => `${g.end}:${g.pitches.join(",")}`).join(" ");
+}
+
+test("the grace notes are the ones of the MIDI file, in order, each group ending where its main right-hand note starts", () => {
+  const expected = insideSong(onsets.upperGraces ?? "");
+  assert.equal(gracesOf(chopinNotes), expected);
+  for (const g of expected === "" ? [] : expected.split(" ")) {
+    const main = Number(g.split(":")[0]);
+    assert.ok(chopinNotes.some((n) => n.hand === "R" && !n.grace && !n.rest && n.tick === main), `a main note follows the grace notes at ${main}`);
+  }
+  assert.ok(chopinNotes.filter((n) => n.grace).every((n) => n.dur === 60 && n.role === "ornament"));
+});
+
+test("counter-proof: a wrong grace pitch, a missing grace note and a grace note moved off its main note each break the grace comparison", () => {
+  const grace = chopinNotes.find((n) => n.grace);
+  if (grace === undefined) return assert.equal(gracesOf(chopinNotes), "", "the opening has no grace note");
+  const wrong = structuredClone(chopinNotes);
+  wrong.find((n) => n.grace).pitch = "A4";
+  assert.notEqual(gracesOf(wrong), insideSong(onsets.upperGraces));
+  assert.notEqual(gracesOf(chopinNotes.filter((n) => n !== grace)), insideSong(onsets.upperGraces));
+  const moved = structuredClone(chopinNotes);
+  moved.find((n) => n.grace).tick -= 120;
+  assert.notEqual(gracesOf(moved), insideSong(onsets.upperGraces));
 });
 
 test("counter-proof: one wrong octave, one wrong tick and one missing note each break the MIDI comparison", () => {
@@ -358,22 +421,46 @@ test("bar 1 beat 2: an Eb pedal under B, D, F and Ab, with the B written Cb4 in 
   assert.equal(midiOf("Cb4") % 12, 11, "Cb4 is the pitch class B");
 });
 
-test("the right hand carries the source fingering and the left hand none; the one ornament is the bar 2 turn", () => {
-  const right = chopinNotes.filter((n) => n.hand === "R" && !n.rest);
-  assert.ok(right.filter((n) => n.finger !== undefined).every((n) => n.fingeringSource === "source" && n.finger >= 1 && n.finger <= 5));
-  assert.equal(right.filter((n) => n.finger !== undefined).length, 25);
-  assert.ok(chopinNotes.filter((n) => n.hand === "L").every((n) => n.finger === undefined));
-  const orn = chopinNotes.filter((n) => n.ornament);
-  assert.equal(orn.length, 1);
-  assert.deepEqual([orn[0].ornament, orn[0].pitch, orn[0].tick], ["turn", "C5", barStart(2) + 480]);
+test("every finger of the Original is a source finger from 1 to 5; the left hand has none outside the cadenza, where the source prints them", () => {
+  const fingered = chopinNotes.filter((n) => n.finger !== undefined);
+  assert.ok(fingered.every((n) => n.fingeringSource === "source" && n.finger >= 1 && n.finger <= 5));
+  assert.ok(chopinNotes.filter((n) => !n.rest && n.fingeringSource === undefined).every((n) => n.finger === undefined), "a finger always says where it comes from");
+  const inCadenza = (n) => n.tick >= barStart(CADENZA[0]) && n.tick < barStart(CADENZA[1] + 1);
+  assert.ok(chopinNotes.filter((n) => n.hand === "L" && n.finger !== undefined).every(inCadenza));
   assert.equal(chopin.confidence.find((c) => c.scope === "fingering").level, "medium");
 });
 
-test("the pedal follows the source: one range per beat through beat 2 of bar 4, then beats 3 and 4 together", () => {
+test("the opening has 25 right-hand fingers and, as its signs, the bar 2 turn and the fioritura of the bar 4 run; every ornament is a known kind", () => {
+  const opening = chopinNotes.filter((n) => n.tick < barStart(5));
+  assert.equal(opening.filter((n) => n.hand === "R" && !n.rest && n.finger !== undefined).length, 25);
+  const orn = opening.filter((n) => n.ornament);
+  assert.deepEqual(orn.filter((n) => n.ornament !== "fioritura").map((n) => [n.ornament, n.pitch, n.tick]), [["turn", "C5", barStart(2) + 480]]);
+  assert.ok(chopinNotes.filter((n) => n.ornament).every((n) => ["turn", "trill", "mordent", "inverted-mordent", "fioritura"].includes(n.ornament)));
+  // a fioritura sign covers the small notes that follow it, which are marked as ornament notes
+  for (const f of orn.filter((n) => n.ornament === "fioritura")) {
+    assert.deepEqual([f.pitch, f.tick], ["Bb5", barStart(4) + 720]);
+    const small = opening.filter((n) => n.hand === "R" && !n.rest && n.tick > f.tick && n.tick < barStart(4) + 1440);
+    assert.equal(small.length, 5);
+    assert.ok(small.every((n) => n.role === "ornament"));
+  }
+});
+
+test("the pedal follows the source: one range per beat through beat 2 of bar 4, then beats 3 and 4 together with beat 1 of bar 5", () => {
   const pedal = chopin.levels.original.pedal;
-  assert.equal(pedal.length, 15);
+  assert.ok(pedal.length >= 15);
   assert.ok(pedal.slice(0, 14).every((p) => p.endTick - p.startTick === 720));
-  assert.deepEqual(pedal[14], { startTick: barStart(4) + 1440, endTick: chopin.lengthTicks });
+  assert.deepEqual(pedal[14], { startTick: barStart(4) + 1440, endTick: Math.min(chopin.lengthTicks, barStart(5) + 720) });
+});
+
+test("every pedal range lies inside the song, follows the one before it and starts on a left-hand note", () => {
+  const pedal = chopin.levels.original.pedal;
+  pedal.forEach((p, i) => {
+    assert.ok(p.startTick >= 0 && p.endTick > p.startTick && p.endTick <= chopin.lengthTicks, `range ${i}`);
+    if (i > 0) assert.ok(p.startTick >= pedal[i - 1].endTick, `range ${i} overlaps the one before`);
+    assert.ok(chopinNotes.some((n) => n.hand === "L" && !n.rest && n.tick === p.startTick), `a left-hand note starts range ${i} at ${p.startTick}`);
+  });
+  const bad = { startTick: 241, endTick: 960 };
+  assert.ok(!chopinNotes.some((n) => n.hand === "L" && !n.rest && n.tick === bad.startTick), "counter-proof: a range that starts between notes is found");
 });
 
 test("the IMSLP entry says it was not read, so it cannot pass as a verification", () => {
@@ -386,52 +473,95 @@ test("the IMSLP entry says it was not read, so it cannot pass as a verification"
 // ---- Chopin Beginner: the same melody, a simpler left hand, labelled notation ----
 const beginner = chopin.levels.beginner;
 const pairs = (notes, hand) => notes.filter((n) => n.hand === hand && !n.rest).map((n) => `${n.tick}:${n.pitch}`);
-const beats = [...Array(16).keys()].map((i) => PICKUP + i * 720);
+const beatTicks = [...Array(BARS * 4).keys()].map((i) => PICKUP + i * 720);
+const beatName = (tick) => `${Math.floor((tick - PICKUP) / BAR) + 1}:${((tick - PICKUP) % BAR) / 720 + 1}`;
+// The beats where the Beginner left hand is not "one bass eighth, then the last chord held": bars 12 and 20 (the chromatic
+// line of beats 3 and 4), beat 2 of bars 29 and 30 (one chord instead of five), and the cadenza and the end (bars 32 to 37).
+const IRREGULAR_BEATS = ["12:3", "12:4", "20:3", "20:4", "29:2", "30:2", ...[32, 33, 34, 35, 36, 37].flatMap((b) => [1, 2, 3, 4].map((k) => `${b}:${k}`))];
+// The Beginner right-hand notes that are not at an Original onset: a note moved to the start of a held beat so that no
+// note is shorter than an eighth. Pinned so that a changed melody shows up as a difference.
+const MOVED_NOTES = ["10080:D5", "12960:G5", "14160:F5", "21600:D5", "27360:Eb5", "44640:Eb5", "49680:Eb5", "50400:Eb5", "66720:D6", "67200:Bb5", "67680:D5", "77040:Eb5", "77760:C6", "78720:Ab5", "78960:G5", "79200:F5", "93360:Bb6", "93840:C7", "94320:A6", "95280:Bb6", "95760:C7", "96240:A6", "97200:Bb6", "97680:C7", "98160:A6", "99360:Bb6", "99600:G6"];
+const movedNotes = (notes) => {
+  const original = new Set(pairs(chopinNotes, "R"));
+  return pairs(notes, "R").filter((p) => !original.has(p) && Number(p.split(":")[0]) < chopin.lengthTicks);
+};
 
 test("Chopin Beginner is labelled and strict, keeps E-flat major, and has no ornament, tie, grace or note shorter than an eighth", () => {
   assert.equal(beginner.notation, "labelled");
   assert.equal(beginner.strictBars, true);
   assert.equal(beginner.transcribed, undefined, "it is a simplification, not a transcription");
   assert.equal(beginner.analysis, undefined, "Beginner shows no analysis");
-  assert.ok(beginner.notes.every((n) => n.ornament === undefined && n.tie === undefined && n.grace === undefined && n.dur >= 240));
+  assert.ok(beginner.notes.every((n) => n.ornament === undefined && n.tie === undefined && n.grace === undefined && n.voice === undefined && n.dur >= 240));
   assert.deepEqual(Object.keys(chopin.levels), ["beginner", "original"]);
   assert.deepEqual(chopin.key, { tonic: "Eb", mode: "major" });
 });
 
-test("the Beginner melody keeps the Original melody: every note is at the same tick and pitch, except one D5 that stands for the run of bar 4", () => {
-  const original = new Set(pairs(chopinNotes, "R"));
-  const extra = pairs(beginner.notes, "R").filter((p) => !original.has(p));
-  assert.deepEqual(extra, ["10080:D5"]);
+test("the Beginner melody keeps the Original melody: every note is at an Original onset with an Original pitch, except the listed moved notes", () => {
+  assert.deepEqual(movedNotes(beginner.notes), MOVED_NOTES.filter((p) => Number(p.split(":")[0]) < chopin.lengthTicks));
   const tied = chopinNotes.find((n) => n.tie);
   assert.equal(beginner.notes.find((n) => n.tick === tied.tick && n.pitch === tied.pitch).dur, 960, "the tied G is one note of both lengths");
+  // nothing is invented: each Beginner right-hand pitch is played by the Original right hand in the same bar
+  for (const n of beginner.notes.filter((x) => x.hand === "R" && !x.rest)) {
+    const bar = Math.floor((n.tick - PICKUP) / BAR);
+    const played = chopinNotes.some((o) => o.hand === "R" && !o.rest && o.pitch === n.pitch && Math.floor((o.tick - PICKUP) / BAR) === bar);
+    assert.ok(played, `${n.tick} ${n.pitch} is not in the Original bar`);
+  }
 });
 
 test("counter-proof: a changed melody note shows up as an extra pair", () => {
   const bad = structuredClone(beginner.notes);
   bad.find((n) => n.hand === "R" && n.pitch === "C6").pitch = "C5";
-  const original = new Set(pairs(chopinNotes, "R"));
-  assert.equal(pairs(bad, "R").filter((p) => !original.has(p)).length, 2);
+  assert.equal(movedNotes(bad).length, movedNotes(beginner.notes).length + 1);
 });
 
-test("the Beginner left hand is one bass eighth then the beat's last chord held for the rest of the beat, on all 16 beats", () => {
-  for (const [i, t] of beats.entries()) {
+// A beat of the Original left hand is regular when it is one bass note, then a chord on the second eighth and another on the third.
+const leftOf = (notes) => notes.filter((n) => n.hand === "L" && !n.rest && (n.voice ?? 1) === 1);
+const regularBeat = (notes, t) => {
+  const left = leftOf(notes);
+  return left.filter((n) => n.tick === t).length === 1 && left.some((n) => n.tick === t && n.role === "bass") && left.some((n) => n.tick === t + 240 && n.role === "accompaniment") && left.some((n) => n.tick === t + 480 && n.role === "accompaniment");
+};
+
+test("the Beginner left hand is one bass eighth then the beat's last chord held for the rest of the beat, on every regular beat", () => {
+  let regular = 0;
+  for (const t of beatTicks.filter((x) => !IRREGULAR_BEATS.includes(beatName(x)))) {
+    assert.ok(regularBeat(chopinNotes, t), `beat ${beatName(t)} of the Original is bass, chord, chord`);
     const bass = beginner.notes.filter((n) => n.hand === "L" && n.role === "bass" && n.tick === t);
     const chord = beginner.notes.filter((n) => n.hand === "L" && n.role === "accompaniment" && n.tick === t + 240);
-    assert.equal(bass.length, 1, `beat ${i + 1} bass`);
+    assert.equal(bass.length, 1, `beat ${beatName(t)} bass`);
     assert.equal(bass[0].dur, 240);
-    assert.equal(bass[0].pitch, chopinNotes.find((n) => n.hand === "L" && n.role === "bass" && n.tick === t).pitch, `beat ${i + 1} bass is the Original bass`);
-    assert.ok(chord.length >= 2 && chord.every((n) => n.dur === 480), `beat ${i + 1} chord`);
-    const last = chopinNotes.filter((n) => n.hand === "L" && n.role === "accompaniment" && n.tick === t + 480).map((n) => n.pitch).sort();
-    assert.deepEqual(chord.map((n) => n.pitch).sort(), last, `beat ${i + 1} chord is the last Original chord of the beat`);
+    assert.equal(bass[0].pitch, chopinNotes.find((n) => n.hand === "L" && n.role === "bass" && n.tick === t).pitch, `beat ${beatName(t)} bass is the Original bass`);
+    assert.ok(chord.length >= 2 && chord.every((n) => n.dur === 480), `beat ${beatName(t)} chord`);
+    const last = leftOf(chopinNotes).filter((n) => n.role === "accompaniment" && n.tick === t + 480).map((n) => n.pitch).sort();
+    assert.deepEqual(chord.map((n) => n.pitch).sort(), last, `beat ${beatName(t)} chord is the last Original chord of the beat`);
+    regular += 1;
+  }
+  assert.ok(regular >= 16, "at least the opening's 16 beats follow the rule");
+});
+
+test("the beats that do not follow the rule are exactly the listed ones, and the listed beats of bars 12 to 30 really differ in the Original", () => {
+  for (const name of ["12:3", "12:4", "20:3", "20:4", "29:2", "30:2"]) {
+    const t = beatTicks.find((x) => beatName(x) === name);
+    if (t !== undefined) assert.equal(regularBeat(chopinNotes, t), false, `beat ${name} of the Original is not bass, chord, chord`);
+  }
+  assert.equal(regularBeat(chopinNotes, beatTicks[0]), true, "counter-proof: a regular beat is recognized");
+  // every beat of the Beginner left hand is covered: its notes and rests fill each bar
+  for (let bar = 1; bar <= BARS; bar += 1) {
+    const covered = beginner.notes.filter((n) => n.hand === "L" && n.tick >= barStart(bar) && n.tick < barStart(bar + 1));
+    const spans = new Map(covered.map((n) => [`${n.tick}:${n.dur}`, n.dur]));
+    assert.equal([...spans.values()].reduce((a, d) => a + d, 0), BAR, `bar ${bar} left hand`);
   }
 });
 
-test("Beginner fingering: source fingers equal the Original ones; the only editorial right-hand fingers are C5 (bar 2), D5 and Eb5 (bar 4); every left-hand note has one", () => {
+test("Beginner fingering: source fingers equal the Original ones; the editorial right-hand fingers are on notes the source does not finger; every left-hand note has one", () => {
   const right = beginner.notes.filter((n) => n.hand === "R" && !n.rest);
   for (const n of right.filter((x) => x.fingeringSource === "source")) {
     assert.equal(chopinNotes.find((o) => o.hand === "R" && o.tick === n.tick && o.pitch === n.pitch).finger, n.finger, `${n.tick} ${n.pitch}`);
   }
-  assert.deepEqual(right.filter((n) => n.fingeringSource === "editorial").map((n) => `${n.tick}:${n.pitch}:${n.finger}`), ["3600:C5:1", "10080:D5:1", "10320:Eb5:2"]);
+  for (const n of right.filter((x) => x.fingeringSource === "editorial")) {
+    assert.ok(!chopinNotes.some((o) => o.hand === "R" && o.tick === n.tick && o.pitch === n.pitch && o.finger !== undefined), `${n.tick} ${n.pitch} has a source finger`);
+  }
+  // the opening keeps the three editorial fingers chosen for it: C5 (bar 2), D5 and Eb5 (bar 4)
+  assert.deepEqual(right.filter((n) => n.fingeringSource === "editorial" && n.tick < barStart(5)).map((n) => `${n.tick}:${n.pitch}:${n.finger}`), ["3600:C5:1", "10080:D5:1", "10320:Eb5:2"]);
   assert.ok(right.every((n) => n.finger >= 1 && n.finger <= 5));
   const left = beginner.notes.filter((n) => n.hand === "L" && !n.rest);
   assert.ok(left.every((n) => n.fingeringSource === "editorial" && n.finger >= 1 && n.finger <= 5));
@@ -444,7 +574,6 @@ test("the Beginner pedal is the Original pedal and the confidence entry calls th
   assert.equal(c.level, "low");
   assert.match(c.note, /Editorial simplification/);
 });
-
 
 // ---- Chopin analysis and lessons: every claim is tied to the data ----
 const chopinChords = chopin.chords;
@@ -471,7 +600,12 @@ test("the chord track parses, is sorted without overlap, and both lessons list e
   chopinChords.forEach((c, i) => i > 0 && assert.ok(c.tick >= chopinChords[i - 1].tick + chopinChords[i - 1].dur, `chord ${i} overlaps`));
 });
 
-test("every left-hand note of each chord span is a tone of that chord and the bass is its bass, except the suspension of bar 4", () => {
+// Spans whose left hand holds notes that are not tones of the chord: the 4-3 suspension of a dominant seventh (an Eb4 over
+// the Bb7 on its first beat, in bars 4, 8, 16, 24, 28 and 31) and the chromatic left-hand line of beats 3 and 4 of bars 12 and 20.
+const SUSPENSIONS = [4, 8, 16, 24, 28, 31].map((b) => barStart(b));
+const CHROMATIC_LINES = [12, 20].map((b) => barStart(b) + 1440);
+
+test("every left-hand note of each chord span is a tone of that chord and the bass is its bass, except the listed suspensions and chromatic lines", () => {
   for (const c of chopinChords) {
     const chord = parseChord(c.symbol);
     const tones = new Set(chord.names.map((x) => pitchClass(`${x}4`)));
@@ -481,8 +615,20 @@ test("every left-hand note of each chord span is a tone of that chord and the ba
       const expected = pitchClass(`${chord.bass ?? chord.root}4`);
       if (n.tick === c.tick || chord.bass === undefined) assert.equal(pitchClass(n.pitch), expected, `${c.symbol} bass at ${n.tick}`);
     }
-    if (c.tick === 8880) continue; // the 4-3 suspension is checked on its own below
+    if (SUSPENSIONS.includes(c.tick) || CHROMATIC_LINES.includes(c.tick)) continue; // checked on their own below
     for (const n of inside.filter((x) => x.role === "accompaniment")) assert.ok(tones.has(pitchClass(n.pitch)), `${c.symbol}: ${n.pitch} at ${n.tick}`);
+  }
+});
+
+test("the exempt spans are what they say: an Eb4 held over a Bb7, and a chromatic line A, D sharp, G sharp under a Bb chord", () => {
+  for (const t of SUSPENSIONS.filter((x) => x < chopin.lengthTicks)) {
+    assert.equal(chordAtC(t).symbol, "Bb7", `bar of ${t}`);
+    assert.ok([t, t + 240, t + 480].flatMap((x) => leftAt(x, "accompaniment")).includes("Eb4"), `the suspended Eb4 sounds at ${t}`);
+    assert.ok(!parseChord("Bb7").names.includes("Eb"), "an Eb is not a tone of Bb7");
+  }
+  for (const t of CHROMATIC_LINES.filter((x) => x < chopin.lengthTicks)) {
+    assert.equal(chordAtC(t).symbol, "Bb");
+    assert.deepEqual([t + 240, t + 480, t + 720].flatMap((x) => leftAt(x, "accompaniment")).slice(0, 3), ["A3", "D#4", "G#3"]);
   }
 });
 
@@ -495,7 +641,9 @@ test("counter-proof: a foreign note in the left hand is found by the same check"
 
 test("analysis exists on Original only, covers harmony, voice-leading, ornament, dynamics and rubato, is sorted and stays inside the song", () => {
   assert.equal(chopin.levels.beginner.analysis, undefined);
-  assert.deepEqual([...new Set(chopinAnalysis.map((a) => a.kind))].sort(), ["dynamics", "harmony", "ornament", "rubato", "voice-leading"]);
+  const kinds = new Set(chopinAnalysis.map((a) => a.kind));
+  for (const k of ["dynamics", "harmony", "ornament", "rubato", "voice-leading"]) assert.ok(kinds.has(k), k);
+  assert.ok([...kinds].every((k) => ["dynamics", "form", "harmony", "ornament", "rubato", "voice-leading"].includes(k)));
   chopinAnalysis.forEach((a, i) => {
     assert.ok(a.tick >= 0 && (a.endTick ?? a.tick) <= chopin.lengthTicks, a.title);
     assert.ok(a.title.length <= 11, `${a.title}: callout titles stay short in 12/8`);
@@ -557,7 +705,7 @@ test("ornament entries sit on the right bar and note: the turn on the C5 of bar 
   assert.equal(barOfTick(run.tick), 4);
   const small = chopinNotes.filter((n) => n.hand === "R" && !n.rest && n.tick >= run.tick && n.tick < run.endTick && n.dur === 120);
   assert.deepEqual(small.map((n) => n.pitch), ["Bb5", "Ab5", "G5", "Ab5", "C5", "D5"]);
-  assert.deepEqual(lessonO.ornaments.map((o) => [barOfTick(o.tick), o.name]), [[2, "Chromatic turn"], [4, "Fioritura"]]);
+  assert.deepEqual(lessonO.ornaments.slice(0, 2).map((o) => [barOfTick(o.tick), o.name]), [[2, "Chromatic turn"], [4, "Fioritura"]]);
   assert.equal(lessonB.ornaments, undefined, "Beginner has no ornaments to explain");
 });
 
@@ -581,7 +729,7 @@ test("the Beginner lesson teaches four big beats, explains each simplification a
 });
 
 test("the Original lesson carries the attribution, the pedal and the interpretation guidance", () => {
-  for (const re of [/Mutopia-2014\/12\/18-1590/, /Renato Biolcati Rinaldi/, /CC BY-SA 3\.0/, /1881 G\. Schirmer/, /pickup and bars 1 to 4 only/]) assert.match(lessonO.arrangementNote, re);
+  for (const re of [/Mutopia-2014\/12\/18-1590/, /Renato Biolcati Rinaldi/, /CC BY-SA 3\.0/, /1881 G\. Schirmer/, new RegExp(`pickup and bars 1 to ${printedBar(BARS)}\\b`)]) assert.match(lessonO.arrangementNote, re);
   assert.match(lessonO.practicePlan.join(" "), /pedal/i);
   assert.match(lessonO.interpretation.rubato, /espress\. dolce/);
   assert.match(lessonO.interpretation.dynamics, /hairpin of bar 2/);

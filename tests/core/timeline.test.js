@@ -130,7 +130,8 @@ test("resolveLevel flags the shifts of both hands in timeline.shifts", () => {
 test("shiftHints on the real Nocturne: the right-hand leaps are flagged, the runs inside a position are not", () => {
   const song = JSON.parse(readFileSync(new URL("../../songs/chopin-nocturne-op9-no2.json", import.meta.url), "utf8"));
   const tl = resolveLevel(song, "original");
-  const right = [...shiftHints(tl.notes, "R")].map((i) => `${tl.notes[i].tick} ${tl.notes[i].pitch}`);
+  // The opening (the pickup and bars 1 to 4); the later bars of the piece have their own leaps.
+  const right = [...shiftHints(tl.notes, "R")].map((i) => `${tl.notes[i].tick} ${tl.notes[i].pitch}`).filter((s) => Number(s.split(" ")[0]) < 11760);
   // Bb4 to G5 on the first beat, G5 down to C5 and up to C6 in bar 1 (each more than 5 semitones outside the previous group).
   assert.deepEqual(right, ["240 G5", "3120 G5", "3600 C5", "3840 C6", "9120 D6", "10080 C5"]);
   // The melody G5 F5 G5 F5 Eb5 of the first bar stays inside one hand position: none of it is flagged.
