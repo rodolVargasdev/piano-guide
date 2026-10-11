@@ -93,3 +93,37 @@ test("privacy counter-proof: the pattern does flag a stored pitch", () => {
   const leaky = withPosition(emptyProgress(), { songId: "s", levelId: "beginner", tonic: "E4", phrase: 1, date: "2026-10-11" });
   assert.match(JSON.stringify(leaky), SPELLED_PITCH, "a pitch smuggled in as a tonic would be caught");
 });
+
+// ---- stages (pr2b2) --------------------------------------------------------------------------------------------
+
+test("a stage and the together hand are saved per song, level and tonic and read back exactly", () => {
+  const store = memory();
+  let p = withPosition(emptyProgress(), { songId: "ode-to-joy", levelId: "beginner", tonic: "C", phrase: 3, stage: 6, hand: "T", date: "2026-10-11" });
+  p = withPosition(p, { songId: "ode-to-joy", levelId: "beginner", tonic: "G", phrase: 0, stage: 1, hand: "L", date: "2026-10-11" });
+  writeProgress(store, p);
+  const back = readProgress(store);
+  assert.deepEqual(positionOf(back, "ode-to-joy", "beginner", "C"), { phrase: 3, stage: 6, hand: "T", updated: "2026-10-11" });
+  assert.deepEqual(positionOf(back, "ode-to-joy", "beginner", "G"), { phrase: 0, stage: 1, hand: "L", updated: "2026-10-11" });
+});
+
+test("a malformed stage or hand is dropped from the entry, the phrase stays (counter-proof of the cleaning)", () => {
+  const store = memory({
+    [PROGRESS_KEY]: JSON.stringify({ v: 1, lessonZero: null, transpose: {}, songs: { s: { beginner: { C: { phrase: 2, stage: -1, hand: "X", updated: "2026-10-11" }, D: { phrase: 1, stage: "3", hand: "T", updated: "2026-10-11" }, E: { phrase: 0, stage: 4.5, updated: "2026-10-11" } } } } }),
+  });
+  const p = readProgress(store);
+  assert.deepEqual(positionOf(p, "s", "beginner", "C"), { phrase: 2, updated: "2026-10-11" });
+  assert.deepEqual(positionOf(p, "s", "beginner", "D"), { phrase: 1, hand: "T", updated: "2026-10-11" });
+  assert.deepEqual(positionOf(p, "s", "beginner", "E"), { phrase: 0, updated: "2026-10-11" });
+});
+
+test("Reset progress removes the stage of the song and keeps another song's stage and lesson zero", () => {
+  const store = memory();
+  let p = withPosition(emptyProgress(), { songId: "a", levelId: "beginner", tonic: "C", phrase: 1, stage: 2, hand: "T", date: "2026-10-11" });
+  p = withPosition(p, { songId: "b", levelId: "beginner", tonic: "C", phrase: 0, stage: 1, hand: "L", date: "2026-10-11" });
+  writeProgress(store, withLessonZero(p, "skipped"));
+  clearSong(store, "a");
+  const back = readProgress(store);
+  assert.equal(positionOf(back, "a", "beginner", "C"), null);
+  assert.equal(positionOf(back, "b", "beginner", "C").stage, 1);
+  assert.equal(back.lessonZero, "skipped");
+});
