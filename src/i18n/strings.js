@@ -127,4 +127,23 @@ export const STRINGS = {
   "learn.hand": { en: "Hand", es: "Mano" },
   "common.loading": { en: "Loading", es: "Cargando" },
   "learn.silent": { en: "The app does not play this song. It only tells you what to play.", es: "La aplicación no reproduce esta canción. Solo indica qué tocar." },
+
+  // lesson zero: for a person who has never touched a piano
+  "lz.offer": { en: "New to the piano? Try lesson zero first. It takes about two minutes.", es: "¿Es nuevo en el piano? Pruebe primero la lección cero. Dura unos dos minutos." },
+  "lz.part": { en: "Lesson zero, part {n} of {total}", es: "Lección cero, parte {n} de {total}" },
+  "lz.skip": { en: "Skip lesson zero", es: "Omitir la lección cero" },
+  "lz.done": { en: "Done", es: "Listo" },
+  "lz.find.heading": { en: "Find a C: it is the white key just left of the two black keys.", es: "Busque un Do: es la tecla blanca justo a la izquierda de las dos teclas negras." },
+  "lz.find.sub": { en: "Black keys come in groups of 2 and 3. Press any C.", es: "Las teclas negras van en grupos de 2 y de 3. Presione cualquier Do." },
+  "lz.find.hint": { en: "Look for a group of 2 black keys. C is the white key on its left.", es: "Busque un grupo de 2 teclas negras. El Do es la tecla blanca a su izquierda." },
+  "lz.posture.heading": { en: "Sit tall and curve your fingers.", es: "Siéntese derecho y curve los dedos." },
+  "lz.posture.sub": { en: "Sit in front of the middle of the keys, with your elbows level with the keys and your fingers curved as if you held a small ball.", es: "Siéntese frente al centro del teclado, con los codos a la altura de las teclas y los dedos curvos, como si sostuviera una pelota pequeña." },
+  "lz.posture.alt": { en: "A person sitting at a piano with straight back, relaxed arms and curved fingers", es: "Una persona sentada al piano con la espalda recta, los brazos sueltos y los dedos curvos" },
+  "lz.fingers.sub": { en: "Right hand: the thumb is finger 1 and the little finger is finger 5.", es: "Mano derecha: el pulgar es el dedo 1 y el meñique es el dedo 5." },
+  "lz.fingers.progress": { en: "Finger {n} of {total}", es: "Dedo {n} de {total}" },
+  "lz.inputs.heading": { en: "You can play in three ways.", es: "Puede tocar de tres maneras." },
+  "lz.inputs.tap": { en: "Tap or click the keys on the screen.", es: "Toque o haga clic en las teclas de la pantalla." },
+  "lz.inputs.computer": { en: "Use the computer keys: the letter is written on each key.", es: "Use las teclas de la computadora: la letra está escrita en cada tecla." },
+  "lz.inputs.piano": { en: "Connect a piano with MIDI: plug the piano's USB TO HOST port into the computer, then press Connect piano.", es: "Conecte un piano con MIDI: enchufe el puerto USB TO HOST del piano a la computadora y presione Conectar el piano." },
+  "lz.inputs.audioOnly": { en: "Some pianos send only sound over USB. They do not show up as MIDI: use the computer keys or tap the keys.", es: "Algunos pianos envían solo sonido por USB. No aparecen como MIDI: use las teclas de la computadora o toque las teclas." },
 };
