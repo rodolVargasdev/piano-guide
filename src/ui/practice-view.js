@@ -5,6 +5,10 @@
 import { GROUPS, exerciseById, exercisesIn } from "../practice/catalog.js";
 import { readPracticeProgress, summaryOf } from "../practice/progress.js";
 import { el } from "./dom.js";
+import { cardModel, docArticle } from "./practice-doc.js";
+import { createExercisePage } from "./practice-run.js";
+
+export { cardModel };
 
 const safeStorage = (win) => {
   try {
@@ -13,9 +17,6 @@ const safeStorage = (win) => {
     return undefined; // blocked storage: the page works for the session, with no saved progress
   }
 };
-
-// Exercises whose card says that fingering books differ: the scales and the arpeggios.
-const FINGERING_NOTE = new Set(["scale-major", "arpeggios"]);
 
 /** The small facts shown on a list entry: best tempo, clean streak, clean runs and the last day. Empty when never practiced. */
 export function summaryChips(summary, t) {
@@ -39,18 +40,6 @@ export function listModel({ progress, i18n }) {
       hint: t(`practice.groupHint.${id}`),
       items: exercisesIn(id).map((e) => ({ id: e.id, href: `#/practice/${e.id}`, title: t(`ex.${e.id}.title`), goal: t(`ex.${e.id}.goal`), chips: summaryChips(summaryOf(progress, e.id), t) })),
     })),
-  };
-}
-
-/** The doc card of one exercise: goal, why, how and what good looks like, the tempo steps and the fingering note. */
-export function cardModel({ exercise, i18n }) {
-  const t = i18n.t;
-  return {
-    id: exercise.id,
-    title: t(`ex.${exercise.id}.title`),
-    sections: ["goal", "why", "how", "good"].map((field) => ({ id: field, heading: t(`practice.card.${field}`), text: t(`ex.${exercise.id}.${field}`) })),
-    tempos: exercise.tempoSteps.length > 0 ? t("practice.card.tempos", { steps: exercise.tempoSteps.join(", ") }) : "",
-    notes: FINGERING_NOTE.has(exercise.id) ? [t("practice.standardFingering")] : [],
   };
 }
 
@@ -88,30 +77,31 @@ function cardScreen(model, { back }) {
     "section",
     { class: "practice practice-page", "data-exercise": model.id },
     el("div", { class: "practice-top" }, el("a", { class: "button button-secondary", href: "#/practice" }, back), el("h2", { class: "practice-title" }, model.title)),
-    el(
-      "article",
-      { class: "panel practice-doc" },
-      model.sections.map((s) => el("section", { class: `practice-field practice-${s.id}` }, el("h3", {}, s.heading), el("p", {}, s.text))),
-      model.tempos ? el("p", { class: "meta practice-tempos" }, model.tempos) : null,
-      model.notes.map((n) => el("p", { class: "meta practice-note" }, n)),
-    ),
+    docArticle(model),
   );
 }
 
 /**
  * practiceView({ i18n, win, storage }) returns a router view (route, root) => { dispose() }. `route.songId` is the
  * exercise id of "#/practice/<id>" (null for the list). An id the catalog does not have shows "Exercise not found"
- * and a link back to the list.
+ * and a link back to the list. A run exercise opens its page (choices, keys to press, feedback); the other exercises
+ * show their card until their own screens arrive. The exercise page repaints itself when the language changes, so this view
+ * leaves it alone (a redraw would lose the step, key and tempo).
  */
-export function practiceView({ i18n, win = window, storage = safeStorage(win) } = {}) {
+export function practiceView({ i18n, win = window, storage = safeStorage(win), makeEngine } = {}) {
   const t = i18n.t;
   return (route, root) => {
     let disposed = false;
+    let page = null;
     const exercise = route.songId ? exerciseById(route.songId) : null;
 
     function render() {
       if (route.songId && !exercise) {
         root.replaceChildren(el("section", { class: "panel", role: "alert" }, el("h2", {}, t("practice.notFound")), el("a", { class: "button", href: "#/practice" }, t("practice.back"))));
+      } else if (exercise?.kind === "run") {
+        page = createExercisePage({ i18n, win, storage, exercise, makeEngine });
+        if (page) root.replaceChildren(page.element);
+        else root.replaceChildren(el("section", { class: "panel", role: "alert" }, el("h2", {}, t("practice.notFound")), el("a", { class: "button", href: "#/practice" }, t("practice.back"))));
       } else if (exercise) {
         root.replaceChildren(cardScreen(cardModel({ exercise, i18n }), { back: t("practice.back") }));
       } else {
@@ -121,12 +111,14 @@ export function practiceView({ i18n, win = window, storage = safeStorage(win) } 
 
     render();
     const off = i18n.onChange(() => {
-      if (!disposed) render();
+      if (!disposed && !page) render();
     });
     return {
       dispose() {
         disposed = true;
         off();
+        page?.dispose();
+        page = null;
       },
     };
   };

@@ -8,7 +8,7 @@ import { EXERCISES } from "../../src/practice/catalog.js";
 import { PRACTICE_KEY, emptyPracticeProgress, recordRun, writePracticeProgress } from "../../src/practice/progress.js";
 
 const doc = fakeDoc();
-globalThis.document = { createElement: (t) => doc.make(t), createTextNode: (text) => ({ tag: "#text", text, attrs: {}, children: [] }) };
+globalThis.document = { createElement: (t) => doc.make(t), createElementNS: (ns, t) => doc.make(t), createTextNode: (text) => ({ tag: "#text", text, attrs: {}, children: [] }), body: { setAttribute() {}, removeAttribute() {} } };
 const { cardModel, listModel, practiceView, summaryChips } = await import("../../src/ui/practice-view.js");
 
 const memory = () => {
@@ -19,10 +19,14 @@ const textOf = (n) => (n.tag === "#text" ? n.text : n._text || n.children.map(te
 const hasClass = (n, c) => (n.attrs.class ?? "").split(" ").includes(c);
 const i18nIn = (lang) => createI18n({ table: STRINGS, navigatorLanguage: lang, warn: () => assert.fail("a missing string") });
 
+// A window and an engine that do nothing: these tests read the cards, the run itself is tested in practice-run.test.js.
+const fakeWin = () => ({ document: globalThis.document, innerWidth: 1200, innerHeight: 800, navigator: { language: "en" }, isSecureContext: true, addEventListener() {}, removeEventListener() {}, setTimeout: () => 0, clearTimeout() {}, requestAnimationFrame: () => 1, cancelAnimationFrame() {} });
+const quietEngine = () => ({ startNote() {}, releaseNote() {}, stopNotes() {}, playNotes() {}, dispose() {} });
+
 function open({ id = null, lang = "en", storage = memory() } = {}) {
   const i18n = i18nIn(lang);
   const root = doc.make("div");
-  const handle = practiceView({ i18n, win: {}, storage })({ songId: id }, root);
+  const handle = practiceView({ i18n, win: fakeWin(), storage, makeEngine: quietEngine })({ songId: id }, root);
   return { root, i18n, storage, handle, all: (pred) => all(root, pred), text: () => textOf(root) };
 }
 
