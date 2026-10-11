@@ -50,7 +50,7 @@ function glowTexture() {
 
 /**
  * One keyboard for an inclusive MIDI range. Returns { group, width, centerX, keyWidth, hasKey,
- * setPressed, highlight, dispose }; `centerX[midi]` and `keyWidth[midi]` place the falling notes over each key.
+ * setPressed, highlight, setGlow, dispose }; `centerX[midi]` and `keyWidth[midi]` place the falling notes over each key.
  */
 export function createKeyboard(range) {
   const { whites, blacks, width } = layoutRange(range);
@@ -73,12 +73,15 @@ export function createKeyboard(range) {
   const colors = { white: palette(KEY_REST_COLOR.white, 0.72), black: palette(KEY_REST_COLOR.black, 0.85) };
 
   function keyMesh(list, black) {
+    // Ivory-like white keys with a light clearcoat; lacquered black keys that reflect the studio.
     const mesh = new THREE.InstancedMesh(
       keyGeometry,
-      new THREE.MeshStandardMaterial({ roughness: black ? 0.3 : 0.45, metalness: 0 }),
+      new THREE.MeshPhysicalMaterial({ roughness: black ? 0.18 : 0.35, metalness: 0, clearcoat: black ? 0.8 : 0.3, clearcoatRoughness: black ? 0.08 : 0.25 }),
       list.length,
     );
     mesh.frustumCulled = false;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
     const rest = new Float32Array(list.length * 16);
     const down = new Float32Array(list.length * 16);
     list.forEach((k, i) => {
@@ -161,11 +164,13 @@ export function createKeyboard(range) {
   owned.push(haloMat, haloTex);
   let lit = [];
 
-  // Lacquered keybed and cheek blocks frame the keys (a plain dark body; reflections arrive later).
-  const bodyMat = new THREE.MeshStandardMaterial({ color: "#0a0b0f", roughness: 0.4, metalness: 0.1 });
+  // Lacquered keybed and cheek blocks frame the keys.
+  const bodyMat = new THREE.MeshPhysicalMaterial({ color: "#0a0b0f", roughness: 0.3, metalness: 0.1, clearcoat: 0.6, clearcoatRoughness: 0.15 });
   const part = (w, h, d, x, y, z) => {
     const g = new THREE.BoxGeometry(w, h, d);
     const m = new THREE.Mesh(g, bodyMat);
+    m.castShadow = true;
+    m.receiveShadow = true;
     m.position.set(x, y, z);
     group.add(m);
     owned.push(g);
@@ -200,11 +205,16 @@ export function createKeyboard(range) {
     halo.instanceMatrix.needsUpdate = true;
   }
 
+  /** The additive glow over pressed keys: on for the High and Medium tiers, off below. */
+  function setGlow(on) {
+    glow.visible = on;
+  }
+
   function dispose() {
     for (const m of [white.mesh, black.mesh, glow, halo]) m.dispose();
     for (const o of owned) o.dispose();
     group.clear();
   }
 
-  return { group, width, centerX, keyWidth: drawnWidth, hasKey: (midi) => slot.has(midi), setPressed, highlight, dispose };
+  return { group, width, centerX, keyWidth: drawnWidth, hasKey: (midi) => slot.has(midi), setPressed, highlight, setGlow, dispose };
 }

@@ -5,6 +5,7 @@
 import { fittedRange } from "../core/keyboard-layout.js";
 import { framePose } from "./camera.js";
 import { createKeyState, updateKeyState } from "./key-state.js";
+import { tierSettings } from "../core/quality.js";
 
 export const UNAVAILABLE_MESSAGE = "3D view unavailable on this device";
 
@@ -54,6 +55,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
     let size = { w: 0, h: 0 };
     let outlined = []; // MIDI keys the lesson card asked to outline
     let reduced = false; // reduced motion: the shift rings stay steady
+    let settings = tierSettings("high"); // the tier in force; a rebuild keeps it
 
     const aspect = () => (size.h > 0 ? size.w / size.h : 1.6);
     let active = null; // the range the keyboard was built for
@@ -62,7 +64,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
         stage.scene.remove(notes.group);
         notes.dispose();
       }
-      notes = createFallingNotes({ timeline: current, keyboard, handModes, range: active });
+      notes = createFallingNotes({ timeline: current, keyboard, handModes, range: active, bars: settings.horizonBars });
       stage.scene.add(notes.group);
     }
     function build() {
@@ -72,7 +74,9 @@ export async function createScene(container, { timeline, loadThree = () => impor
       }
       active = range ?? fittedRange(current.notes);
       keyboard = createKeyboard(active);
+      keyboard.setGlow(settings.glow);
       stage.scene.add(keyboard.group);
+      stage.fitKeyboard(keyboard.width);
       keys.pressed.fill(0); // a new keyboard starts with every key up
       stage.applyPose(framePose(keyboard.width, aspect()));
       keyboard.highlight(outlined);
@@ -113,7 +117,13 @@ export async function createScene(container, { timeline, loadThree = () => impor
       setReducedMotion(on) {
         reduced = on === true;
       },
-      setQuality() {},
+      /** A tier name (high, medium, low, minimum); anything else, such as "auto", means High until the watchdog decides. */
+      setQuality(tier) {
+        settings = tierSettings(tier);
+        stage.applyTier(settings);
+        keyboard.setGlow(settings.glow);
+        notes.setHorizonBars(settings.horizonBars);
+      },
       /** Draw the scene at `tick`; with `playing` false no key is lit by playback. */
       render(tick, playing = true) {
         const changed = updateKeyState(keys, current, tick, playing, handModes);

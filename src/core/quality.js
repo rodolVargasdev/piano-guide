@@ -74,3 +74,19 @@ export function decideTier(frameTimesMs, currentTier, state) {
   }
   return { tier: currentTier, state };
 }
+
+// What each tier turns on. Every tier removes exactly one family from the one before it
+// (reflections, then lights, then resolution), and none of them touches falling notes, key
+// states or finger markers: those stay on in every tier.
+const HIGH = { env: true, shadows: true, rim: true, glow: true, pixelRatioCap: 2, horizonBars: 2 };
+export const TIER_SETTINGS = Object.freeze({
+  high: Object.freeze(HIGH),
+  medium: Object.freeze({ ...HIGH, env: false }), // environment reflections off, the floor goes matte
+  low: Object.freeze({ ...HIGH, env: false, shadows: false, rim: false, glow: false }), // lights reduced
+  minimum: Object.freeze({ ...HIGH, env: false, shadows: false, rim: false, glow: false, pixelRatioCap: 1, horizonBars: 1 }),
+});
+
+/** The settings of a tier; an unknown name gets the High settings. */
+export function tierSettings(tier) {
+  return TIER_SETTINGS[tier] ?? TIER_SETTINGS.high;
+}

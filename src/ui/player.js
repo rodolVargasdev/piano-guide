@@ -161,7 +161,10 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
             scene.setRange(range);
             requestFrame();
           },
-          setQuality: (q) => scene.setQuality(q),
+          setQuality: (q) => {
+            scene.setQuality(q);
+            requestFrame(); // a paused scene redraws only when asked
+          },
         },
       });
       const panel = createPracticePanel({ practice, timeline });

@@ -150,3 +150,25 @@ test("initialTier is High on desktop and Medium with 4 or fewer cores or a coars
   assert.equal(initialTier({}), "high");
   assert.equal(initialTier(), "high");
 });
+
+test("tierSettings: each tier removes one family from the one before it, in the design's order", async () => {
+  const { tierSettings, TIER_SETTINGS } = await import("../../src/core/quality.js");
+  const diff = (a, b) => Object.keys(a).filter((k) => a[k] !== b[k]);
+  assert.deepEqual(diff(tierSettings("high"), tierSettings("medium")), ["env"], "Medium: reflections off");
+  assert.deepEqual(diff(tierSettings("medium"), tierSettings("low")).sort(), ["glow", "rim", "shadows"], "Low: shadows, rim light and glow off");
+  assert.deepEqual(diff(tierSettings("low"), tierSettings("minimum")).sort(), ["horizonBars", "pixelRatioCap"], "Minimum: pixel ratio 1 and a one-bar horizon");
+  assert.equal(tierSettings("minimum").pixelRatioCap, 1);
+  assert.equal(tierSettings("minimum").horizonBars, 1);
+  assert.equal(tierSettings("high").horizonBars, 2);
+  assert.ok(Object.isFrozen(TIER_SETTINGS) && Object.isFrozen(TIER_SETTINGS.high), "settings cannot be changed by a caller");
+});
+
+test("tierSettings: every named tier has settings, an unknown name falls back to High, and no tier turns notes, keys or markers off", async () => {
+  const { tierSettings, TIERS } = await import("../../src/core/quality.js");
+  for (const t of TIERS) assert.ok(tierSettings(t), t);
+  assert.equal(tierSettings("nope"), tierSettings("high"));
+  assert.equal(tierSettings(undefined), tierSettings("high"));
+  for (const t of TIERS) {
+    for (const family of ["notes", "keys", "markers"]) assert.equal(family in tierSettings(t), false, `${t} has no switch for ${family}: they are always on`);
+  }
+});
