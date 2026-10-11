@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
-import { validateIndex, validateSong } from "../src/core/schema.js";
+import { validateIndex, validateSong, visibilityMismatch } from "../src/core/schema.js";
 import { parseChord } from "../src/core/chords.js";
 import { parsePitch } from "../src/core/pitch.js";
 import { barBeatOf } from "../src/core/timing.js";
@@ -32,6 +32,17 @@ test("index fields match the song files", () => {
     assert.equal(song.tempo.bpm, e.defaultBpm);
     assert.deepEqual(Object.keys(song.levels).sort(), [...e.levels].sort());
   }
+});
+
+test("every index entry that declares visibility agrees with its song file", () => {
+  for (const e of index.songs) assert.equal(visibilityMismatch(e, read(e.file)), null, e.id);
+});
+
+test("counter-proof: an entry saying private over a file without visibility is reported, naming the entry", () => {
+  const first = index.songs[0];
+  const reason = visibilityMismatch({ ...first, visibility: "private" }, read(first.file));
+  assert.match(reason, new RegExp(first.id));
+  assert.equal(visibilityMismatch({ ...first, visibility: "public" }, read(first.file)), null, "public over a public file agrees");
 });
 
 test("counter-proof: a duplicated and an incomplete entry make the same index invalid", () => {
