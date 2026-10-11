@@ -1,6 +1,9 @@
 // Phrases of a lesson: the slices of a song the learner practices one at a time. Pure, no DOM.
 import { PPQ, ticksPerBar } from "../core/timing.js";
 
+/** A phrase never has more onset groups than this: a beginner learns a few keys at a time, then moves on. */
+export const MAX_PHRASE_STEPS = 8;
+
 /** A silence shorter than this (an eighth note) is not a rest worth ending a phrase on. */
 export const MIN_REST_TICKS = PPQ / 2;
 
@@ -31,7 +34,9 @@ function restGaps(spans) {
  * Authored `learn.phrases` win unchanged. Otherwise a phrase is about two bars (a pickup belongs to the
  * first phrase) and ends at a rest when one starts within half a bar of the two-bar mark; the next phrase
  * begins at the first note after that rest. Cuts fall on ticks, never inside an onset group, and a phrase
- * with no onset at all (trailing silence) is dropped.
+ * with no onset at all (trailing silence) is dropped. A phrase with more than MAX_PHRASE_STEPS onset groups
+ * (the ticks where any hand starts a note) is cut into equal parts at onsets, so no automatic phrase is long.
+ * Authored phrases are never split.
  */
 export function derivePhrases(timeline) {
   const authored = timeline.learn?.phrases;
@@ -65,5 +70,16 @@ export function derivePhrases(timeline) {
   const hasOnset = ([a, b]) => timeline.notes.some((n) => isSounding(n) && n.tick >= a && n.tick < b);
   const kept = cuts.filter(hasOnset);
   const spans = kept.length > 0 ? kept : [[0, length]];
-  return spans.map(([startTick, endTick], i) => ({ id: `p${i + 1}`, startTick, endTick }));
+  return spans.flatMap((span) => splitLong(timeline, span)).map(([startTick, endTick], i) => ({ id: `p${i + 1}`, startTick, endTick }));
+}
+
+// Cuts [a, b) into the fewest equal parts of at most MAX_PHRASE_STEPS onset ticks, each part starting on an onset.
+function splitLong(timeline, [a, b]) {
+  const onsets = [...new Set(timeline.notes.filter((n) => isSounding(n) && n.tick >= a && n.tick < b).map((n) => n.tick))].sort((x, y) => x - y);
+  if (onsets.length <= MAX_PHRASE_STEPS) return [[a, b]];
+  const parts = Math.ceil(onsets.length / MAX_PHRASE_STEPS);
+  const size = Math.ceil(onsets.length / parts);
+  const starts = [a];
+  for (let i = size; i < onsets.length; i += size) starts.push(onsets[i]);
+  return starts.map((start, i) => [start, i + 1 < starts.length ? starts[i + 1] : b]);
 }

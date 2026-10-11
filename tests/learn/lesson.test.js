@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { initLesson, reduce } from "../../src/learn/lesson.js";
+import { initLesson, phraseNumber, reduce } from "../../src/learn/lesson.js";
 import { emptyProgress, withPosition } from "../../src/learn/progress.js";
 import { mulberry32 } from "../../src/theory/random.js";
 import { BAR, Q, learnSong, note } from "../fixtures/learn-songs.js";
@@ -233,4 +233,30 @@ test("a silent lesson refuses Listen at the intro and during My turn, with no st
   assert.equal(reduce(priv, { type: "LISTEN" }).state, priv);
   assert.equal(reduce(priv, { type: "LISTEN_AGAIN" }).state, priv);
   assert.equal(act(priv, "NEXT_PHRASE").state, priv);
+});
+
+// ---- a song that opens with a left-hand intro: the beginner starts at the melody ------------------------------
+const INTRO_NOTES = [
+  note(0, 2 * Q, "C3", "L"), note(BAR, 2 * Q, "G2", "L"), // phrases 1 and 2: left hand only
+  note(2 * BAR, Q, "C4"), note(2 * BAR + Q, Q, "D4"), // phrase 3: the melody starts
+  note(3 * BAR, Q, "E4"), note(3 * BAR, 2 * Q, "C3", "L"), // phrase 4
+];
+const introSong = () => learnSong({ notes: INTRO_NOTES, bars: 4, learn: { phrases: [0, 1, 2, 3].map((i) => ({ id: `i${i}`, startTick: i * BAR, endTick: (i + 1) * BAR })) } }).song;
+
+test("the default start is the first phrase with a right-hand melody, numbered 1 of the phrases that hand plays", () => {
+  const s = initLesson({ song: introSong(), levelId: "beginner" });
+  assert.equal(s.hand, "R");
+  assert.equal(s.phraseIndex, 2, "the two left-hand intro phrases are skipped for the right hand");
+  assert.deepEqual(phraseNumber(s), { n: 1, total: 2 });
+  const next = reduce(reduce(reduce(s, { type: "START" }).state, { type: "MY_TURN" }).state, { type: "REPEAT" }).state;
+  assert.deepEqual(phraseNumber(next), { n: 1, total: 2 });
+});
+
+test("counter-proof: choosing the left hand brings the intro back, numbered from 1 as well", () => {
+  const s = initLesson({ song: introSong(), levelId: "beginner", hand: "L" });
+  assert.equal(s.phraseIndex, 0);
+  assert.deepEqual(phraseNumber(s), { n: 1, total: 3 });
+  const moved = reduce(initLesson({ song: introSong(), levelId: "beginner" }), { type: "SET_HAND", hand: "L" }).state;
+  assert.equal(moved.hand, "L");
+  assert.ok(phraseNumber(moved).total === 3);
 });

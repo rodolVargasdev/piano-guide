@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { derivePhrases, MIN_REST_TICKS } from "../../src/learn/phrases.js";
+import { derivePhrases, MAX_PHRASE_STEPS, MIN_REST_TICKS } from "../../src/learn/phrases.js";
 import { validateSong } from "../../src/core/schema.js";
 import { BAR, Q, learnSong, line, note } from "../fixtures/learn-songs.js";
 
@@ -62,7 +62,51 @@ test("a one-bar song has one phrase, and a song with no notes still has one (nev
 
 test("a pickup belongs to the first phrase and trailing silence yields no phrase", () => {
   const pickup = learnSong({ notes: line(["G3"], { dur: Q }).concat(run(4, { startTick: Q })), bars: 4, pickupTicks: Q });
-  assert.deepEqual(spans(derivePhrases(pickup.timeline)), [[0, Q + 2 * BAR], [Q + 2 * BAR, Q + 4 * BAR]]);
+  // The pickup note plus eight quarters make nine onsets in the first two bars: cut into 5 and 4 at an onset.
+  assert.deepEqual(spans(derivePhrases(pickup.timeline)), [[0, 5 * Q], [5 * Q, Q + 2 * BAR], [Q + 2 * BAR, Q + 4 * BAR]]);
   const trailing = learnSong({ notes: run(4), bars: 6 });
   assert.deepEqual(spans(derivePhrases(trailing.timeline)), [[0, 2 * BAR], [2 * BAR, 4 * BAR]], "the third, silent phrase is dropped");
+});
+
+// ---- small phrases for a beginner ------------------------------------------------------------------------
+const eighths = (count, opts) => line(Array.from({ length: count }, (_, i) => CYCLE[i % 4]), { dur: Q / 2, ...opts });
+const onsetsIn = (timeline, [a, b]) => new Set(timeline.notes.filter((n) => n.tick >= a && n.tick < b).map((n) => n.tick)).size;
+
+test("a phrase of exactly the limit is not split; one more onset splits it into two near-equal parts", () => {
+  assert.equal(MAX_PHRASE_STEPS, 8);
+  const exact = learnSong({ notes: eighths(8), bars: 2 }).timeline;
+  assert.deepEqual(spans(derivePhrases(exact)), [[0, 2 * BAR]]);
+  const over = learnSong({ notes: eighths(9), bars: 2 }).timeline;
+  const parts = derivePhrases(over);
+  assert.equal(parts.length, 2);
+  assert.deepEqual(parts.map((p) => onsetsIn(over, [p.startTick, p.endTick])), [5, 4]);
+});
+
+test("a long phrase is cut at onsets into the fewest equal parts, each within the limit, covering the same ticks", () => {
+  const { timeline } = learnSong({ notes: eighths(16), bars: 2 });
+  const parts = derivePhrases(timeline);
+  assert.deepEqual(parts.map((p) => onsetsIn(timeline, [p.startTick, p.endTick])), [8, 8]);
+  const big = learnSong({ notes: eighths(20, { dur: Q / 4 }).map((n, i) => ({ ...n, dur: Q / 4, tick: i * (Q / 4) })), bars: 2 }).timeline;
+  const three = derivePhrases(big);
+  assert.deepEqual(three.map((p) => onsetsIn(big, [p.startTick, p.endTick])), [7, 7, 6]);
+  assert.equal(three[0].startTick, 0);
+  assert.equal(three.at(-1).endTick, 2 * BAR);
+  three.slice(1).forEach((p, i) => assert.equal(p.startTick, three[i].endTick, "contiguous"));
+  assert.ok(three.every((p) => big.notes.some((n) => n.tick === p.startTick)), "every part starts on an onset");
+  assert.deepEqual(three.map((p) => p.id), ["p1", "p2", "p3"]);
+});
+
+test("counter-proof: authored phrases are never split, however many notes they hold", () => {
+  const learn = { phrases: [{ id: "all", startTick: 0, endTick: 2 * BAR }] };
+  const { timeline } = learnSong({ notes: eighths(16), bars: 2, learn });
+  assert.deepEqual(spans(derivePhrases(timeline)), [[0, 2 * BAR]]);
+});
+
+test("the onsets of both hands count, so the right hand never gets more steps than the limit", () => {
+  const right = eighths(6); // onsets at 0, 240, ...
+  const left = line(["C3", "G3", "C3", "G3"], { hand: "L", dur: Q / 4 }).map((n, i) => ({ ...n, tick: i * (Q / 2) + Q / 4 })); // between them
+  const { timeline } = learnSong({ notes: [...right, ...left], bars: 2 });
+  const parts = derivePhrases(timeline);
+  assert.equal(parts.length, 2, "ten onsets in all: split although the right hand has only six");
+  assert.ok(parts.every((p) => onsetsIn(timeline, [p.startTick, p.endTick]) <= MAX_PHRASE_STEPS));
 });

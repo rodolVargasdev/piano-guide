@@ -29,6 +29,16 @@ function phraseWithSteps(timeline, phrases, hand, from, dir = 1) {
   return -1;
 }
 
+/**
+ * phraseNumber(state) -> { n, total }: the place of the current phrase among the phrases that have steps for
+ * the hand, counted from 1. A song whose first phrases belong to the other hand (a left-hand intro) still
+ * starts at "Phrase 1 of N" for the hand the learner chose, never at "Phrase 3".
+ */
+export function phraseNumber(s) {
+  const playable = s.phrases.map((_, i) => i).filter((i) => stepsFor(s.timeline, s.phrases, i, s.hand).length > 0);
+  return { n: Math.max(0, playable.indexOf(s.phraseIndex)) + 1, total: Math.max(1, playable.length) };
+}
+
 const expectedOf = (step) => step.keys.map((k) => k.midi);
 const savePosition = (s, phrase, extra = {}) => ({ type: "save", position: { songId: s.song.id, levelId: s.levelId, tonic: s.keyTonic, phrase, hand: s.hand }, ...extra });
 
