@@ -54,7 +54,11 @@ export function keyboardMetrics({ whiteCount, width, height = Infinity }) {
   const size = keyW >= 72 ? "lg" : keyW >= 52 ? "md" : "sm";
   const s = SIZES[size];
   const stripH = 2 * s.strip + 8; // two lines: letter and solfege of each black key
-  const wanted = Math.round(keyW * 3.6);
+  const wanted = Math.round(keyW * (size === "sm" ? 4.6 : 3.8)); // a phone key is narrow, so it is taller
   const keyH = Math.max(120, Math.min(wanted, Math.floor(height - stripH)));
-  return { keyW, keyH, stripH, blackH: Math.round(keyH * BLACK_RATIO), size, ...s };
+  // Below the black keys there must be room for a finger badge, a computer-key letter and the two names.
+  const namesBlock = 8 + s.secondary + 4 + s.primary;
+  const slot = s.badge + (s.letter + 6) + 8;
+  const blackH = Math.round(Math.max(0.42 * keyH, Math.min(BLACK_RATIO * keyH, keyH - namesBlock - slot)));
+  return { keyW, keyH, stripH, blackH, size, ...s };
 }
