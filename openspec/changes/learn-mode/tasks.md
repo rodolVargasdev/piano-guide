@@ -363,3 +363,26 @@ Specs: practice-exercises, project docs rules.
 
 - [ ] 28.1 Add a section "Only the user can verify" to `docs/USABILITY_CHECK.md` (and mirror it in the tracker PR description), each item with how to check and where to record the result (date, device, input): (1) by-ear check of the converted private Cancer melody on the Casio, phrase by phrase, then raising `confidence` in the private file by hand; (2) Casio MIDI connection in Chrome or Edge: device name chip, hot-plug, default no app sound, the MIDI-sound toggle, and the "No MIDI device found" line if the Casio exposes only USB audio; (3) recognizing Cancer by playing it (success criterion, user confirmation recorded); (4) judging the app sound as a piano (only if samples were approved); (5) confirming the flagged fingerings (Bb RH start, F# LH start, flat-key arpeggio LH) with a teacher or book; (6) running the manual usability protocol T1 to T5 with a person who has never played, recording times, hesitations over 10 seconds and wrong-key counts, and revising thresholds with a reason; (7) the Docker run with the read-only mount on the user's machine; (8) confirming on the deployed GitHub Pages site (after the tracker merges) that only public songs appear and there is no error. Test: `tests/docs-guard.test.js` asserts the section exists and lists items 1 to 8 (counter-proof: a fixture doc without it fails).
 - [ ] 28.2 Verification: `node --test` full. Final branch hygiene per project rules: `git branch -a` and `git worktree list` show only `master`, the tracker and the PR branch in progress; report anything else with `git log master..branch`.
+
+---
+
+# Apply notes
+
+## Batch 1: Milestone A phases 1 to 4 (chain as built, local branches, nothing pushed)
+
+Each phase was split at a coherent boundary to keep PR slices near the review budget. The chain, each branch based on the previous one (descriptions in `openspec/changes/learn-mode/prs/`):
+
+| Order | Branch | Tasks | Changed lines excluding openspec docs |
+|-------|--------|-------|---------------------------------------|
+| 1 | `feat/learn-mode-pr1a-silent-rule` (base `feat/learn-mode`) | 1.1 to 1.5 | 433 |
+| 2 | `feat/learn-mode-pr1a2-privacy-guards` | 1.6 to 1.8 | 118 |
+| 3 | `feat/learn-mode-pr2a-converter` | 2.1 | 142 |
+| 4 | `feat/learn-mode-pr2a2-import-chords` | part of 2.3 | 301 |
+| 5 | `feat/learn-mode-pr2a3-import-converter` | 2.2, 2.3 | 538 (size:exception recommended) |
+| 6 | `feat/learn-mode-pr2a4-import-cli` | 2.4 to 2.6 | 328 |
+| 7 | `feat/learn-mode-pr3a-i18n` | 3.1, 3.2 | 387 |
+| 8 | `feat/learn-mode-pr3a2-i18n-strings` | 3.3 to 3.6 | 383 |
+| 9 | `feat/learn-mode-pr4a-transpose-fingering` | 4.1, 4.2 | 518 (size:exception recommended) |
+| 10 | `feat/learn-mode-pr4a2-fingering` | 4.3, 4.4 | 367 |
+
+Next in the chain: pr5a-phrases-steps, based on `feat/learn-mode-pr4a2-fingering`.
