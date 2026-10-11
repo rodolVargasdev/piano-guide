@@ -64,10 +64,10 @@ Conventions for every task below: TDD mode is `strict_tdd: false`, tests land in
 
 ## Phase 2 (PR 2, S1): Core timing and pitch
 
-- [ ] 2.1 Create `src/core/timing.js` per design signatures: `PPQ = 480`, `ticksPerBar`, `ticksPerBeatUnit`, `ticksPerSecond`, `ticksToSeconds`, `secondsToTicks`, `barBeatOf` (pickup is bar 0), `tickOfBarBeat`, `beatGrid` (accent on first beat of each bar). Spec: `playback-engine` timing requirements, 4/4 and 12/8. Check: `node --test tests/core/timing.test.js`.
-- [ ] 2.2 Create `tests/core/timing.test.js`: bar lengths 1920 and 2880, pickup handling, seconds round trip for BPM 20 to 300 (table-driven), `barBeatOf` and `tickOfBarBeat` inverse, `beatGrid` for `quarter` and `dotted-quarter` (12/8 gives 4 clicks per bar, accent on beat 1) and for `eighth` in 12/8 (12 per bar) as the contra-case.
-- [ ] 2.3 Create `src/core/pitch.js`: `parsePitch` (letter, `#`, `b`, `##`, `bb`, octave, C4 = 60), `noteName(pitch, mode)` for `solfege` and `letters` using written spelling (Eb4 is Mib), `transpose(pitch, semitones, key)`. Spec: `score-view` note names requirement, `song-data-model` pitch rules. Check: `node --test tests/core/pitch.test.js`.
-- [ ] 2.4 Create `tests/core/pitch.test.js`: naturals, sharps, flats, doubles, A0 (21) and C8 (108) bounds, unparsable strings return an error or `null` per the chosen contract (document it in the module), Eb4 never becomes "Re#", transpose follows the target key side.
+- [x] 2.1 Create `src/core/timing.js` per design signatures: `PPQ = 480`, `ticksPerBar`, `ticksPerBeatUnit`, `ticksPerSecond`, `ticksToSeconds`, `secondsToTicks`, `barBeatOf` (pickup is bar 0), `tickOfBarBeat`, `beatGrid` (accent on first beat of each bar). Spec: `playback-engine` timing requirements, 4/4 and 12/8. Check: `node --test tests/core/timing.test.js`.
+- [x] 2.2 Create `tests/core/timing.test.js`: bar lengths 1920 and 2880, pickup handling, seconds round trip for BPM 20 to 300 (table-driven), `barBeatOf` and `tickOfBarBeat` inverse, `beatGrid` for `quarter` and `dotted-quarter` (12/8 gives 4 clicks per bar, accent on beat 1) and for `eighth` in 12/8 (12 per bar) as the contra-case.
+- [x] 2.3 Create `src/core/pitch.js`: `parsePitch` (letter, `#`, `b`, `##`, `bb`, octave, C4 = 60), `noteName(pitch, mode)` for `solfege` and `letters` using written spelling (Eb4 is Mib), `transpose(pitch, semitones, key)`. Spec: `score-view` note names requirement, `song-data-model` pitch rules. Check: `node --test tests/core/pitch.test.js`.
+- [x] 2.4 Create `tests/core/pitch.test.js`: naturals, sharps, flats, doubles, A0 (21) and C8 (108) bounds, unparsable strings return an error or `null` per the chosen contract (document it in the module), Eb4 never becomes "Re#", transpose follows the target key side.
 
 ## Phase 3 (PR 3, S1): Schema validator
 
