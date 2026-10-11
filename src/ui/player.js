@@ -166,7 +166,13 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
       });
       const panel = createPracticePanel({ practice, timeline });
       // The lesson card follows the level and the Analysis toggle; its chord chips outline keys on the scene.
-      const lessonCard = createLessonCard({ song, onHighlight: (midis) => scene.highlightNotes(midis) });
+      const lessonCard = createLessonCard({
+        song,
+        onHighlight: (midis) => {
+          scene.highlightNotes(midis);
+          requestFrame(); // a paused scene redraws only when asked
+        },
+      });
       const showLesson = () => lessonCard.setLevel(levelId, { analysis: ui.analysis && controlsFor(song, levelId).analysis });
       showLesson();
       const offPass = engine.on("loop-pass", () => practice.onPass());
