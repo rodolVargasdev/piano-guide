@@ -8,8 +8,8 @@ const M44 = { num: 4, den: 4 };
 const M128 = { num: 12, den: 8 };
 
 // Minimal timeline built through the real resolver so `midi` and `key` come from production code.
-function timelineOf(notes, { key = { tonic: "C", mode: "major" }, meter = M44, pickupTicks = 0, lengthTicks = 3840, notation = "engraved" } = {}) {
-  const song = { key, meter, pickupTicks, lengthTicks, tempo: { bpm: 72, beatUnit: "quarter" }, levels: { x: { label: "X", notation, notes } } };
+function timelineOf(notes, { key = { tonic: "C", mode: "major" }, meter = M44, pickupTicks = 0, lengthTicks = 3840, notation = "engraved", strictBars = true } = {}) {
+  const song = { key, meter, pickupTicks, lengthTicks, tempo: { bpm: 72, beatUnit: "quarter" }, levels: { x: { label: "X", notation, strictBars, notes } } };
   return resolveLevel(song, "x");
 }
 const R = (tick, dur, pitch, extra = {}) => ({ tick, dur, pitch, hand: "R", ...extra });

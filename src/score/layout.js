@@ -8,6 +8,7 @@
 
 import { parsePitch, keyFifths } from "../core/pitch.js";
 import { ticksPerBar } from "../core/timing.js";
+import { placeStems, placeBeams, computedRests } from "./engraving.js";
 
 const LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
 // Diatonic step of the bottom line: E4 for the treble clef, G2 for the bass clef.
@@ -135,6 +136,7 @@ function buildEvents(notes) {
     if (n.finger !== undefined) note.finger = n.finger;
     if (n.label !== undefined) note.label = n.label;
     if (n.ornament !== undefined) note.ornament = n.ornament;
+    if (n.role !== undefined) note.role = n.role;
     if (n.tie) note.tie = true;
     e.notes.push(note);
   });
@@ -178,15 +180,20 @@ function placeLedgers(events) {
 /**
  * Lays out a resolved timeline (see core/timeline.resolveLevel; `key` is required for the
  * signature). Returns { notation, metrics, keySignature, meter, measures, anchors, tickToX,
- * events, width }. Each event is one chord or rest of one hand and voice with its x (staff
- * spaces), ledger lines and notes (pos, accidental). `anchors` is the complete
- * tick to x table: every onset, bar start, chord, analysis entry, tick 0 and the end.
+ * events, beams, width }. Each event is one chord or rest of one
+ * hand and voice with its x (staff spaces), stem, ledger lines and notes (pos, accidental).
+ * `anchors` is the complete tick to x table: every onset, bar start, chord, analysis entry,
+ * tick 0 and the end.
  */
 export function layoutScore(tl, { notation = tl.notation } = {}) {
   const metrics = metricsFor(notation);
   const sig = keySignature(tl.key);
   const measures = barsOf(tl.meter, tl.pickupTicks, tl.lengthTicks);
   const events = buildEvents(tl.notes);
+  // Levels that are not strictBars leave gaps; the score writes them as rests.
+  if (!tl.strictBars) events.push(...computedRests(events, tl, durationShape));
+  events.sort((a, b) => a.tick - b.tick || (a.grace ? 0 : 1) - (b.grace ? 0 : 1) || a.id - b.id);
+  events.forEach((e, i) => (e.id = i));
 
   const barStarts = new Set(measures.map((m) => m.startTick).concat(tl.lengthTicks));
   const ticks = new Set([0, tl.lengthTicks, ...barStarts]);
@@ -207,8 +214,10 @@ export function layoutScore(tl, { notation = tl.notation } = {}) {
 
   assignAccidentals(events, sig, tl);
   placeLedgers(events);
+  placeStems(events, metrics);
   for (const e of events) e.x = tickToX(e.tick);
+  const beams = placeBeams(events, tl, metrics);
   for (const m of measures) m.x = tickToX(m.startTick) - BAR_OFFSET;
 
-  return { notation, metrics, keySignature: sig, meter: tl.meter, measures, anchors, tickToX, events, width: x };
+  return { notation, metrics, keySignature: sig, meter: tl.meter, measures, anchors, tickToX, events, beams, width: x };
 }

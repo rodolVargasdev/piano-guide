@@ -27,6 +27,7 @@ export function resolveLevel(song, levelId) {
     levelId,
     label: level.label,
     notation: level.notation,
+    strictBars: level.strictBars === true,
     meter: song.meter,
     pickupTicks: song.pickupTicks,
     tempo: song.tempo,
