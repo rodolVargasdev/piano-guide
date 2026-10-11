@@ -42,9 +42,9 @@ Delivery: a feature-branch-chain of ten branches, each of about 400 authored lin
 
 ## Tasks
 - [x] T1 Map the current code (learn mode, schema limits, tests that pin the Nocturne length) and fetch the full source again (same SHA-256). Proof: both SHA-256 matched; the tests that pinned the length were in tests/songs.test.js and tests/core/timeline.test.js and now measure `lengthTicks`.
-- [ ] T2 Original level, bars 5 to 34 (app bars 5 to 37), in slices, each pinned by the MIDI onset fixture. Done up to app bar 8.
-- [ ] T3 Beginner level for the same bars. Done up to app bar 8.
-- [ ] T4 Lesson, ornaments and analysis for the new sections; lengthTicks, sections and loops. Done up to app bar 8.
+- [ ] T2 Original level, bars 5 to 34 (app bars 5 to 37), in slices, each pinned by the MIDI onset fixture. Done up to app bar 12.
+- [ ] T3 Beginner level for the same bars. Done up to app bar 12.
+- [ ] T4 Lesson, ornaments and analysis for the new sections; lengthTicks, sections and loops. Done up to app bar 12.
 - [ ] T5 Browser verification, README and STACK/content-sources update. Orchestrator pushes.
 
 ## Progress
@@ -52,4 +52,5 @@ Delivery: a feature-branch-chain of ten branches, each of about 400 authored lin
 - 2026-10-11: slice 0 on `feat/nocturne-complete`: the Nocturne tests measure lengthTicks and the MIDI fixture pins the whole piece. About 200 authored lines: tests/songs.test.js +195 and -47, the fixture (4 long lines) and tests/core/timeline.test.js +2 and -1. The 68 song tests pass on the unchanged four-bar file.
 - 2026-10-11: slice 1 on `feat/nocturne-complete-pr1-content-tests`: the tests of the later bars (sections, forms, tuplets, graces, cadenza), each one skipped until the file reaches its bar. About 250 authored test lines, all in tests/songs.test.js; 18 of the 89 song tests are skipped on the four-bar file and run from the slice that reaches their bar.
 - 2026-10-11: slice 2 on `feat/nocturne-complete-pr2-bars-5-8`: bars 5 to 8, both levels, with chords, analysis and lesson text. Authored lines (song file, licence note and stack row): +399 and -40.
+- 2026-10-11: slice 3 on `feat/nocturne-complete-pr3-bars-9-12`: bars 9 to 12, both levels, with chords, analysis and lesson text. Authored lines (song file, licence note and stack row): +374 and -24.
 
