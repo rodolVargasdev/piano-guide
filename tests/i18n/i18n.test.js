@@ -127,3 +127,12 @@ test("works with no storage, no document and no table", () => {
   assert.equal(i18n.t("anything"), "");
   assert.doesNotThrow(() => i18n.setLang("es"));
 });
+
+test("t renders in an explicit language without changing the current one, and ignores an unsupported language", () => {
+  const i18n = make({ navigatorLanguage: "en-US" });
+  assert.equal(i18n.t("common.correct", undefined, "es"), "Correcto");
+  assert.equal(i18n.lang(), "en", "the current language is untouched");
+  assert.equal(i18n.t("common.correct"), "Correct");
+  assert.equal(i18n.t("common.correct", undefined, "fr"), "Correct", "an unsupported language falls back to the current one");
+  assert.equal(i18n.t("only.english", undefined, "es"), "English only", "a missing Spanish value still falls back to English");
+});

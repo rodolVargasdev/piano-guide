@@ -61,6 +61,7 @@ export const STRINGS = {
   "step.together_one": { en: "Press this key.", es: "Presione esta tecla." },
   "step.together_other": { en: "Press these {count} keys together.", es: "Presione estas {count} teclas a la vez." },
   "step.move": { en: "Move the {hand}: thumb on {thumb}.", es: "Mueva la {hand}: pulgar en {thumb}." },
+  "step.fingerOn": { en: "{finger} on {note}", es: "{finger} en {note}" },
   "step.thenPlay": { en: "Then {finger} on {note}.", es: "Luego, {finger} en {note}." },
   "step.both": { en: "Both hands: {right} right, {left} left.", es: "Ambas manos: {right} con la derecha, {left} con la izquierda." },
 

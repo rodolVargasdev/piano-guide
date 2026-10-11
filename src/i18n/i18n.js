@@ -19,8 +19,9 @@ export function format(template, params = {}) {
 
 /**
  * createI18n({ storage, navigatorLanguage, documentElement, table, warn }) ->
- *   { t(key, params), lang(), setLang(lang), onChange(fn) }.
- * `t` picks the plural form when `params.count` is a number and `key_one` or `key_other` exists, falls
+ *   { t(key, params, lang?), lang(), setLang(lang), onChange(fn) }.
+ * `t` renders in the current language, or in `lang` when that optional third argument names a supported
+ * one (so one translator can render both languages, as the instruction limit guard needs). It picks the plural form when `params.count` is a number and `key_one` or `key_other` exists, falls
  * back to English when the language has no text, and never returns a raw key: an unknown key gives an
  * empty string and a warning for development.
  */
@@ -47,9 +48,10 @@ export function createI18n({ storage, navigatorLanguage, documentElement, table 
   }
 
   return {
-    t(key, params) {
+    t(key, params, lang) {
+      const use = LANGUAGES.includes(lang) ? lang : current;
       const entry = entryFor(key, params);
-      const text = entry && (filled(entry[current]) ? entry[current] : filled(entry.en) ? entry.en : "");
+      const text = entry && (filled(entry[use]) ? entry[use] : filled(entry.en) ? entry.en : "");
       if (!text) {
         warn(`i18n: no text for "${key}"`);
         return "";
