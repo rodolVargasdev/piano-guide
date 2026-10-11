@@ -374,3 +374,39 @@ test("counter-proof: one wrong octave, one wrong tick and one missing note each 
   const missing = chopinNotes.filter((n) => !(n.hand === "L" && n.pitch === "Ab3" && n.tick === barStart(1) + 960));
   assert.notEqual(onsetsOf(missing, "L"), onsets.lower);
 });
+
+test("bar 1 beat 2: an Eb pedal under B, D, F and Ab, with the B written Cb4 in the source", () => {
+  const beat2 = barStart(1) + 720;
+  const sounding = (hand) => chopinNotes.filter((n) => n.hand === hand && !n.rest && n.tick >= beat2 && n.tick < beat2 + 720);
+  const left = sounding("L");
+  assert.equal(left.find((n) => n.role === "bass").pitch, "Eb3");
+  const classes = new Set([...left.filter((n) => n.role === "accompaniment"), ...sounding("R")].map((n) => midiOf(n.pitch) % 12));
+  for (const pc of [11, 2, 5, 8]) assert.ok(classes.has(pc), `pitch class ${pc} sounds on beat 2`);
+  assert.ok(left.some((n) => n.pitch === "Cb4"), "the source spells the B as Cb4");
+  assert.equal(midiOf("Cb4") % 12, 11, "Cb4 is the pitch class B");
+});
+
+test("the right hand carries the source fingering and the left hand none; the one ornament is the bar 2 turn", () => {
+  const right = chopinNotes.filter((n) => n.hand === "R" && !n.rest);
+  assert.ok(right.filter((n) => n.finger !== undefined).every((n) => n.fingeringSource === "source" && n.finger >= 1 && n.finger <= 5));
+  assert.equal(right.filter((n) => n.finger !== undefined).length, 25);
+  assert.ok(chopinNotes.filter((n) => n.hand === "L").every((n) => n.finger === undefined));
+  const orn = chopinNotes.filter((n) => n.ornament);
+  assert.equal(orn.length, 1);
+  assert.deepEqual([orn[0].ornament, orn[0].pitch, orn[0].tick], ["turn", "C5", barStart(2) + 480]);
+  assert.equal(chopin.confidence.find((c) => c.scope === "fingering").level, "medium");
+});
+
+test("the pedal follows the source: one range per beat through beat 2 of bar 4, then beats 3 and 4 together", () => {
+  const pedal = chopin.levels.original.pedal;
+  assert.equal(pedal.length, 15);
+  assert.ok(pedal.slice(0, 14).every((p) => p.endTick - p.startTick === 720));
+  assert.deepEqual(pedal[14], { startTick: barStart(4) + 1440, endTick: chopin.lengthTicks });
+});
+
+test("the IMSLP entry says it was not read, so it cannot pass as a verification", () => {
+  const imslp = chopin.sources.find((s) => new URL(s.url).hostname === "imslp.org");
+  assert.equal(imslp.kind, "reference");
+  assert.match(imslp.what, /could not be read/);
+  assert.equal(chopin.confidence.find((c) => c.scope === "notes").level, "medium");
+});
