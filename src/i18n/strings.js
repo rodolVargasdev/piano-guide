@@ -291,4 +291,10 @@ export const STRINGS = {
   "quality.minor.hint": { en: "Darker and softer.", es: "Más oscuro y suave." },
   "quality.dim.hint": { en: "Tense, it wants to resolve.", es: "Tenso, pide resolverse." },
   "quality.aug.hint": { en: "Dreamy and unsettled.", es: "Soñador e inquieto." },
+  // practice: the summary chips of the list and the header link
+  "practice.summary.best": { en: "Best tempo {bpm}", es: "Mejor tempo {bpm}" },
+  "practice.summary.streak": { en: "Clean streak {count}", es: "Racha limpia {count}" },
+  "practice.summary.runs_one": { en: "{count} clean run", es: "{count} ejecución limpia" },
+  "practice.summary.runs_other": { en: "{count} clean runs", es: "{count} ejecuciones limpias" },
+  "practice.summary.last": { en: "Last practiced {date}", es: "Última práctica: {date}" },
 };

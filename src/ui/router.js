@@ -2,8 +2,7 @@
 //
 // Routes: "#/" is the catalog; "#/song/<id>?level=<id>&names=solfege|letters&view=both|scene|score"
 // is the player; "#/learn/<id>?level=<id>" is Learn mode; "#/practice" and "#/practice/<id>" are the
-// practice exercises (their view arrives later: until then the router sends them to "unknown").
-// Anything else is "unknown".
+// practice exercises (the id is an exercise id, returned raw in `songId`). Anything else is "unknown".
 
 import { el } from "./dom.js";
 

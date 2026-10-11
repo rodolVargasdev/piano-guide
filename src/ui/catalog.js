@@ -153,7 +153,12 @@ function hero(entries, i18n) {
     el("p", { class: "hero-badge" }, m.badge),
     el("h2", {}, m.title),
     el("p", { class: "hero-lead" }, m.lead),
-    m.start ? el("a", { class: "button", href: `#/${learn ? "learn" : "song"}/${m.start.id}` }, i18n.t("catalog.hero.start", { title: m.start.title })) : null,
+    el(
+      "div",
+      { class: "hero-actions" },
+      m.start ? el("a", { class: "button", href: `#/${learn ? "learn" : "song"}/${m.start.id}` }, i18n.t("catalog.hero.start", { title: m.start.title })) : null,
+      el("a", { class: "button button-secondary", href: "#/practice" }, i18n.t("common.practice")),
+    ),
     el("div", { class: "hero-stage", "aria-hidden": "true" }, HERO_NOTES.map((c) => el("span", { class: `hero-note ${c}` }))),
     el("div", { class: "hero-keys", "aria-hidden": "true" }),
   );
