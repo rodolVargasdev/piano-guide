@@ -11,6 +11,7 @@ import { createTransport } from "./transport.js";
 import { resolveLevel } from "../core/timeline.js";
 import { createPractice } from "./practice-controller.js";
 import { createPracticePanel } from "./practice-panel.js";
+import { createLessonCard } from "./lesson-card.js";
 import { createLevelSelect, resolveLevelId, controlsFor, readRemembered, remember, mapPosition, updateHash } from "./level-select.js";
 import { FULL_RANGE } from "../core/keyboard-layout.js";
 import { createAudio } from "../audio/context.js";
@@ -164,6 +165,10 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
         },
       });
       const panel = createPracticePanel({ practice, timeline });
+      // The lesson card follows the level and the Analysis toggle; its chord chips outline keys on the scene.
+      const lessonCard = createLessonCard({ song, onHighlight: (midis) => scene.highlightNotes(midis) });
+      const showLesson = () => lessonCard.setLevel(levelId, { analysis: ui.analysis && controlsFor(song, levelId).analysis });
+      showLesson();
       const offPass = engine.on("loop-pass", () => practice.onPass());
       const key = `${song.key.tonic} ${song.key.mode}`;
       const sceneSlot = el("div", { class: "slot", "data-slot": "scene" }, el("p", { class: "meta", role: "status" }, "Loading keyboard view"));
@@ -184,6 +189,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
         onAnalysis: (on) => {
           ui.analysis = on;
           applyMode();
+          showLesson();
           requestFrame();
         },
         onView: (view) => {
@@ -208,6 +214,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
         timeline = next;
         levelId = id;
         applyMode();
+        showLesson();
         levelSelect.update({ levelId });
         remember(win.sessionStorage, song.id, id);
         replaceHash({ level: id });
@@ -232,6 +239,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
           stage,
           transport.element,
           panel.element,
+          lessonCard.element,
           debug?.element,
         ),
       );
@@ -271,6 +279,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
       return {
         dispose() {
           closed = true;
+          lessonCard.dispose(); // clears a chord outline while the scene still exists
           win.removeEventListener("resize", onResize);
           motion?.removeEventListener("change", onMotion);
           score.dispose();

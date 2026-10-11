@@ -96,7 +96,7 @@ export async function createScene(container, { timeline, loadThree = () => impor
       /** Outline these MIDI keys with a neutral color, whatever the playback does; [] clears it. Survives a rebuild. */
       highlightNotes(midis) {
         outlined = Array.isArray(midis) ? midis : [];
-        keyboard.highlight(outlined);
+        keyboard?.highlight(outlined);
       },
       setReducedMotion() {},
       setQuality() {},

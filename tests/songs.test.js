@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { validateIndex, validateSong } from "../src/core/schema.js";
+import { parseChord } from "../src/core/chords.js";
 
 const read = (rel) => JSON.parse(readFileSync(new URL(`../songs/${rel}`, import.meta.url), "utf8"));
 const index = read("index.json");
@@ -102,4 +103,43 @@ test("Cancer Beginner: every bar has one bass note and a right-hand triad, all e
     assert.equal(inBar.filter((n) => n.hand === "R").length, 3, `bar ${b + 1} right hand`);
   }
   assert.ok(notes.every((n) => n.fingeringSource === "editorial" && n.finger >= 1 && n.finger <= 5));
+});
+
+// ---- Cancer lesson (Beginner) ----
+const lesson = cancer.lesson.beginner;
+const playsAt = (level, tick, hand, pitch) => cancer.levels[level].notes.some((n) => n.tick === tick && n.hand === hand && n.pitch === pitch);
+
+test("the Cancer Beginner lesson validates and the level has no missing-lesson warning", () => {
+  const r = validateSong(cancer);
+  assert.deepEqual(r.errors, []);
+  assert.ok(!r.warnings.some((w) => w.path === "lesson.beginner"), "beginner has its lesson");
+});
+
+test("the lesson lists exactly the chords of the chord track, and every one is recognized", () => {
+  const track = [...new Set(cancer.chords.map((c) => c.symbol))].sort();
+  assert.deepEqual([...lesson.chordsUsed].sort(), track);
+  for (const s of lesson.chordsUsed) assert.notEqual(parseChord(s), null, s);
+});
+
+test("every hand position names a note the level really plays at that tick with that hand", () => {
+  assert.ok(lesson.handPositions.length >= 6);
+  for (const h of lesson.handPositions) assert.ok(playsAt("beginner", h.tick, h.hand, h.anchor), `${h.hand} ${h.anchor} at ${h.tick}`);
+});
+
+test("counter-proof: a hand position pointing at a note the level does not play is caught", () => {
+  assert.equal(playsAt("beginner", 0, "R", "F4"), false);
+  assert.equal(playsAt("beginner", 0, "L", "E4"), false);
+});
+
+test("the lesson teaches posture, finger numbers, hands separate, slow mode and the loop", () => {
+  assert.match(lesson.posture, /sit/i);
+  assert.match(lesson.handPositions[0].text, /1 is the thumb/);
+  const plan = lesson.practicePlan.join(" ");
+  for (const word of [/hands separately/i, /Mute right/, /Slow/, /Loop a section/, /Ramp/]) assert.match(plan, word);
+});
+
+test("the lesson states the arrangement is a generic chord-based accompaniment, not a transcription", () => {
+  assert.match(lesson.arrangementNote, /generic chord-based accompaniment/);
+  assert.match(lesson.arrangementNote, /not a transcription/);
+  assert.match(lesson.summary, /generic chord-based accompaniment, not a transcription/);
 });

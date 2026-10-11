@@ -82,7 +82,79 @@
     }
   },
   "defaultLevel": "beginner",
-  "lesson": {},
+  "lesson": {
+    "beginner": {
+      "summary": "Cancer here is seven chords in a row: E, B, C#m, Am, A, F#/A# and F#m. Your left hand plays one low bass note and your right hand plays a three-note chord, one chord per bar, at a calm 72 BPM. It is a generic chord-based accompaniment, not a transcription of the recording.",
+      "chordsUsed": [
+        "E",
+        "B",
+        "C#m",
+        "Am",
+        "A",
+        "F#/A#",
+        "F#m"
+      ],
+      "handPositions": [
+        {
+          "tick": 0,
+          "hand": "R",
+          "anchor": "E4",
+          "text": "Finger numbers are the same on both hands: 1 is the thumb, 2 the index, 3 the middle, 4 the ring and 5 the little finger. Rest your thumb (1) on E4, your middle finger (3) on G#4 and your little finger (5) on B4, then press the three keys together. That is the E chord."
+        },
+        {
+          "tick": 0,
+          "hand": "L",
+          "anchor": "E2",
+          "text": "Put your left little finger (5) on the low E. The left hand only plays one note per bar, so keep it relaxed and let the little finger travel to the next bass note."
+        },
+        {
+          "tick": 1920,
+          "hand": "R",
+          "anchor": "B3",
+          "text": "For the B chord the right hand steps down a little: thumb (1) on B3, middle finger (3) on D#4, little finger (5) on F#4. The left little finger plays B2."
+        },
+        {
+          "tick": 7680,
+          "hand": "R",
+          "anchor": "C#4",
+          "text": "C#m: thumb (1) on C#4, middle finger (3) on E4, little finger (5) on G#4. The left little finger plays C#3."
+        },
+        {
+          "tick": 9600,
+          "hand": "R",
+          "anchor": "A3",
+          "text": "Am: thumb (1) on A3, middle finger (3) on C4, little finger (5) on E4. The left little finger plays A2. It sounds a little sadder than the chords before it."
+        },
+        {
+          "tick": 11520,
+          "hand": "R",
+          "anchor": "A3",
+          "text": "A: the thumb stays on A3, and the middle finger (3) moves up to C#4. The little finger (5) stays on E4. The left little finger plays A2 again."
+        },
+        {
+          "tick": 13440,
+          "hand": "R",
+          "anchor": "F#4",
+          "text": "F#/A# means an F# chord with A# in the bass. Left little finger (5) on A#2; right thumb (1) on F#4, middle finger (3) on A#4, little finger (5) on C#5."
+        },
+        {
+          "tick": 19200,
+          "hand": "R",
+          "anchor": "F#3",
+          "text": "F#m: thumb (1) on F#3, middle finger (3) on A3, little finger (5) on C#4. The left little finger plays F#2."
+        }
+      ],
+      "posture": "Sit toward the front half of the bench, centered on the keyboard, with your back straight but relaxed and your feet flat on the floor. Let your elbows hang a little in front of your body so that your forearms are level with the keys. Keep your wrists neither dropped nor lifted, and curve your fingers as if you were holding a small ball.",
+      "practicePlan": [
+        "Sit as described and rest your hands on the keys without playing. Check that your shoulders are relaxed.",
+        "Practice hands separately. Press Mute right and play the left hand alone, one bass note per bar. Then press Mute left and play only the right-hand chords.",
+        "Turn on Slow and Metronome, pick Verse in Loop a section, and repeat it until the chord changes feel easy.",
+        "Play hands together at the slow tempo. When it feels comfortable, switch on Ramp so the tempo rises a little after each pass.",
+        "Finish with the Pre-Chorus and Chorus. Its chords are the least certain part of the source, so check them by ear."
+      ],
+      "arrangementNote": "This is a generic chord-based accompaniment built from the chord progression: a bass note on the left and a triad on the right. It is not a transcription of the recording and it leaves out the vocal line."
+    }
+  },
   "sources": [
     {"url":"https://hooktheory.com/theorytab/view/my-chemical-romance/cancer","what":"User-submitted chord progressions per section (Intro I V; Verse I V vi iv; Pre-Chorus and Chorus IV V6/V vi iv ii; a Bridge is listed and not used here), key E major, 4/4, 75 BPM. Chords only: no melody and no text were taken.","accessed":"2026-10-10","kind":"user-submitted"},
     {"url":"https://en.wikipedia.org/wiki/Cancer_(song)","what":"Key E major, common time and a tempo of 70 BPM (the article cites a Musicnotes sheet-music listing). No chords were taken from it.","accessed":"2026-10-10","kind":"reference"}

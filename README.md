@@ -87,6 +87,10 @@ The panel under the transport drives `src/ui/practice-controller.js` (state, no 
 | Full 88 | Frames the whole keyboard instead of the range of the level |
 | Quality | Manual graphics tier; it takes effect with the quality tiers of a later change |
 
+## Lesson card
+
+Under the practice panel, `src/ui/lesson-card.js` shows the `lesson` entry of the active level from the song file: overview, the chords used (each chip outlines its keys on the keyboard and lists its notes; an unknown symbol shows as text), hand positions with their bar, how to sit, the practice plan, the arrangement note and interpretation when present, the analysis entries when the Analysis toggle is on, the sources and the confidence notes (lower confidence is labelled). Sources are links only when their address starts with `https:`. A level without a lesson shows "No lesson for this level yet". The lesson shape is `{ summary, chordsUsed[], handPositions[{ tick, hand, anchor, text }], posture, practicePlan[], arrangementNote?, interpretation?: { rubato, dynamics } }`.
+
 ## Scene
 
 `src/scene/` draws the 3D keyboard with three.js 0.186.1 (vendored under `assets/vendor/`, see `docs/STACK_TECNOLOGICO.md`). The player loads it lazily, so the catalog never downloads three.js; `render(tick, playing)` is called once per frame from the single animation loop and reads no clock of its own.
