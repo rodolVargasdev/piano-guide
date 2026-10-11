@@ -156,7 +156,7 @@ Pure `decideTier(frameTimesMs, currentTier, state)` in `src/core/quality.js` ste
 
 ### Decision: Finger markers, shift hints and a non-color hand cue
 
-**Choice**: Pooled `Sprite`s with `CanvasTexture`s. Shape encodes the hand independently of color: right-hand markers are circles, left-hand markers are rounded squares, each with a small "R" or "L" corner mark. The finger number is drawn only when the event has `finger`; an event without `finger` lights its key and shows no marker. Current notes: full opacity. Notes starting within the next beat: ghost markers at 40 percent opacity. Shift hint: pure `shiftHints(notes, hand, 5)` in `src/core/timeline.js` marks an event as a shift when its pitch lies more than 5 semitones outside the span (lowest to highest MIDI) of the previous onset group of the same hand; the scene draws a pulsing outline ring (static under reduced motion) on the destination key starting one beat before the shift.
+**Choice**: One instanced billboard mesh over a `CanvasTexture` atlas (a single draw call for every marker and ring; separate `Sprite`s reached 27 draw calls per frame on the Nocturne and broke the budget). Shape encodes the hand independently of color: right-hand markers are circles, left-hand markers are rounded squares, each with a small "R" or "L" corner mark. The finger number is drawn only when the event has `finger`; an event without `finger` lights its key and shows no marker. Current notes: full opacity. Notes starting within the next beat: ghost markers at 40 percent opacity. Shift hint: pure `shiftHints(notes, hand, 5)` in `src/core/timeline.js` marks an event as a shift when its pitch lies more than 5 semitones outside the span (lowest to highest MIDI) of the previous onset group of the same hand; the scene draws a pulsing outline ring (static under reduced motion) on the destination key starting one beat before the shift.
 
 ### Decision: Custom SVG score, single continuous system, pure layout
 
@@ -257,7 +257,8 @@ All files are new except `README.md`.
 | `src/scene/index.js` | Create | `createScene` facade and null-scene fallback |
 | `src/scene/keyboard.js` | Create | Instanced keys, press state, glow quads, `highlightNotes` |
 | `src/scene/falling-notes.js` | Create | Instanced field, clipping planes |
-| `src/scene/markers.js` | Create | Finger sprites with hand shapes, ghosts, shift rings |
+| `src/scene/marker-plan.js` | Create | Pure plan of which keys carry a marker or ring at a tick |
+| `src/scene/markers.js` | Create | One instanced billboard mesh: finger markers with hand shapes, ghosts, shift rings |
 | `src/scene/stage.js` | Create | Lights, PMREM studio env, floor, fog, tone mapping |
 | `src/scene/camera.js` | Create | Range framing, section tweens, reduced-motion cut |
 | `src/scene/quality.js` | Create | Frame sampling, applies tiers |
