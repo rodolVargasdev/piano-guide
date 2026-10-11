@@ -39,7 +39,9 @@ export const BAR_OFFSET = 3.0; // the barline sits this far before that onset
 /** Spacing and notehead metrics. Labelled noteheads are larger because they carry the note name. */
 export function metricsFor(notation) {
   const labelled = notation === "labelled";
-  return { headW: labelled ? 1.9 : 1.2, minGap: labelled ? 3.6 : 2.4, gapK: labelled ? 3.6 : 3, maxGap: 14 };
+  const headW = labelled ? 2.1 : 1.2;
+  // chordStep: the vertical distance (half-spaces) under which two heads of a chord must not share a column.
+  return { headW, chordStep: Math.floor(headW * 2), minGap: labelled ? 3.6 : 2.4, gapK: labelled ? 3.6 : 3, maxGap: 14 };
 }
 
 /** Half-spaces above the bottom line for a parsed pitch on `clef` ("treble" or "bass"). */

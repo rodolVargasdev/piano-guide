@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createScore, quantizeToBeat, scoreText } from "../../src/score/render.js";
+import { createScore, quantizeToBeat, countNodes, mountedWindow, scoreText, MOUNT_RADIUS } from "../../src/score/render.js";
 import { layoutScore } from "../../src/score/layout.js";
 import { resolveLevel } from "../../src/core/timeline.js";
 import { beatGrid } from "../../src/core/timing.js";
@@ -21,6 +21,7 @@ function mount(tl, size = [1000, 330], opts = {}) {
   const score = createScore(slot, { timeline: tl, title: "Cancer", doc, ...opts });
   return { doc, slot, score, svg: () => slot.children[0], scroll: () => all(slot, (n) => n.tag === "g" && n.attrs.transform)[0] };
 }
+const bars = (slot) => all(slot, (n) => n.attrs["data-bar"] !== undefined).map((n) => Number(n.attrs["data-bar"]));
 
 test("quantizeToBeat gives the start of the current beat and matches the metronome grid", () => {
   const tl = timelineOf([R(0, 1920, "E4")]);
@@ -37,6 +38,14 @@ test("quantizeToBeat follows the beat unit: a dotted quarter in 12/8 and the pic
   assert.deepEqual([0, 719, 720, 1500, 2879].map((t) => quantizeToBeat(t, tl)), [0, 0, 720, 1440, 2160]);
   const pick = timelineOf([R(0, 480, "E4")], { pickupTicks: 480, lengthTicks: 2400 });
   assert.equal(quantizeToBeat(600, pick), 480, "counted from the pickup end");
+});
+
+test("countNodes counts children and mountedWindow clamps both ends", () => {
+  assert.equal(countNodes([{ children: [{}, { children: [{}] }] }, {}]), 5);
+  assert.deepEqual(mountedWindow(0, 100), [0, MOUNT_RADIUS]);
+  assert.deepEqual(mountedWindow(50, 100), [42, 58]);
+  assert.deepEqual(mountedWindow(99, 100), [91, 99]);
+  assert.deepEqual(mountedWindow(1, 3), [0, 2]);
 });
 
 test("the SVG has role img with a title naming the song and level and a description", () => {
@@ -108,6 +117,22 @@ test("the names toggle redraws immediately: Mi, then E, and Original shows neith
   assert.deepEqual(names(), ["E"]);
   score.setTimeline(timelineOf([R(0, 1920, "E4")], { notation: "engraved", lengthTicks: 1920 }));
   assert.deepEqual(names(), []);
+});
+
+test("beyond the node limit only the measures near the playhead stay mounted; a small score mounts all", () => {
+  const notes = [];
+  for (let b = 0; b < 400; b += 1) for (let q = 0; q < 4; q += 1) notes.push(R(b * 1920 + q * 480, 480, "E4"), L(b * 1920 + q * 480, 480, "E2"));
+  const { slot, score } = mount(timelineOf(notes, { lengthTicks: 400 * 1920 }));
+  const span = () => [Math.min(...bars(slot)), Math.max(...bars(slot))];
+  score.render(0);
+  assert.deepEqual(span(), [1, 1 + MOUNT_RADIUS]);
+  score.render(200 * 1920 + 10);
+  assert.deepEqual(span(), [201 - MOUNT_RADIUS, 201 + MOUNT_RADIUS]);
+  assert.equal(bars(slot).length, 2 * MOUNT_RADIUS + 1);
+  score.render(0);
+  assert.equal(bars(slot).length, MOUNT_RADIUS + 1, "seeking back unmounts the far measures");
+  const small = mount(timelineOf([R(0, 1920, "E4"), R(1920, 1920, "G4")]));
+  assert.equal(bars(small.slot).length, 2, "counter-proof: below the limit every measure is mounted");
 });
 
 test("song text only ever reaches the DOM through textContent", () => {

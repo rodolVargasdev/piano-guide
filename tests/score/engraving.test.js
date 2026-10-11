@@ -7,8 +7,8 @@ const M44 = { num: 4, den: 4 };
 const M128 = { num: 12, den: 8 };
 const EB = { tonic: "Eb", mode: "major" };
 
-function timelineOf(notes, { key = { tonic: "C", mode: "major" }, meter = M44, pickupTicks = 0, lengthTicks = 1920, strictBars = true } = {}) {
-  const song = { key, meter, pickupTicks, lengthTicks, tempo: { bpm: 72, beatUnit: "quarter" }, levels: { x: { label: "X", notation: "engraved", strictBars, notes } } };
+function timelineOf(notes, { key = { tonic: "C", mode: "major" }, meter = M44, pickupTicks = 0, lengthTicks = 1920, strictBars = true, notation = "engraved" } = {}) {
+  const song = { key, meter, pickupTicks, lengthTicks, tempo: { bpm: 72, beatUnit: "quarter" }, levels: { x: { label: "X", notation, strictBars, notes } } };
   return resolveLevel(song, "x");
 }
 const R = (tick, dur, pitch, extra = {}) => ({ tick, dur, pitch, hand: "R", ...extra });
@@ -41,6 +41,15 @@ test("a second in a chord puts the upper head on the other side of the stem", ()
   assert.deepEqual(up.notes.map((n) => n.dx), [0, up.stem.dx * 2, 0]);
   const apart = layoutScore(timelineOf([R(0, 480, "C4"), R(0, 480, "E4")])).events[0];
   assert.deepEqual(apart.notes.map((n) => n.dx), [0, 0], "contra-case: a third needs no shift");
+});
+
+test("large labelled heads stagger a triad of thirds, which engraved heads do not need", () => {
+  const triad = [R(0, 1920, "E4"), R(0, 1920, "G4"), R(0, 1920, "B4")];
+  const labelled = layoutScore(timelineOf(triad, { notation: "labelled" })).events[0];
+  assert.deepEqual(labelled.notes.map((n) => n.dx), [0, 2.1, 0], "the middle head steps aside, the outer two are a fifth apart and fit");
+  assert.deepEqual(layoutScore(timelineOf(triad)).events[0].notes.map((n) => n.dx), [0, 0, 0]);
+  const fifths = layoutScore(timelineOf([R(0, 1920, "E4"), R(0, 1920, "B4")], { notation: "labelled" })).events[0];
+  assert.deepEqual(fifths.notes.map((n) => n.dx), [0, 0], "contra-case: a fifth is far enough apart");
 });
 
 test("12/8 beams eighths in four groups of three", () => {

@@ -74,6 +74,12 @@ function drawNoteEvent(e, layout, opts, out) {
   const headW = layout.metrics.headW;
   const hand = `head-${e.hand}`;
   const hollow = e.base === "whole" || e.base === "half";
+  // Accidentals stack in columns to the left of the whole chord, never over a head.
+  const left = (e.x + Math.min(...e.notes.map((n) => n.dx)) - headW / 2) * unit;
+  let column = 0;
+  // Ledger lines first, so a head is drawn over the line that crosses it.
+  const half = (headW / 2 + 0.45) * unit;
+  for (const p of e.ledgers) out.push(node("line", { class: "ledger", x1: e.x * unit - half, x2: e.x * unit + half, y1: yOf(e.staff, p, unit), y2: yOf(e.staff, p, unit) }));
   for (const n of e.notes) {
     const cx = (e.x + n.dx) * unit;
     const cy = yOf(e.staff, n.pos, unit);
@@ -81,15 +87,16 @@ function drawNoteEvent(e, layout, opts, out) {
     if (labelled) {
       out.push(node("circle", { class: cls, cx, cy, r: (headW / 2) * unit * s }));
       const name = n.label ?? noteName(n.pitch, opts.names);
-      if (name && !e.small) out.push(node("text", { class: "note-name", x: cx, y: cy, "font-size": unit * (name.length > 3 ? 0.72 : 0.9), "text-anchor": "middle", "dominant-baseline": "central" }, name));
+      if (name && !e.small) out.push(node("text", { class: "note-name", x: cx, y: cy, "font-size": unit * (name.length > 3 ? 0.7 : name.length > 2 ? 0.82 : 1), "text-anchor": "middle", "dominant-baseline": "central" }, name));
     } else {
       out.push(node("ellipse", { class: cls, cx, cy, rx: 0.62 * unit * s, ry: 0.45 * unit * s, transform: `rotate(-20 ${round(cx)} ${round(cy)})` }));
     }
-    if (n.accidental) out.push(...glyph(n.accidental, cx - (headW / 2 + 0.9) * unit * s, cy, unit * s, "accidental"));
+    if (n.accidental) {
+      out.push(...glyph(n.accidental, left - (0.9 + column * 1.1) * unit * s, cy, unit * s, "accidental"));
+      column += 1;
+    }
     for (let k = 0; k < e.dots; k += 1) out.push(node("circle", { class: "dot", cx: cx + (headW / 2 + 0.6 + k * 0.5) * unit, cy: n.pos % 2 === 0 ? cy - 0.5 * unit : cy, r: 0.18 * unit }));
   }
-  const half = (headW / 2 + 0.45) * unit;
-  for (const p of e.ledgers) out.push(node("line", { class: "ledger", x1: e.x * unit - half, x2: e.x * unit + half, y1: yOf(e.staff, p, unit), y2: yOf(e.staff, p, unit) }));
   if (!e.stem) return;
   const x = (e.x + e.stem.dx) * unit;
   const y2 = yOf(e.staff, e.stem.toPos, unit);

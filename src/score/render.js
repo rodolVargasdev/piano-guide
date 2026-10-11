@@ -1,20 +1,34 @@
 // SVG score view: one continuous grand staff scrolling under a fixed playhead. It is a pure
 // subscriber of the player loop (`render(tick)`); it never schedules or keeps time. The layout
 // and the drawing come from layout.js and draw.js, this module only builds the SVG elements,
-// moves the scroll group and steps per beat under reduced motion. Song text is always inserted
-// with textContent.
+// moves the scroll group, steps per beat under reduced motion and mounts only the measures near
+// the playhead when the drawing is very large. Song text is always inserted with textContent.
 
 import { layoutScore } from "./layout.js";
 import { drawScore, HEIGHT_SP, HEIGHT_ANALYSIS_SP } from "./draw.js";
 import { ticksPerBeatUnit, ticksPerBar } from "../core/timing.js";
 
 const NS = "http://www.w3.org/2000/svg";
+export const NODE_LIMIT = 5000;
+export const MOUNT_RADIUS = 8;
 const BASE_UNIT = { labelled: 11, engraved: 10 };
 
 /** Start of the beat that contains `tick` (the beat unit of the tempo, counted from the pickup). */
 export function quantizeToBeat(tick, tl) {
   const beat = ticksPerBeatUnit(tl.tempo.beatUnit);
   return Math.max(0, Math.floor((tick - tl.pickupTicks) / beat) * beat + tl.pickupTicks);
+}
+
+/** Total number of descriptors (children included) in a list of draw nodes. */
+export function countNodes(nodes) {
+  let n = 0;
+  for (const node of nodes) n += 1 + (node.children ? countNodes(node.children) : 0);
+  return n;
+}
+
+/** Inclusive range of measure indexes to keep mounted around `center`. */
+export function mountedWindow(center, count, radius = MOUNT_RADIUS) {
+  return [Math.max(0, center - radius), Math.min(count - 1, center + radius)];
 }
 
 /** Text alternative: `title` is "<song>, <level> score", `desc` summarizes key, meter, tempo and length. */
@@ -56,10 +70,43 @@ export function createScore(slot, { timeline, title = "", names = "solfege", ana
   let svg = null;
   let scroll = null;
   let translate = null;
+  let measureEls = [];
+  let virtual = false;
+  let mounted = [0, -1];
   let lastX = NaN;
   let lastTick = null;
   let builtSize = "";
   const clipId = `score-clip-${(clipSeq += 1)}`;
+
+  function mountMeasure(i) {
+    if (measureEls[i] || !drawn.measures[i]) return;
+    const g = doc.createElementNS(NS, "g");
+    g.setAttribute("data-bar", String(drawn.measures[i].bar));
+    for (const d of drawn.measures[i].nodes) g.append(build(doc, d));
+    measureEls[i] = g;
+    scroll.append(g);
+  }
+  function setWindow(lo, hi) {
+    if (lo === mounted[0] && hi === mounted[1]) return;
+    measureEls.forEach((g, i) => {
+      if (g && (i < lo || i > hi)) {
+        g.remove();
+        measureEls[i] = null;
+      }
+    });
+    for (let i = lo; i <= hi; i += 1) mountMeasure(i);
+    mounted = [lo, hi];
+  }
+  function measureAt(tick) {
+    let lo = 0;
+    let hi = layout.measures.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (layout.measures[mid].startTick <= tick) lo = mid;
+      else hi = mid - 1;
+    }
+    return lo;
+  }
 
   function rebuild() {
     const analysisHeight = tl.analysis?.length ? HEIGHT_ANALYSIS_SP : HEIGHT_SP;
@@ -101,13 +148,11 @@ export function createScore(slot, { timeline, title = "", names = "solfege", ana
     svg.append(t, desc, defs, paper, lines, header, clipped, head);
     slot.replaceChildren(svg);
     translate = scroll.transform.baseVal.getItem(0);
-    for (const m of drawn.measures) {
-      const g = doc.createElementNS(NS, "g");
-      g.setAttribute("data-bar", String(m.bar));
-      for (const d of m.nodes) g.append(build(doc, d));
-      scroll.append(g);
-    }
+    measureEls = [];
+    virtual = countNodes(drawn.measures.flatMap((m) => m.nodes)) > NODE_LIMIT;
+    mounted = [0, -1];
     lastX = NaN;
+    if (!virtual) setWindow(0, drawn.measures.length - 1);
     // render(tick) is called every frame; this one call places the new drawing at the last tick.
     if (lastTick !== null) render(lastTick);
   }
@@ -117,6 +162,10 @@ export function createScore(slot, { timeline, title = "", names = "solfege", ana
     if (!svg) return;
     const shown = reduced ? quantizeToBeat(tick, tl) : tick;
     const x = playheadX - layout.tickToX(shown) * unit;
+    if (virtual) {
+      const [lo, hi] = mountedWindow(measureAt(shown), drawn.measures.length);
+      setWindow(lo, hi);
+    }
     if (x !== lastX) {
       translate.setTranslate(x, 0);
       lastX = x;
@@ -153,6 +202,7 @@ export function createScore(slot, { timeline, title = "", names = "solfege", ana
       svg = null;
       scroll = null;
       translate = null;
+      measureEls = [];
     },
   };
 }

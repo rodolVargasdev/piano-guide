@@ -70,6 +70,7 @@ test("ledger lines: middle C has one on the treble staff, notes inside the staff
   const ledgers = withClass(body(out), "ledger");
   assert.equal(ledgers.length, 1);
   assert.equal(ledgers[0].attrs.y1, yOf("treble", -2, U));
+  assert.ok(body(out).indexOf(ledgers[0]) < body(out).indexOf(withClass(body(out), "head")[0]), "drawn first, so the head covers the line");
 });
 
 test("an accidental glyph is drawn left of the notehead, once per bar, and none for a note in the key", () => {
@@ -79,6 +80,15 @@ test("an accidental glyph is drawn left of the notehead, once per bar, and none 
   const head = withClass(body(out), "head")[0];
   assert.match(acc[0].attrs.transform, /^translate\(/);
   assert.ok(Number(/translate\((-?[\d.]+)/.exec(acc[0].attrs.transform)[1]) < head.attrs.cx);
+});
+
+test("accidentals of a chord stack in columns left of every head", () => {
+  const { out } = draw([R(0, 1920, "C#4"), R(0, 1920, "E#4"), R(0, 1920, "G#4")], { notation: "engraved" });
+  const xs = withClass(body(out), "accidental").map((n) => Number(/translate\((-?[\d.]+)/.exec(n.attrs.transform)[1]));
+  assert.equal(xs.length, 3);
+  assert.equal(new Set(xs).size, 3, "each accidental has its own column");
+  const leftHead = Math.min(...withClass(body(out), "head").map((h) => h.attrs.cx));
+  assert.ok(xs.every((x) => x < leftHead), "all to the left of the heads");
 });
 
 test("stems run from the head to the tip, a lone eighth keeps a flag, a beamed eighth does not", () => {

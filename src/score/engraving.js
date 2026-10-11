@@ -13,14 +13,16 @@ const REST_VALUES = [2880, 1920, 1440, 960, 720, 480, 360, 240, 180, 120, 60];
 const farthest = (e) => (Math.abs(e.notes[e.notes.length - 1].pos - MIDDLE) > Math.abs(e.notes[0].pos - MIDDLE) ? e.notes[e.notes.length - 1].pos : e.notes[0].pos);
 
 // Sets the stem side, the head offsets and the stem of one chord for a given direction.
-function orient(e, dir, headW) {
+function orient(e, dir, metrics) {
+  const headW = metrics.headW;
   const low = e.notes[0].pos;
   const high = e.notes[e.notes.length - 1].pos;
   e.dir = dir;
-  // Adjacent steps in a chord alternate sides of the stem so the heads do not overlap.
+  // Heads closer than `chordStep` half-spaces alternate sides of the stem so they do not overlap
+  // (a second when engraved; up to a fourth when the heads are large to hold a name).
   const ordered = dir === "up" ? e.notes : [...e.notes].reverse();
   ordered.forEach((n, i) => {
-    n.dx = i > 0 && Math.abs(n.pos - ordered[i - 1].pos) === 1 && ordered[i - 1].dx === 0 ? (dir === "up" ? headW : -headW) : 0;
+    n.dx = i > 0 && Math.abs(n.pos - ordered[i - 1].pos) < metrics.chordStep && ordered[i - 1].dx === 0 ? (dir === "up" ? headW : -headW) : 0;
   });
   if (e.base === "whole") return;
   e.stem = dir === "up" ? { dir, dx: headW / 2, fromPos: low, toPos: Math.max(high + STEM_LENGTH, MIDDLE) } : { dir, dx: -headW / 2, fromPos: high, toPos: Math.min(low - STEM_LENGTH, MIDDLE) };
@@ -32,7 +34,7 @@ export function placeStems(events, metrics) {
   for (const e of events) {
     if (e.kind !== "note") continue;
     e.fixedDir = twoVoices.has(e.staff);
-    orient(e, e.fixedDir ? (e.voice === 2 ? "down" : "up") : farthest(e) >= MIDDLE ? "down" : "up", metrics.headW);
+    orient(e, e.fixedDir ? (e.voice === 2 ? "down" : "up") : farthest(e) >= MIDDLE ? "down" : "up", metrics);
   }
 }
 
@@ -50,7 +52,7 @@ function perVoice(events, keep) {
 function buildBeam(run, id, metrics) {
   const lean = run.reduce((s, e) => s + farthest(e) - MIDDLE, 0);
   const dir = run[0].fixedDir ? run[0].dir : lean >= 0 ? "down" : "up";
-  for (const e of run) orient(e, dir, metrics.headW);
+  for (const e of run) orient(e, dir, metrics);
   const sgn = dir === "up" ? 1 : -1;
   const last = run[run.length - 1];
   const x1 = run[0].x + run[0].stem.dx;
