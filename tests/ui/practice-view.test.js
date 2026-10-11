@@ -36,7 +36,7 @@ test("the list shows the four groups in order with the ten exercises, each a lin
   assert.deepEqual(groups.map((g) => g.attrs["data-group"]), ["technique", "harmony", "ear", "routine"]);
   const items = v.all((n) => n.tag === "li" && n.attrs["data-exercise"]);
   assert.deepEqual(items.map((n) => n.attrs["data-exercise"]), ["five-finger", "scale-major", "arpeggios", "triads", "cadence-i-iv-v-i", "progression-i-vi-iv-v", "progression-i-v-vi-iv", "ear-intervals", "ear-chords", "routine"]);
-  const links = v.all((n) => n.tag === "a" && /^#\/practice\//.test(n.attrs.href ?? ""));
+  const links = v.all((n) => n.tag === "a" && /^#\/practice\//.test(n.attrs.href ?? "") && n.parent?.tag === "h4");
   assert.equal(links.length, 10);
   assert.equal(links.find((l) => textOf(l) === "Major scales").attrs.href, "#/practice/scale-major");
 });
@@ -44,7 +44,7 @@ test("the list shows the four groups in order with the ten exercises, each a lin
 test("each entry has a short goal line and no paragraph, and the heading says Practice exercises", () => {
   const v = open();
   assert.equal(textOf(v.all((n) => n.tag === "h2")[0]), "Practice exercises");
-  const first = v.all((n) => n.tag === "li")[0];
+  const first = v.all((n) => n.tag === "li" && n.attrs["data-exercise"])[0];
   assert.equal(textOf(first.children[1]), "Put one finger on each of five neighboring keys and play them evenly.");
 });
 
@@ -72,7 +72,7 @@ test("corrupt or blocked storage shows the list with no chips and no error", () 
   assert.equal(open({ storage }).all((n) => hasClass(n, "chip")).length, 0);
   const blocked = { getItem() { throw new Error("denied"); } };
   const v = open({ storage: blocked });
-  assert.equal(v.all((n) => n.tag === "li").length, 10);
+  assert.equal(v.all((n) => n.tag === "li" && n.attrs["data-exercise"]).length, 10);
 });
 
 test("the C major scale card has the goal, why, how and what good looks like, the tempo steps and the fingering note", () => {

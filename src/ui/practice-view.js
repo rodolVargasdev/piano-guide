@@ -3,11 +3,12 @@
 // into elements with text nodes only. The id in the address bar is only compared against the catalog and is never
 // shown. The page follows the language selector and keeps its place when the language changes.
 import { GROUPS, exerciseById, exercisesIn } from "../practice/catalog.js";
-import { clearPracticeProgress, readPracticeProgress, summaryOf } from "../practice/progress.js";
+import { clearPracticeProgress, localIsoDate, readPracticeProgress, summaryOf } from "../practice/progress.js";
 import { el } from "./dom.js";
 import { cardModel, docArticle, summaryChips } from "./practice-doc.js";
 import { createEarPage } from "./practice-ear.js";
 import { createRoutinePage } from "./practice-routine.js";
+import { createTodayCard } from "./practice-today.js";
 import { createExercisePage } from "./practice-run.js";
 
 export { cardModel, summaryChips };
@@ -45,11 +46,12 @@ function resetRow({ confirming, t, onAsk, onYes, onNo }) {
   return el("div", { class: "practice-reset", role: "group", "aria-label": t("practice.reset.ask") }, el("span", {}, t("practice.reset.ask")), button("RESET_YES", t("practice.reset.yes"), onYes), button("RESET_NO", t("practice.reset.no"), onNo));
 }
 
-function listScreen(model, reset) {
+function listScreen(model, reset, today) {
   return el(
     "section",
     { class: "practice" },
     el("h2", {}, model.heading),
+    today,
     model.groups.map((g) =>
       el(
         "section",
@@ -91,12 +93,13 @@ function cardScreen(model, { back }) {
  * (play, answer, count) and the routine its four blocks in order. The exercise page repaints itself when the language changes, so this view
  * leaves it alone (a redraw would lose the step, key and tempo).
  */
-export function practiceView({ i18n, win = window, storage = safeStorage(win), makeEngine } = {}) {
+export function practiceView({ i18n, win = window, storage = safeStorage(win), makeEngine, today = () => localIsoDate() } = {}) {
   const t = i18n.t;
   return (route, root) => {
     let disposed = false;
     let page = null;
     let confirming = false;
+    let todayCard = null;
     const exercise = route.songId ? exerciseById(route.songId) : null;
 
     function render() {
@@ -127,7 +130,11 @@ export function practiceView({ i18n, win = window, storage = safeStorage(win), m
             render();
           },
         });
-        root.replaceChildren(listScreen(listModel({ progress: readPracticeProgress(storage), i18n }), reset));
+        const progress = readPracticeProgress(storage);
+        // One Today card for the life of the list: it is redrawn with the progress, and it follows the language itself.
+        todayCard ??= createTodayCard({ i18n });
+        todayCard.set({ progress, today: today() });
+        root.replaceChildren(listScreen(listModel({ progress, i18n }), reset, todayCard.element));
       }
     }
 
@@ -141,6 +148,8 @@ export function practiceView({ i18n, win = window, storage = safeStorage(win), m
         off();
         page?.dispose();
         page = null;
+        todayCard?.dispose();
+        todayCard = null;
       },
     };
   };

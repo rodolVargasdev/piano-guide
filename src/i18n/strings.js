@@ -383,4 +383,5 @@ export const STRINGS = {
   "routine.summary.counts": { en: "Today counts: {days}.", es: "Hoy cuenta: {days}." },
   "routine.summary.none": { en: "Every block was skipped, so today does not count.", es: "Se omitieron todos los bloques, así que hoy no cuenta." },
   "routine.start": { en: "Start the routine", es: "Empezar la rutina" },
+  "routine.todayKey": { en: "Today's key: {key}", es: "Tonalidad de hoy: {key}" },
 };

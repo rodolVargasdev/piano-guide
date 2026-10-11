@@ -7,14 +7,15 @@ import { el } from "./dom.js";
 
 /**
  * createCircleOfFifths({ i18n, onPick }) -> { element, set({ current, done, next }), dispose() }.
- * `onPick(tonic)` is called with the key the learner taps. `set` says which key is selected, which have a clean run
+ * `onPick(tonic)` is called with the key the learner taps; with `readOnly` the circle only shows (the buttons are
+ * disabled and keep their labels). `set` says which key is selected, which have a clean run
  * and which are suggested next; it redraws the labels, so the language can change at any time.
  */
-export function createCircleOfFifths({ i18n, onPick }) {
-  const root = el("div", { class: "cof", role: "group" });
+export function createCircleOfFifths({ i18n, onPick = () => {}, readOnly = false }) {
+  const root = el("div", { class: "cof", role: "group", ...(readOnly ? { "data-readonly": "true" } : {}) });
   const center = el("span", { class: "cof-center", "aria-hidden": "true" });
   const buttons = TONICS.map((tonic, i) => {
-    const b = el("button", { type: "button", class: `btn cof-key cof-pos-${i}`, "data-key": tonic }, tonic);
+    const b = el("button", { type: "button", class: `btn cof-key cof-pos-${i}`, "data-key": tonic, ...(readOnly ? { disabled: true } : {}) }, tonic);
     b.addEventListener("click", () => onPick(tonic));
     return b;
   });
