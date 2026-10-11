@@ -197,12 +197,12 @@ Split point: 11.1 (input panel) as its own PR, or 11.3 CSS.
 
 Specs: private-song-library (Docker), lesson-guide, success criteria (usability protocol).
 
-- [ ] 12.1 Create `docs/USABILITY_CHECK.md`: participant profile (has never played), setup (device, input, language), tasks T1 find C with lesson zero (2 min), T2 first Cancer phrase right hand in E and in C (10 min per key), T3 Ode to Joy first phrase (5 min), T4 resume after reload, T5 one 10-minute routine, rules (the observer does not help), what to record (time per task, hesitations over 10 seconds or questions, wrong-key count), pass thresholds, "revised on" line (A4). Tasks T1, T3, T5 are marked "available after Milestone B/C".
-- [ ] 12.2 Modify `README.md`: Learn mode, the three inputs and Casio setup (USB TO HOST cable, Chrome or Edge, "Connect piano", what to do when only USB audio is exposed), the documented computer-key map, private songs (gitignored folder, converter command, `docker run -v <path>/songs-private:/usr/share/nginx/html/songs-private:ro`), language selector, link to `docs/USABILITY_CHECK.md`; Docker presented as the main path.
-- [ ] 12.3 Modify `.dockerignore` (add `songs-private`, `!docs/USABILITY_CHECK.md`), `Dockerfile` (test stage also copies `.gitignore`, `.dockerignore`, `README.md`, `docs/USABILITY_CHECK.md`; replace `COPY assets/vendor/ ./assets/vendor/` with `COPY assets/ ./assets/`; no `COPY`/`ADD` of `songs-private`; `tools/` stays out), `nginx.conf` (`location ^~ /songs-private/sources/ { return 404; }` and `location ^~ /songs-private/ { expires -1; types { application/json json; } }`). Verify `tests/csp.test.js` still passes (no change to `index.html`).
-- [ ] 12.4 Create `tests/docs-guard.test.js`: `docs/USABILITY_CHECK.md` has T1 to T5 with thresholds, the README links it; extend `tests/privacy.test.js`: `.dockerignore` contains `songs-private`, Dockerfile has no `COPY`/`ADD` naming it (counter-proof fixture Dockerfile text that does fails).
-- [ ] 12.5 Verification: `docker build -t piano-guide .` (tests run in the build stage and CLI tests skip with their reason), `docker run --rm -p 8790:8080 piano-guide` (no private songs, catalog public only), `docker run --rm -p 8790:8080 -v <abs path>\songs-private:/usr/share/nginx/html/songs-private:ro piano-guide` (private Cancer appears; `/songs-private/sources/` returns 404), and `docker run --rm piano-guide find /usr/share/nginx/html -path '*songs-private*'` prints nothing. Stop containers afterwards.
-- [ ] 12.6 Milestone A close-out in the tracker: list in the PR notes which success criteria are now met by automated tests and which await the user (by-ear confirmation of Cancer, Casio MIDI), so the user can judge Milestone A before B starts.
+- [x] 12.1 Create `docs/USABILITY_CHECK.md`: participant profile (has never played), setup (device, input, language), tasks T1 find C with lesson zero (2 min), T2 first Cancer phrase right hand in E and in C (10 min per key), T3 Ode to Joy first phrase (5 min), T4 resume after reload, T5 one 10-minute routine, rules (the observer does not help), what to record (time per task, hesitations over 10 seconds or questions, wrong-key count), pass thresholds, "revised on" line (A4). Tasks T1, T3, T5 are marked "available after Milestone B/C".
+- [x] 12.2 Modify `README.md`: Learn mode, the three inputs and Casio setup (USB TO HOST cable, Chrome or Edge, "Connect piano", what to do when only USB audio is exposed), the documented computer-key map, private songs (gitignored folder, converter command, `docker run -v <path>/songs-private:/usr/share/nginx/html/songs-private:ro`), language selector, link to `docs/USABILITY_CHECK.md`; Docker presented as the main path.
+- [x] 12.3 Modify `.dockerignore` (add `songs-private`, `!docs/USABILITY_CHECK.md`), `Dockerfile` (test stage also copies `.gitignore`, `.dockerignore`, `README.md`, `docs/USABILITY_CHECK.md`; replace `COPY assets/vendor/ ./assets/vendor/` with `COPY assets/ ./assets/`; no `COPY`/`ADD` of `songs-private`; `tools/` stays out), `nginx.conf` (`location ^~ /songs-private/sources/ { return 404; }` and `location ^~ /songs-private/ { expires -1; types { application/json json; } }`). Verify `tests/csp.test.js` still passes (no change to `index.html`).
+- [x] 12.4 Create `tests/docs-guard.test.js`: `docs/USABILITY_CHECK.md` has T1 to T5 with thresholds, the README links it; extend `tests/privacy.test.js`: `.dockerignore` contains `songs-private`, Dockerfile has no `COPY`/`ADD` naming it (counter-proof fixture Dockerfile text that does fails).
+- [x] 12.5 Verification: `docker build -t piano-guide .` (tests run in the build stage and CLI tests skip with their reason), `docker run --rm -p 8790:8080 piano-guide` (no private songs, catalog public only), `docker run --rm -p 8790:8080 -v <abs path>\songs-private:/usr/share/nginx/html/songs-private:ro piano-guide` (private Cancer appears; `/songs-private/sources/` returns 404), and `docker run --rm piano-guide find /usr/share/nginx/html -path '*songs-private*'` prints nothing. Stop containers afterwards.
+- [x] 12.6 Milestone A close-out in the tracker: list in the PR notes which success criteria are now met by automated tests and which await the user (by-ear confirmation of Cancer, Casio MIDI), so the user can judge Milestone A before B starts.
 
 ---
 
@@ -413,3 +413,40 @@ Findings recorded for the user:
 - Still user-only and NOT verified here: the Casio MIDI connection (the Web MIDI module is tested only with a fake navigator), the audible check of Listen and of the learner's own presses, and the key legend on a non-US keyboard.
 
 Next in the chain: pr9a-learn-keyboard, based on `feat/learn-mode-pr8a4-learner-sound`.
+
+## Batch 3: Milestone A phases 9 to 12 (chain as built, local branches, nothing pushed)
+
+Same rule as before: each phase split at a coherent boundary, each branch on the previous one (descriptions in `openspec/changes/learn-mode/prs/`). The first branch is based on `feat/learn-mode-pr8a4-learner-sound`. With this batch every task of Milestone A (1.1 to 12.6) is done; Milestones B and C have not started.
+
+| Order | Branch | Tasks | Changed lines (code, tests, CSS; excluding openspec docs) |
+|-------|--------|-------|-------------------------------------------------------------|
+| 22 | `feat/learn-mode-pr9a-learn-keyboard` | 9.1 (names) | 302 |
+| 23 | `feat/learn-mode-pr9a2-keyboard-states` | 9.1 (states, badges, pointers) | 402 |
+| 24 | `feat/learn-mode-pr9a3-keyboard-styles` | 9.2, 9.3 | 219 |
+| 25 | `feat/learn-mode-pr10a-catalog-private` | 10.1 | 376 |
+| 26 | `feat/learn-mode-pr10a2-router-player` | 10.2, 10.3 | 233 |
+| 27 | `feat/learn-mode-pr10a3-dev-server` | 10.4 to 10.6 | 171 |
+| 28 | `feat/learn-mode-pr11a-beginner-phrases` | decision, see below | 104 |
+| 29 | `feat/learn-mode-pr11a2-input-panel` | 11.1 | 207 |
+| 30 | `feat/learn-mode-pr11a3-screen-model` | 11.2 (screen model) | 206 |
+| 31 | `feat/learn-mode-pr11a4-learn-wiring` | 11.2 (the view) | 642 (`size:exception` recommended, see its description) |
+| 32 | `feat/learn-mode-pr11a5-learn-route` | 11.3 to 11.5 | 300 |
+| 33 | `feat/learn-mode-pr12a-docs-docker` | 12.1 to 12.6 | 228 |
+
+Full suite on the tip: 1266 tests, 0 failures (1152 at the start of the batch). `docker build` passes (1244 tests in the image, 22 skipped with reasons).
+
+### Decision: the start of a beginner lesson (user complaint: not didactic)
+
+- Automatic phrases are cut so none has more than 8 onset groups (`MAX_PHRASE_STEPS`); on the local private song the right hand goes from phrases of 1 to 14 steps to 4 to 7 (one 1-step tail phrase remains).
+- The default hand is the right hand and the first phrase is the first one with a right-hand melody; phrases are numbered among those the chosen hand plays ("Phrase 1 of 21"), so the left-hand intro phrases neither start the lesson nor shift the count. Choosing the left hand brings them back, numbered from 1.
+- Learn opens the beginner level when the song has one with notes.
+- Authored `learn.phrases` are never split.
+
+### Findings recorded for the user
+
+- The Docker build had been failing since pr3a2 (a test reads `styles/app.css`, which the test stage did not copy); fixed in pr12a. Earlier PRs of the chain were verified with `node --test` only.
+- Browser walkthroughs found and fixed: `[object Object]` as a level chip for a LocalizedText label, the key toggle vanishing after switching to C, a black-key badge hidden by a computer-key letter, quiet digits hidden in landscape, Chopin opening on the "original" level.
+- Still user-only and NOT verified: the real Casio over MIDI, hearing the learner's own presses and Listen, the key legend on a non-US keyboard, the by-ear confirmation of Cancer, the manual usability protocol.
+- The transport still shows its other labels in English (only the play button is bilingual); the catalog hero and cards, Learn and the input panel are fully bilingual.
+
+Next in the chain: Milestone B starts with pr1b-lesson-zero, based on `feat/learn-mode-pr12a-docs-docker`.

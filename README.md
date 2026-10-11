@@ -27,7 +27,7 @@ On PowerShell: `$env:PORT=8790; node tools/serve.mjs`. The default port is 8790.
 
 ## Learn mode
 
-Open a song and press **Learn**. The screen says one thing at a time: which finger goes on which key ("Right hand: thumb on E (Mi)."), with the key shaded on a close keyboard and the finger number on it. Press the key and the screen says "Correct" and gives the next step; press another key and it says "Try again" and keeps the shaded key. A phrase is a few steps; finish it and the next one opens. Progress (phrase, hand, key, language) is saved in the browser and "Continue" brings you back to it.
+Open a song and press **Learn**. The screen says one thing at a time: which finger goes on which key ("Right hand: thumb on C (Do)."), with the key shaded on a close keyboard and the finger number on it. Press the key and the screen says "Correct" and gives the next step; press another key and it says "Try again" and keeps the shaded key. A phrase is a few steps; finish it and the next one opens. Progress (phrase, hand, key, language) is saved in the browser and "Continue" brings you back to it.
 
 - **Language**: the selector (English / Español) switches every text at once, also in the middle of a step.
 - **Key**: when a song offers it, a second key (for example "C major" for a song in E major) recomputes the note names and the fingers.
