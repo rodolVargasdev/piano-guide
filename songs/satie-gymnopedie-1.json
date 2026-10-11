@@ -8,11 +8,13 @@
   "meter": { "num": 3, "den": 4 },
   "pickupTicks": 0,
   "tempo": { "bpm": 60, "beatUnit": "quarter", "marking": "Lent et douloureux" },
-  "lengthTicks": 17280,
+  "lengthTicks": 30240,
   "sections": [
     {"id":"intro","name":"Intro: left hand alone","startTick":0,"endTick":5760},
     {"id":"melody","name":"Melody enters","startTick":5760,"endTick":11520},
-    {"id":"pause","name":"Held F sharp","startTick":11520,"endTick":17280}
+    {"id":"pause","name":"Held F sharp","startTick":11520,"endTick":17280},
+    {"id":"melody-again","name":"Melody again","startTick":17280,"endTick":23040},
+    {"id":"turn","name":"F sharp minor to D minor","startTick":23040,"endTick":30240}
   ],
   "chords": [
     {"tick":0,"dur":1440,"symbol":"Gmaj7","roman":"IVmaj7","function":"subdominant"},
@@ -26,7 +28,16 @@
     {"tick":11520,"dur":1440,"symbol":"Gmaj7","roman":"IVmaj7","function":"subdominant"},
     {"tick":12960,"dur":1440,"symbol":"Dmaj7","roman":"Imaj7","function":"tonic"},
     {"tick":14400,"dur":1440,"symbol":"Gmaj7","roman":"IVmaj7","function":"subdominant"},
-    {"tick":15840,"dur":1440,"symbol":"Dmaj7","roman":"Imaj7","function":"tonic"}
+    {"tick":15840,"dur":1440,"symbol":"Dmaj7","roman":"Imaj7","function":"tonic"},
+    {"tick":17280,"dur":1440,"symbol":"Gmaj7","roman":"IVmaj7","function":"subdominant"},
+    {"tick":18720,"dur":1440,"symbol":"Dmaj7","roman":"Imaj7","function":"tonic"},
+    {"tick":20160,"dur":1440,"symbol":"Gmaj7","roman":"IVmaj7","function":"subdominant"},
+    {"tick":21600,"dur":1440,"symbol":"Dmaj7","roman":"Imaj7","function":"tonic"},
+    {"tick":23040,"dur":1440,"symbol":"F#m","roman":"iii","function":"tonic substitute"},
+    {"tick":24480,"dur":1440,"symbol":"Bm","roman":"vi","function":"relative minor"},
+    {"tick":25920,"dur":1440,"symbol":"Em","roman":"ii","function":"supertonic"},
+    {"tick":27360,"dur":1440,"symbol":"Em7","roman":"ii7","function":"supertonic seventh"},
+    {"tick":28800,"dur":1440,"symbol":"Dm","roman":"i","function":"tonic minor"}
   ],
   "levels": {
     "beginner": {
@@ -100,7 +111,57 @@
         {"tick":15840,"dur":480,"pitch":"D2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
         {"tick":16320,"dur":960,"pitch":"A3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
         {"tick":16320,"dur":960,"pitch":"C#4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
-        {"tick":16320,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"}
+        {"tick":16320,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":17280,"dur":480,"hand":"R","rest":true},
+        {"tick":17280,"dur":480,"pitch":"G2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":17760,"dur":480,"pitch":"F#5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":17760,"dur":960,"pitch":"B3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":17760,"dur":960,"pitch":"D4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":17760,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":18240,"dur":480,"pitch":"A5","hand":"R","finger":5,"fingeringSource":"editorial","role":"melody"},
+        {"tick":18720,"dur":480,"pitch":"G5","hand":"R","finger":4,"fingeringSource":"editorial","role":"melody"},
+        {"tick":18720,"dur":480,"pitch":"D2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":19200,"dur":480,"pitch":"F#5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":19200,"dur":960,"pitch":"A3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":19200,"dur":960,"pitch":"C#4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":19200,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":19680,"dur":480,"pitch":"C#5","hand":"R","finger":1,"fingeringSource":"editorial","role":"melody"},
+        {"tick":20160,"dur":480,"pitch":"B4","hand":"R","finger":1,"fingeringSource":"editorial","role":"melody"},
+        {"tick":20160,"dur":480,"pitch":"G2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":20640,"dur":480,"pitch":"C#5","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody"},
+        {"tick":20640,"dur":960,"pitch":"B3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":20640,"dur":960,"pitch":"D4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":20640,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":21120,"dur":480,"pitch":"D5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":21600,"dur":1440,"pitch":"A4","hand":"R","finger":1,"fingeringSource":"editorial","role":"melody"},
+        {"tick":21600,"dur":480,"pitch":"D2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":22080,"dur":960,"pitch":"A3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":22080,"dur":960,"pitch":"C#4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":22080,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":23040,"dur":1440,"pitch":"C#5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":23040,"dur":480,"pitch":"F#2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":23520,"dur":960,"pitch":"A3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":23520,"dur":960,"pitch":"C#4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":23520,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":24480,"dur":1440,"pitch":"F#5","hand":"R","finger":5,"fingeringSource":"editorial","role":"melody"},
+        {"tick":24480,"dur":480,"pitch":"B1","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":24960,"dur":960,"pitch":"B3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":24960,"dur":960,"pitch":"D4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":24960,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":25920,"dur":1440,"pitch":"E4","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody","tie":true},
+        {"tick":25920,"dur":480,"pitch":"E2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":26400,"dur":960,"pitch":"G3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":26400,"dur":960,"pitch":"B3","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":27360,"dur":1440,"pitch":"E4","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody","tie":true},
+        {"tick":27360,"dur":480,"pitch":"E2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":27840,"dur":960,"pitch":"B3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":27840,"dur":960,"pitch":"D4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":27840,"dur":960,"pitch":"G4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":28800,"dur":1440,"pitch":"E4","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody"},
+        {"tick":28800,"dur":480,"pitch":"D2","hand":"L","finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":29280,"dur":960,"pitch":"F3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":29280,"dur":960,"pitch":"A3","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":29280,"dur":960,"pitch":"D4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"}
       ]
     },
     "original": {
@@ -170,7 +231,56 @@
         {"tick":15840,"dur":1440,"pitch":"D2","hand":"L","voice":2,"finger":5,"fingeringSource":"editorial","role":"bass"},
         {"tick":16320,"dur":960,"pitch":"A3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
         {"tick":16320,"dur":960,"pitch":"C#4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
-        {"tick":16320,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"}
+        {"tick":16320,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":17280,"dur":1440,"pitch":"G2","hand":"L","voice":2,"finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":17760,"dur":480,"pitch":"F#5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":17760,"dur":960,"pitch":"B3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":17760,"dur":960,"pitch":"D4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":17760,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":18240,"dur":480,"pitch":"A5","hand":"R","finger":5,"fingeringSource":"editorial","role":"melody"},
+        {"tick":18720,"dur":480,"pitch":"G5","hand":"R","finger":4,"fingeringSource":"editorial","role":"melody"},
+        {"tick":18720,"dur":1440,"pitch":"D2","hand":"L","voice":2,"finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":19200,"dur":480,"pitch":"F#5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":19200,"dur":960,"pitch":"A3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":19200,"dur":960,"pitch":"C#4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":19200,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":19680,"dur":480,"pitch":"C#5","hand":"R","finger":1,"fingeringSource":"editorial","role":"melody"},
+        {"tick":20160,"dur":480,"pitch":"B4","hand":"R","finger":1,"fingeringSource":"editorial","role":"melody"},
+        {"tick":20160,"dur":1440,"pitch":"G2","hand":"L","voice":2,"finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":20640,"dur":480,"pitch":"C#5","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody"},
+        {"tick":20640,"dur":960,"pitch":"B3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":20640,"dur":960,"pitch":"D4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":20640,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":21120,"dur":480,"pitch":"D5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":21600,"dur":1440,"pitch":"A4","hand":"R","finger":1,"fingeringSource":"editorial","role":"melody"},
+        {"tick":21600,"dur":1440,"pitch":"D2","hand":"L","voice":2,"finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":22080,"dur":960,"pitch":"A3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":22080,"dur":960,"pitch":"C#4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":22080,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":23040,"dur":1440,"pitch":"C#5","hand":"R","finger":3,"fingeringSource":"editorial","role":"melody"},
+        {"tick":23040,"dur":1440,"pitch":"F#2","hand":"L","voice":2,"finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":23520,"dur":960,"pitch":"A3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":23520,"dur":960,"pitch":"C#4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":23520,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":24480,"dur":1440,"pitch":"F#5","hand":"R","finger":5,"fingeringSource":"editorial","role":"melody"},
+        {"tick":24480,"dur":1440,"pitch":"B1","hand":"L","voice":2,"finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":24960,"dur":960,"pitch":"B3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":24960,"dur":960,"pitch":"D4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":24960,"dur":960,"pitch":"F#4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":25920,"dur":1440,"pitch":"E4","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody","tie":true},
+        {"tick":25920,"dur":1440,"pitch":"E2","hand":"L","voice":2,"finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":26400,"dur":960,"pitch":"G3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":26400,"dur":960,"pitch":"B3","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":27360,"dur":1440,"pitch":"E4","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody","tie":true},
+        {"tick":27360,"dur":1440,"pitch":"E2","hand":"L","voice":2,"finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":27840,"dur":960,"pitch":"B3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":27840,"dur":960,"pitch":"D4","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":27840,"dur":960,"pitch":"G4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":28800,"dur":1440,"pitch":"E4","hand":"R","finger":2,"fingeringSource":"editorial","role":"melody"},
+        {"tick":28800,"dur":1440,"pitch":"D2","hand":"L","voice":2,"finger":5,"fingeringSource":"editorial","role":"bass"},
+        {"tick":29280,"dur":960,"pitch":"F3","hand":"L","finger":5,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":29280,"dur":960,"pitch":"A3","hand":"L","finger":3,"fingeringSource":"editorial","role":"accompaniment"},
+        {"tick":29280,"dur":960,"pitch":"D4","hand":"L","finger":1,"fingeringSource":"editorial","role":"accompaniment"}
       ],
       "analysis": [
         {"tick":0,"kind":"harmony","title":"Gmaj7","text":"The piece opens with the left hand alone: a low G in the bass, then the chord B, D and F sharp above it. Together they make G major seventh, a G chord with the F sharp on top. It is a soft color with no pull toward another chord.","roman":"IVmaj7","function":"subdominant"},
@@ -178,17 +288,28 @@
         {"tick":1440,"kind":"harmony","title":"Dmaj7","text":"The second bar is D major seventh: a low D with the chord A, C sharp and F sharp. D is the home chord of the piece. The two chords now alternate, bar after bar, and the home chord is never allowed to sound final.","roman":"Imaj7","function":"tonic"},
         {"tick":6240,"kind":"form","title":"Melody enters","text":"The right hand enters softly, marked pp in the source, on F sharp 5. The first phrase is nine notes, F#5 A5 G5 F#5 C#5 B4 C#5 D5 A4, and it floats over the same two chords as the intro."},
         {"tick":6240,"kind":"dynamics","title":"Swells","text":"A hairpin grows from the F#5 of bar 5 to the C#5 of bar 7, and another fades from the D5 across the long A4 of bar 8. The left hand stays level underneath. Dynamics are read from the source file; the MIDI file ignores them.","endTick":11520},
-        {"tick":11520,"kind":"voice-leading","title":"Held F sharp","text":"The melody holds one note, F sharp 4, for four bars (bars 9 to 12). Over Gmaj7 it is the major seventh of the chord; over Dmaj7 it is the third. The note never moves, yet its meaning changes with every bar.","endTick":17280}
+        {"tick":11520,"kind":"voice-leading","title":"Held F sharp","text":"The melody holds one note, F sharp 4, for four bars (bars 9 to 12). Over Gmaj7 it is the major seventh of the chord; over Dmaj7 it is the third. The note never moves, yet its meaning changes with every bar.","endTick":17280},
+        {"tick":17280,"kind":"form","title":"Melody again","text":"Bars 13 to 16 play bars 5 to 8 again, note for note: the same nine notes over the same two chords."},
+        {"tick":23040,"kind":"harmony","title":"F sharp minor","text":"The bass drops to F sharp 2 and the chord is F sharp, A and C sharp: F sharp minor, the first chord that is not Gmaj7 or Dmaj7. The melody settles on C#5.","roman":"iii","function":"tonic substitute"},
+        {"tick":24480,"kind":"harmony","title":"B minor","text":"B minor over a low B: the bass falls a fifth from F sharp. The melody climbs a fourth, from C#5 to F#5.","roman":"vi","function":"relative minor"},
+        {"tick":25920,"kind":"harmony","title":"E minor","text":"E minor: E2 in the bass with B and G above it. The melody drops to a long E4 held for three bars (bars 19 to 21).","roman":"ii","function":"supertonic","endTick":30240},
+        {"tick":27360,"kind":"harmony","title":"E minor 7","text":"G4, D4 and B3 over the same E bass: E, G, B and D. The bass stays and the chord gains its seventh, D, so the harmony shifts without the bass moving.","roman":"ii7","function":"supertonic seventh"},
+        {"tick":28800,"kind":"harmony","title":"D minor","text":"The bass is back on D2 and the chord is D, F and A. The F is natural: every F so far in the piece has been F sharp. This is the first note outside the key signature, and the color turns darker.","roman":"i","function":"tonic minor"}
       ]
     }
   },
   "defaultLevel": "original",
   "lesson": {
     "beginner": {
-      "summary": "Gymnopédie No. 1 by Erik Satie, with the repeat and both endings written out: 78 bars in 3/4, felt as three slow beats. The right hand sings the melody and the left hand keeps one pattern: a low bass note on beat 1, then a chord on beats 2 and 3. Many players know this sound from calm video-game piano music such as Minecraft's, which is often compared to Satie's style. It is a simplified version of the transcribed bars, so read the Arrangement note to see what was left out. This file holds bars 1 to 12 so far, out of 78.",
+      "summary": "Gymnopédie No. 1 by Erik Satie, with the repeat and both endings written out: 78 bars in 3/4, felt as three slow beats. The right hand sings the melody and the left hand keeps one pattern: a low bass note on beat 1, then a chord on beats 2 and 3. Many players know this sound from calm video-game piano music such as Minecraft's, which is often compared to Satie's style. It is a simplified version of the transcribed bars, so read the Arrangement note to see what was left out. This file holds bars 1 to 21 so far, out of 78.",
       "chordsUsed": [
         "Gmaj7",
-        "Dmaj7"
+        "Dmaj7",
+        "F#m",
+        "Bm",
+        "Em",
+        "Em7",
+        "Dm"
       ],
       "handPositions": [
         {"tick":0,"hand":"L","anchor":"G2","text":"Bar 1: the little finger (5) on the low G for one beat, then the chord B3, D4 and F#4 with fingers 5, 3 and 1, held for two beats. Bar 2 is the same shape from D2 with the chord A3, C#4 and F#4. The right hand rests for four bars."},
@@ -196,7 +317,12 @@
         {"tick":7200,"hand":"R","anchor":"G5","text":"Bar 6: G5 (4), F#5 (3) and C#5 (1). The thumb takes the C#5 so that it can step down to B4 in the next bar."},
         {"tick":8640,"hand":"R","anchor":"B4","text":"Bar 7: B4 (1), C#5 (2) and D5 (3), three steps up with three neighbouring fingers."},
         {"tick":10080,"hand":"R","anchor":"A4","text":"Bar 8: A4 with finger 2, held for the whole bar. The thumb (1) will take the F#4 in bar 9."},
-        {"tick":11520,"hand":"R","anchor":"F#4","text":"Bars 9 to 12: F#4 with the thumb (1), held for four bars (the note is tied from bar to bar). Count the bars while the left hand keeps going."}
+        {"tick":11520,"hand":"R","anchor":"F#4","text":"Bars 9 to 12: F#4 with the thumb (1), held for four bars (the note is tied from bar to bar). Count the bars while the left hand keeps going."},
+        {"tick":17760,"hand":"R","anchor":"F#5","text":"Bars 13 to 16 repeat bars 5 to 8 with the same fingers. The one difference is the A4 of bar 16: it takes the thumb (1) because C#5 comes next."},
+        {"tick":23040,"hand":"R","anchor":"C#5","text":"Bars 17 and 18: C#5 (3), then F#5 (5), one note per bar."},
+        {"tick":23040,"hand":"L","anchor":"F#2","text":"Bar 17: the bass moves to F#2 for the first time, with the chord A3, C#4 and F#4. Bar 18 is B1 with B3, D4 and F#4."},
+        {"tick":25920,"hand":"R","anchor":"E4","text":"Bars 19 to 21: E4 with finger 2, held for three bars (tied). The left hand plays E minor, E minor 7 and then D minor."},
+        {"tick":28800,"hand":"L","anchor":"D2","text":"Bar 21: D minor. The bass is D2 and the chord is F3, A3 and D4: the F is natural here."}
       ],
       "posture": "Sit centered with your forearms level and your shoulders loose. The left hand leaps from a low note to a chord in every bar, so move from the elbow and keep the wrist soft. Play every note quietly and slowly: this piece has no loud moments.",
       "practicePlan": [
@@ -213,15 +339,23 @@
       }
     },
     "original": {
-      "summary": "The Original level is Satie's Gymnopédie No. 1 as printed in the Mutopia source, with the repeat and both endings written out (78 bars in 3/4). The left hand holds a low bass note for the whole bar and plays a chord on beats 2 and 3; the right hand sings the melody, which enters in bar 5 after four bars of the left hand alone. Many players know this sound from calm video-game piano music such as Minecraft's, which is often compared to Satie's style. Switch on Analysis to see the chords and the notes behind them. This file holds bars 1 to 12 so far, out of 78.",
+      "summary": "The Original level is Satie's Gymnopédie No. 1 as printed in the Mutopia source, with the repeat and both endings written out (78 bars in 3/4). The left hand holds a low bass note for the whole bar and plays a chord on beats 2 and 3; the right hand sings the melody, which enters in bar 5 after four bars of the left hand alone. Many players know this sound from calm video-game piano music such as Minecraft's, which is often compared to Satie's style. Switch on Analysis to see the chords and the notes behind them. This file holds bars 1 to 21 so far, out of 78.",
       "chordsUsed": [
         "Gmaj7",
-        "Dmaj7"
+        "Dmaj7",
+        "F#m",
+        "Bm",
+        "Em",
+        "Em7",
+        "Dm"
       ],
       "handPositions": [
         {"tick":0,"hand":"L","anchor":"G2","text":"Bars 1 to 4: the left hand alone. A low G (G2) with the little finger (5) held for the whole bar, and on beat 2 the chord B3, D4 and F#4 with fingers 5, 3 and 1. Bar 2 is D2 with A3, C#4 and F#4."},
         {"tick":6240,"hand":"R","anchor":"F#5","text":"Bar 5, beat 2: the melody enters, pp. F#5 with finger 3 and A5 with the little finger (5). The source prints no fingering, so these fingers are editorial."},
-        {"tick":11520,"hand":"R","anchor":"F#4","text":"Bars 9 to 12: F#4 with the thumb (1), held and tied for four bars."}
+        {"tick":11520,"hand":"R","anchor":"F#4","text":"Bars 9 to 12: F#4 with the thumb (1), held and tied for four bars."},
+        {"tick":17760,"hand":"R","anchor":"F#5","text":"Bars 13 to 16 repeat bars 5 to 8, with the same fingers."},
+        {"tick":23040,"hand":"L","anchor":"F#2","text":"Bar 17: the bass moves to F#2 with the chord A3, C#4 and F#4. Bar 18 is B1 with B3, D4 and F#4."},
+        {"tick":25920,"hand":"R","anchor":"E4","text":"Bars 19 to 21: E4 with finger 2 tied for three bars, while the left hand plays chords from the bass staff: B3 with G3 (bar 19), then G4, D4 and B3 (bar 20), then D4, A3 and F3 (bar 21)."}
       ],
       "posture": "Sit as in the Beginner lesson. The bass note is held for the whole bar while the same hand plays the chord, so the pedal does the holding. The source prints no pedal; a natural choice, editorial and not printed, is down with each bass note and up as the next one arrives. The chords of bars 24 to 26 and 29 to 31 have four notes, so keep the hand open.",
       "practicePlan": [
@@ -231,7 +365,7 @@
         "Bars 37 and 76 are the hardest: the left hand holds E2 and plays B2 and E3 above it while the right hand plays two chords. Loop them on their own.",
         "Join the sections, switch on Analysis, and raise the tempo with Ramp toward 60 beats per minute."
       ],
-      "arrangementNote": "Transcribed from the Mutopia Project LilyPond source (Mutopia-2014/12/14-37, typeset by Evin Robertson from the Dover edition, Public Domain) and checked note by note against the MIDI file that LilyPond makes from it: bars 1 to 12 of the 78 of the unfolded piece, so far. The source prints no fingering and no pedal, so every finger here is editorial. The source writes the left-hand chords on the treble staff in bars 1 to 18 and in the endings, and on the bass staff in bars 19 to 31; the app gives them all to the left hand, an editorial choice, and draws the left hand on the bass staff with ledger lines. In bars 37 and 76 the right hand takes the two chords, also editorial, because three streams of notes cannot be played by one hand.",
+      "arrangementNote": "Transcribed from the Mutopia Project LilyPond source (Mutopia-2014/12/14-37, typeset by Evin Robertson from the Dover edition, Public Domain) and checked note by note against the MIDI file that LilyPond makes from it: bars 1 to 21 of the 78 of the unfolded piece, so far. The source prints no fingering and no pedal, so every finger here is editorial. The source writes the left-hand chords on the treble staff in bars 1 to 18 and in the endings, and on the bass staff in bars 19 to 31; the app gives them all to the left hand, an editorial choice, and draws the left hand on the bass staff with ledger lines. In bars 37 and 76 the right hand takes the two chords, also editorial, because three streams of notes cannot be played by one hand.",
       "interpretation": {
         "rubato": "The source marks Lent et douloureux (slow and sorrowful) and prints no other tempo or time mark. Keep the beat even and very slow; the 60 beats per minute of this app is the speed of the Mutopia MIDI file, not a printed tempo.",
         "dynamics": "The source file marks pp at bar 5 and again at bar 13, p at bar 22 and an f under the chord of bar 9, which the MIDI file cannot confirm; hairpins swell and fade over the phrases. Keep the left-hand chords lighter than the bass note and the melody above both."
@@ -239,7 +373,7 @@
     }
   },
   "sources": [
-    {"url":"https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=37","what":"Mutopia Project piece 37 (Mutopia-2014/12/14-37), Gymnopédie No. 1 for piano by Erik Satie (1888), typeset in LilyPond 2.18.2 by Evin Robertson from the Dover edition (a reproduction of the original publication; the Dover translations are not in the file). Public Domain: the typesetter placed the file in the public domain, https://creativecommons.org/licenses/publicdomain . Transcribed from the LilyPond file: bars 1 to 12 of the 78 of the unfolded piece, so far. The notes were read from the file with a throwaway program that resolves its relative octaves, durations and ties and unfolds the repeat (it is not part of this repository), and every onset of the result was checked against the MIDI file listed next. The source prints no fingering, no pedal and no tempo number.","accessed":"2026-10-11","kind":"public-domain-score","mutopiaId":"Mutopia-2014/12/14-37","license":"Public Domain","licenseUrl":"https://creativecommons.org/licenses/publicdomain/","maintainer":"Evin Robertson","fileUrl":"https://www.mutopiaproject.org/ftp/SatieE/gymnopedie_1/gymnopedie_1.ly","sha256":"420a52244e9fbe106dd33ba2cac84414fd66e0d01c6d472205bad39678d4ce04"},
+    {"url":"https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=37","what":"Mutopia Project piece 37 (Mutopia-2014/12/14-37), Gymnopédie No. 1 for piano by Erik Satie (1888), typeset in LilyPond 2.18.2 by Evin Robertson from the Dover edition (a reproduction of the original publication; the Dover translations are not in the file). Public Domain: the typesetter placed the file in the public domain, https://creativecommons.org/licenses/publicdomain . Transcribed from the LilyPond file: bars 1 to 21 of the 78 of the unfolded piece, so far. The notes were read from the file with a throwaway program that resolves its relative octaves, durations and ties and unfolds the repeat (it is not part of this repository), and every onset of the result was checked against the MIDI file listed next. The source prints no fingering, no pedal and no tempo number.","accessed":"2026-10-11","kind":"public-domain-score","mutopiaId":"Mutopia-2014/12/14-37","license":"Public Domain","licenseUrl":"https://creativecommons.org/licenses/publicdomain/","maintainer":"Evin Robertson","fileUrl":"https://www.mutopiaproject.org/ftp/SatieE/gymnopedie_1/gymnopedie_1.ly","sha256":"420a52244e9fbe106dd33ba2cac84414fd66e0d01c6d472205bad39678d4ce04"},
     {"url":"https://www.mutopiaproject.org/ftp/SatieE/gymnopedie_1/gymnopedie_1.mid","what":"MIDI file that LilyPond generated from the same source. It plays the music as written, the body of bars 1 to 31 once and then the two endings one after the other (47 bars), with no repeat. It was used to check every octave and onset (282 note onsets, pinned in tests/fixtures); the repeat of bars 1 to 31 is the same notes again.","accessed":"2026-10-11","kind":"reference","sha256":"09ce7337b4bf42ba12e1aa64b4c7dc7fcfa6455f1070cb12f8880a755df97384"}
   ],
   "confidence": [

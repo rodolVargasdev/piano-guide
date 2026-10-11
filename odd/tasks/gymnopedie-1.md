@@ -36,3 +36,4 @@ Delivery: work-unit commits; chained branches `feat/gymnopedie-1-prN-<slug>` if 
 ## Progress
 - 2026-10-11: branch created from feat/nocturne-complete 19d0900.
 - 2026-10-11: slice 0 on `feat/gymnopedie-1`: the song file with the intro, the first melody phrase and the held F sharp (bars 1 to 12), both levels, with chords, sections, analysis, lesson text, sources and confidence; the MIDI onset fixture of the whole piece and the core tests (onsets against the MIDI with counter-proofs, hands, source record, typography).
+- 2026-10-11: slice 1 on `feat/gymnopedie-1-pr1-bars-13-21`: bars 13 to 21 (melody again, the F sharp minor turn, E minor, E minor 7, D minor), both levels, with chords, analysis and lesson text; tests of the bar shapes and of the Beginner rules (derived from the Original, with counter-proof).

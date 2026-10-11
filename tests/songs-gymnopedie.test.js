@@ -160,6 +160,152 @@ test("the song uses only C, C#, D, E, F, F#, G, A and B: no D sharp, G sharp or 
   assert.ok(heads([...original, ...beginner]).every((n) => !n.pitch.includes("b") || n.pitch === "B1" || /^Bd/.test(n.pitch)), "no flat spelling");
 });
 
+// ---- the shape of the Original, bar by bar ----
+const barsOfPass = (from, to) => Array.from({ length: to - from + 1 }, (_, k) => from + k).filter((b) => b <= BARS);
+const BUSY = new Set([37, 76]); // three streams of notes in one bar
+const FINAL = new Set([38, 39, 77, 78]); // one chord per hand, the whole bar
+const regular = (b) => !BUSY.has(b) && !FINAL.has(b);
+
+test("Original left hand: in every regular bar a bass note held for the whole bar (voice 2, role bass) and a chord on beats 2 and 3 (voice 1)", () => {
+  for (const b of barsOfPass(1, 78).filter(regular)) {
+    const l = left(inBar(original, b));
+    const bass = l.filter((n) => n.role === "bass");
+    assert.equal(bass.length, 1, `bar ${b} bass`);
+    assert.deepEqual([bass[0].tick, bass[0].dur, bass[0].voice], [tickOf(b), BAR, 2], `bar ${b} bass timing`);
+    const chord = l.filter((n) => n.role === "accompaniment");
+    assert.ok(chord.length >= 2 && chord.length <= 4, `bar ${b} has ${chord.length} chord notes`);
+    assert.ok(chord.every((n) => n.tick === tickOf(b, 2) && n.dur === 960 && n.voice === undefined), `bar ${b} chord timing`);
+    assert.ok(midiOf(bass[0].pitch) < Math.min(...chord.map((n) => midiOf(n.pitch))), `bar ${b}: the chord is above the bass`);
+  }
+});
+
+test("the right hand is silent for the four bars of the intro and enters on beat 2 of bar 5; the left hand is alone before that", () => {
+  assert.deepEqual(right(original).filter((n) => n.tick < tickOf(5, 2)), []);
+  const first = right(original)[0];
+  assert.deepEqual([first.tick, first.pitch, first.role], [tickOf(5, 2), "F#5", "melody"]);
+  assert.ok(left(original).some((n) => n.tick === 0 && n.pitch === "G2"));
+});
+
+test("bars 1 to 16 alternate Gmaj7 and Dmaj7: bass G2 with B3 D4 F#4 in odd bars, bass D2 with A3 C#4 F#4 in even bars", () => {
+  for (const b of barsOfPass(1, 16)) {
+    const l = left(inBar(original, b));
+    const bass = l.find((n) => n.role === "bass").pitch;
+    const chord = names(sorted(l.filter((n) => n.role === "accompaniment")));
+    if (b % 2 === 1) {
+      assert.equal(bass, "G2", `bar ${b}`);
+      assert.deepEqual(chord, ["B3", "D4", "F#4"], `bar ${b}`);
+    } else {
+      assert.equal(bass, "D2", `bar ${b}`);
+      assert.deepEqual(chord, ["A3", "C#4", "F#4"], `bar ${b}`);
+    }
+  }
+});
+
+test("between bars 1 and 2 only B falls to A and D falls to C sharp; F sharp stays and the bass leaps a fifth from G to D", () => {
+  const chord = (b) => new Set(names(sorted(left(inBar(original, b)).filter((n) => n.role === "accompaniment"))).map((p) => p.replace(/\d/, "")));
+  assert.deepEqual([...chord(1)].filter((x) => !chord(2).has(x)).sort(), ["B", "D"]);
+  assert.deepEqual([...chord(2)].filter((x) => !chord(1).has(x)).sort(), ["A", "C#"]);
+  assert.deepEqual([...chord(1)].filter((x) => chord(2).has(x)), ["F#"]);
+  assert.equal(midiOf("G2") - midiOf("D2"), 5);
+});
+
+test("the first melody phrase is the nine notes F#5 A5 G5 F#5 C#5 B4 C#5 D5 A4, in bars 5 to 8", () => {
+  const phrase = right(original).filter((n) => n.tick >= tickOf(5) && n.tick < tickOf(9) && n.role === "melody");
+  assert.deepEqual(names(phrase), ["F#5", "A5", "G5", "F#5", "C#5", "B4", "C#5", "D5", "A4"]);
+  assert.equal(phrase.at(-1).dur, BAR, "the last A4 lasts the whole bar");
+});
+
+test("bars 9 to 12 hold one F sharp 4 for four bars, tied; it is the major seventh of Gmaj7 and the third of Dmaj7", () => {
+  const held = right(original).filter((n) => n.tick >= tickOf(9) && n.tick < tickOf(13));
+  assert.deepEqual(held.map((n) => [n.pitch, n.tick, n.dur, n.tie === true]), [
+    ["F#4", tickOf(9), BAR, true], ["F#4", tickOf(10), BAR, true], ["F#4", tickOf(11), BAR, true], ["F#4", tickOf(12), BAR, false],
+  ]);
+  assert.equal(midiOf("F#4") - midiOf("G3"), 11, "seven above G is F sharp: a major seventh");
+  assert.equal(midiOf("F#4") - midiOf("D4"), 4, "over D it is the major third");
+  assert.deepEqual([9, 10, 11, 12].map((b) => left(inBar(original, b)).find((n) => n.role === "bass").pitch), ["G2", "D2", "G2", "D2"]);
+});
+
+test("the Beginner is built from the Original by its rules, note by note (tick, length, pitch, hand)", () => {
+  assert.deepEqual(beginnerOf(original), keyed(heads(beginner)));
+});
+
+const keyed = (notes) => notes.map((n) => `${n.hand}|${n.tick}|${n.dur}|${n.pitch}`).sort();
+/** The Beginner that the rules make of an Original: the rules are the ones the lesson states. */
+function beginnerOf(orig) {
+  const out = [];
+  const groupsOf = (list) => {
+    const m = new Map();
+    for (const n of list) (m.get(`${n.tick}|${n.dur}`) ?? m.set(`${n.tick}|${n.dur}`, []).get(`${n.tick}|${n.dur}`)).push(n);
+    return [...m.values()];
+  };
+  const upper = (g) => sorted(g).slice(-3);
+  // right hand, voice 1: the melody; a chord keeps its three upper notes
+  for (const g of groupsOf(right(orig).filter((n) => n.voice === undefined))) for (const n of upper(g)) out.push({ ...n });
+  // right hand, voice 2 (the two chords of bars 37 and 76): they go to the left hand
+  for (const n of right(orig).filter((n) => n.voice === 2)) out.push({ ...n, hand: "L" });
+  // left hand: the held bass of a bar is a quarter; the little bass line of bars 37 and 76 (voice 1, role bass) is left out
+  for (const n of left(orig).filter((n) => n.voice === 2)) out.push({ ...n, dur: 480 });
+  const bar = (n) => Math.floor(n.tick / BAR) + 1;
+  const upperChords = left(orig).filter((n) => n.voice === undefined && !(n.role === "bass" && BUSY.has(bar(n))));
+  for (const g of groupsOf(upperChords)) for (const n of upper(g)) out.push({ ...n });
+  return keyed(out);
+}
+
+test("counter-proof: the rules notice a Beginner with a four-note chord, a changed bass length or a missing right-hand note", () => {
+  const expected = beginnerOf(original);
+  const four = [...beginner, { tick: tickOf(24, 2), dur: 960, pitch: "C3", hand: "L" }];
+  assert.notDeepEqual(keyed(heads(four)), expected);
+  const longBass = structuredClone(beginner);
+  longBass.find((n) => n.hand === "L" && n.role === "bass").dur = 960;
+  assert.notDeepEqual(keyed(heads(longBass)), expected);
+  const fewer = beginner.filter((n) => n !== beginner.find((x) => x.pitch === "A5"));
+  assert.notDeepEqual(keyed(heads(fewer)), expected);
+});
+
+test("no Beginner chord has more than three notes and the Beginner's left hand is one line of bass quarter then chord, bar by bar", () => {
+  for (const b of barsOfPass(1, 78).filter(regular)) {
+    const l = left(inBar(beginner, b));
+    const bass = l.filter((n) => n.role === "bass");
+    assert.deepEqual(bass.map((n) => [n.tick, n.dur]), [[tickOf(b), 480]], `bar ${b}`);
+    const chord = l.filter((n) => n.role === "accompaniment");
+    assert.ok(chord.length >= 2 && chord.length <= 3, `bar ${b}: ${chord.length} notes`);
+    assert.ok(chord.every((n) => n.tick === tickOf(b, 2) && n.dur === 960), `bar ${b}`);
+  }
+});
+
+test("no event of either level crosses a barline, and the validator notices one that does (Beginner strictBars)", () => {
+  for (const [id, notes] of [["original", original], ["beginner", beginner]]) {
+    for (const n of notes) assert.equal(Math.floor(n.tick / BAR), Math.floor((n.tick + n.dur - 1) / BAR), `${id}: ${n.pitch ?? "rest"} at ${n.tick}`);
+  }
+  const bad = structuredClone(song);
+  const note = bad.levels.beginner.notes.find((n) => n.hand === "L" && n.role === "accompaniment");
+  note.dur += 480;
+  assert.ok(validateSong(bad).errors.some((e) => e.rule === "R10" || e.rule === "R9"));
+});
+
+test("every note of both levels has an editorial finger from 1 to 5: the source prints none", () => {
+  for (const n of [...heads(original), ...heads(beginner)]) {
+    assert.ok(Number.isInteger(n.finger) && n.finger >= 1 && n.finger <= 5, `${n.pitch} at ${n.tick}`);
+    assert.equal(n.fingeringSource, "editorial");
+  }
+});
+
+test("both hands stay in their own range: the left hand up to A4 and the right hand from A3", () => {
+  for (const n of left(original)) assert.ok(midiOf(n.pitch) <= midiOf("A4"), `${n.pitch} at ${n.tick}`);
+  for (const n of right(original)) assert.ok(midiOf(n.pitch) >= midiOf("A3"), `${n.pitch} at ${n.tick}`);
+});
+
+test("the F sharp minor turn: bass F#2 and chord A3 C#4 F#4 in bar 17, B1 with B3 D4 F#4 in bar 18, the melody climbing a fourth from C#5 to F#5", { skip: !has(21) }, () => {
+  assert.equal(left(inBar(original, 17)).find((n) => n.role === "bass").pitch, "F#2");
+  assert.deepEqual(names(sorted(left(inBar(original, 17)).filter((n) => n.role === "accompaniment"))), ["A3", "C#4", "F#4"]);
+  assert.equal(left(inBar(original, 18)).find((n) => n.role === "bass").pitch, "B1");
+  assert.deepEqual(names(sorted(left(inBar(original, 18)).filter((n) => n.role === "accompaniment"))), ["B3", "D4", "F#4"]);
+  assert.deepEqual(right(inBar(original, 17)).map((n) => n.pitch), ["C#5"]);
+  assert.deepEqual(right(inBar(original, 18)).map((n) => n.pitch), ["F#5"]);
+  assert.equal(midiOf("F#5") - midiOf("C#5"), 5, "a fourth");
+  assert.equal(midiOf("F#2") - midiOf("B1"), 7, "the bass falls a fifth");
+});
+
 test("the song file holds none of the typographic marks that betray machine-written text: no long dashes, middle dots, curly quotes, arrows, one-character ellipsis or hard spaces", () => {
   const banned = /[\u2012-\u2015\u00b7\u2022\u2018\u2019\u201c\u201d\u2026\u2190-\u21ff\u00a0]/;
   assert.equal(banned.test(text), false);
