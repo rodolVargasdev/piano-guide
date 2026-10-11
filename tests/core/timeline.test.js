@@ -1,4 +1,5 @@
 import { test } from "node:test";
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { resolveLevel, activeAt, shiftHints } from "../../src/core/timeline.js";
 import { validSong, mutated } from "../fixtures/helpers.js";
@@ -112,4 +113,18 @@ test("resolveLevel flags the shifts of both hands in timeline.shifts", () => {
   const flagged = [...tl.shifts].map((i) => tl.notes[i]);
   assert.ok(flagged.every((x) => x.tick > 0));
   assert.ok(flagged.some((x) => x.pitch === "D5"));
+});
+
+test("shiftHints on the real Nocturne: the right-hand leaps are flagged, the runs inside a position are not", () => {
+  const song = JSON.parse(readFileSync(new URL("../../songs/chopin-nocturne-op9-no2.json", import.meta.url), "utf8"));
+  const tl = resolveLevel(song, "original");
+  const right = [...shiftHints(tl.notes, "R")].map((i) => `${tl.notes[i].tick} ${tl.notes[i].pitch}`);
+  // Bb4 to G5 on the first beat, G5 down to C5 and up to C6 in bar 1 (each more than 5 semitones outside the previous group).
+  assert.deepEqual(right, ["240 G5", "3120 G5", "3600 C5", "3840 C6", "9120 D6", "10080 C5"]);
+  // The melody G5 F5 G5 F5 Eb5 of the first bar stays inside one hand position: none of it is flagged.
+  const inside = tl.notes.map((x, i) => [x, i]).filter(([x]) => x.hand === "R" && x.tick >= 960 && x.tick <= 2400);
+  assert.ok(inside.length >= 5);
+  for (const [x, i] of inside) assert.equal(tl.shifts.has(i), false, `${x.tick} ${x.pitch}`);
+  // Counter-proof: with a threshold above any leap in the piece (40) nothing is flagged.
+  assert.deepEqual([...shiftHints(tl.notes, "R", 40)], []);
 });
