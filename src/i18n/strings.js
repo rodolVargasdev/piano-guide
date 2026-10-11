@@ -28,6 +28,8 @@ export const STRINGS = {
   "common.private": { en: "Private", es: "Privada" },
   "common.songNotFound": { en: "Song not found", es: "Canción no encontrada" },
   "common.language": { en: "Language", es: "Idioma" },
+  "credits.piano": { en: "Piano: Salamander Grand Piano by Alexander Holm, CC BY 3.0, subset converted to MP3, via tonejs.github.io/audio.", es: "Piano: Salamander Grand Piano de Alexander Holm, CC BY 3.0, subconjunto convertido a MP3, vía tonejs.github.io/audio." },
+  "credits.license": { en: "License text", es: "Texto de la licencia" },
   "lang.en": { en: "English", es: "English" },
   "lang.es": { en: "Español", es: "Español" },
 

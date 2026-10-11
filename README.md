@@ -141,6 +141,8 @@ An id that is not in the index shows "Song not found". The browser back button a
 
 The scheduler runs every 25 ms with a 120 ms look-ahead (1.5 s while the tab is hidden). Everything is deterministic given the audio clock, so `node --test` covers it with a fake context (`tests/audio/`). Sound itself can only be judged by listening.
 
+The engine plays through `src/audio/voice.js`: a sampled piano (`src/audio/sampler.js`, 30 Salamander Grand Piano MP3 files under `assets/audio/piano/`, pitched between sample points by playback rate, never more than 3 semitones) with the oscillator synthesizer (`src/audio/synth.js`) as the automatic fallback. The samples load lazily on the first key or Play, never block the page, and a note requested before its sample is decoded, a missing file or a decode failure sounds on the synthesizer with no error shown. Listen on a public song and the learner's own key presses use this same voice; a private song still schedules no note at all.
+
 ## Practice tools
 
 The panel under the transport drives `src/ui/practice-controller.js` (state, no DOM) and `src/ui/practice-panel.js` (the controls).
@@ -200,4 +202,4 @@ Measured on 2026-10-10 (Chrome on an RTX 3050 laptop GPU through ANGLE and Direc
 
 ## License
 
-The code and documentation are MIT licensed (`LICENSE`). The Nocturne data, `songs/chopin-nocturne-op9-no2.json`, is adapted from a Mutopia Project file and is licensed CC BY-SA 3.0; its attribution is in `songs/LICENSE-chopin-nocturne-op9-no2.md`. The Ode to Joy data, `songs/ode-to-joy.json`, is adapted from Mutopia Project piece 528, which is Public Domain (no attribution is required; the source, the license and the SHA-256 of the file are in `songs/LICENSE-ode-to-joy.md`); its left hand is an original arrangement. A song you keep for yourself goes in the private folder described above and is never part of the public data.
+The code and documentation are MIT licensed (`LICENSE`). The Nocturne data, `songs/chopin-nocturne-op9-no2.json`, is adapted from a Mutopia Project file and is licensed CC BY-SA 3.0; its attribution is in `songs/LICENSE-chopin-nocturne-op9-no2.md`. The Ode to Joy data, `songs/ode-to-joy.json`, is adapted from Mutopia Project piece 528, which is Public Domain (no attribution is required; the source, the license and the SHA-256 of the file are in `songs/LICENSE-ode-to-joy.md`); its left hand is an original arrangement. The piano samples in `assets/audio/piano/` are the Salamander Grand Piano by Alexander Holm, licensed CC BY 3.0 (`assets/audio/piano/LICENSE.txt`); the credit is shown in the footer of every page, in English and Spanish: "Piano: Salamander Grand Piano by Alexander Holm, CC BY 3.0, subset converted to MP3, via tonejs.github.io/audio". The source, the SHA-256 of every file and the rejected alternatives are in `docs/STACK_TECNOLOGICO.md`. A song you keep for yourself goes in the private folder described above and is never part of the public data.

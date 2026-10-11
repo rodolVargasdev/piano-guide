@@ -6,6 +6,7 @@ import { catalogView } from "./ui/catalog.js";
 import { createI18n } from "./i18n/i18n.js";
 import { STRINGS } from "./i18n/strings.js";
 import { createLanguageSelect } from "./ui/language-select.js";
+import { createCredits } from "./ui/credits.js";
 import { el } from "./ui/dom.js";
 
 const mount = document.getElementById("app");
@@ -24,6 +25,9 @@ const i18n = createI18n({ storage, navigatorLanguage: globalThis.navigator?.lang
 const practiceLink = el("a", { class: "header-link", href: "#/practice" }, i18n.t("common.practice"));
 i18n.onChange(() => (practiceLink.textContent = i18n.t("common.practice")));
 document.querySelector("header")?.append(practiceLink, createLanguageSelect({ i18n }).element);
+
+// The sample license credit is on every page, below the content.
+mount.after(createCredits({ i18n }).element);
 
 createRouter({
   mount,
