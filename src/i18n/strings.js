@@ -1,0 +1,107 @@
+// Learner-facing string catalog, Milestone A keys: { key: { en, es } }. Templates use {name}
+// placeholders and plural pairs key_one / key_other. Spanish is neutral Latin American and uses the
+// formal imperative (Presione, Toque, Mueva), never voseo. Text must use plain straight quotes and
+// plain hyphens only; tests/i18n/strings.test.js runs every guard over this table.
+
+export const STRINGS = {
+  // common
+  "common.correct": { en: "Correct", es: "Correcto" },
+  "common.tryAgain": { en: "Try again", es: "Intente de nuevo" },
+  "common.listen": { en: "Listen", es: "Escuchar" },
+  "common.listenAgain": { en: "Listen again", es: "Escuchar de nuevo" },
+  "common.myTurn": { en: "My turn", es: "Mi turno" },
+  "common.start": { en: "Start", es: "Empezar" },
+  "common.continue": { en: "Continue", es: "Continuar" },
+  "common.startOver": { en: "Start over", es: "Empezar de nuevo" },
+  "common.resetProgress": { en: "Reset progress", es: "Reiniciar el progreso" },
+  "common.next": { en: "Next", es: "Siguiente" },
+  "common.repeat": { en: "Repeat", es: "Repetir" },
+  "common.skip": { en: "Skip", es: "Omitir" },
+  "common.back": { en: "Back", es: "Atrás" },
+  "common.catalog": { en: "Catalog", es: "Catálogo" },
+  "common.learn": { en: "Learn", es: "Aprender" },
+  "common.playAlong": { en: "Play along", es: "Tocar junto a la canción" },
+  "common.playAlongNoSound": { en: "Play along (no sound)", es: "Tocar junto a la canción (sin sonido)" },
+  "common.practice": { en: "Practice exercises", es: "Ejercicios de práctica" },
+  "common.private": { en: "Private", es: "Privada" },
+  "common.songNotFound": { en: "Song not found", es: "Canción no encontrada" },
+  "common.language": { en: "Language", es: "Idioma" },
+  "lang.en": { en: "English", es: "English" },
+  "lang.es": { en: "Español", es: "Español" },
+
+  // hands and fingers
+  "hand.R": { en: "Right hand", es: "Mano derecha" },
+  "hand.L": { en: "Left hand", es: "Mano izquierda" },
+  "hand.T": { en: "Both hands", es: "Ambas manos" },
+  "hand.R.lower": { en: "right hand", es: "mano derecha" },
+  "hand.L.lower": { en: "left hand", es: "mano izquierda" },
+  "hand.letter.R": { en: "R", es: "D" },
+  "hand.letter.L": { en: "L", es: "I" },
+  "hand.unavailable": { en: "Not available for this song", es: "No disponible para esta canción" },
+  "finger.1": { en: "thumb", es: "pulgar" },
+  "finger.2": { en: "index finger", es: "dedo índice" },
+  "finger.3": { en: "middle finger", es: "dedo medio" },
+  "finger.4": { en: "ring finger", es: "dedo anular" },
+  "finger.5": { en: "little finger", es: "dedo meñique" },
+
+  // note names: fixed-do solfege in both languages, letter first in English and solfege first in Spanish
+  "note.C": { en: "Do", es: "Do" },
+  "note.D": { en: "Re", es: "Re" },
+  "note.E": { en: "Mi", es: "Mi" },
+  "note.F": { en: "Fa", es: "Fa" },
+  "note.G": { en: "Sol", es: "Sol" },
+  "note.A": { en: "La", es: "La" },
+  "note.B": { en: "Si", es: "Si" },
+  "note.display": { en: "{letter} ({solfege})", es: "{solfege} ({letter})" },
+  "key.major": { en: "{tonic} major", es: "{tonic} mayor" },
+  "keyboard.label": { en: "Keyboard, {low} to {high}", es: "Teclado, de {low} a {high}" },
+
+  // step instructions
+  "step.one": { en: "{hand}: {finger} on {note}.", es: "{hand}: {finger} en {note}." },
+  "step.together_one": { en: "Press this key.", es: "Presione esta tecla." },
+  "step.together_other": { en: "Press these {count} keys together.", es: "Presione estas {count} teclas a la vez." },
+  "step.move": { en: "Move the {hand}: thumb on {thumb}.", es: "Mueva la {hand}: pulgar en {thumb}." },
+  "step.thenPlay": { en: "Then {finger} on {note}.", es: "Luego, {finger} en {note}." },
+  "step.both": { en: "Both hands: {right} right, {left} left.", es: "Ambas manos: {right} con la derecha, {left} con la izquierda." },
+
+  // input panel
+  "input.computerKeys.on": { en: "Computer keys: on", es: "Teclas de la computadora: activadas" },
+  "input.computerKeys.off": { en: "Computer keys: off", es: "Teclas de la computadora: desactivadas" },
+  "input.connect": { en: "Connect piano", es: "Conectar el piano" },
+  "input.midiSound": { en: "Sound from the app for MIDI", es: "Sonido de la aplicación para MIDI" },
+  "input.midi.unsupported": { en: "MIDI: not available in this browser", es: "MIDI: no disponible en este navegador" },
+  "input.midi.insecure": { en: "MIDI: needs a secure page", es: "MIDI: requiere una página segura" },
+  "input.midi.idle": { en: "MIDI: not connected", es: "MIDI: sin conexión" },
+  "input.midi.requesting": { en: "MIDI: waiting for permission", es: "MIDI: esperando el permiso" },
+  "input.midi.denied": { en: "MIDI: permission denied (allow it in the site settings)", es: "MIDI: permiso denegado (permítalo en la configuración del sitio)" },
+  "input.midi.noDevice": { en: "MIDI: no device", es: "MIDI: sin dispositivo" },
+  "input.midi.noDeviceHint": { en: "No MIDI device found. Use the computer keys or tap the keys.", es: "No se encontró ningún dispositivo MIDI. Use el teclado de la computadora o toque las teclas." },
+  "input.midi.connected": { en: "MIDI: {name}", es: "MIDI: {name}" },
+  "input.midi.connectedMore": { en: "MIDI: {name} +{more}", es: "MIDI: {name} +{more}" },
+  "input.midi.unavailable": { en: "MIDI: could not start", es: "MIDI: no se pudo iniciar" },
+
+  // catalog
+  "catalog.privateNotice": { en: "The private library could not be read.", es: "No se pudo leer la biblioteca privada." },
+  "catalog.noNotes": { en: "This song has no notes to learn", es: "Esta canción no tiene notas para aprender" },
+  "catalog.unavailable": { en: "Unavailable", es: "No disponible" },
+  "catalog.idUsed": { en: "id already used by a public song", es: "identificador ya usado por una canción pública" },
+  "catalog.visibilityMismatch": { en: "index and file disagree on visibility", es: "el índice y el archivo no coinciden en la visibilidad" },
+  "catalog.notPrivate": { en: "the file is not marked private", es: "el archivo no está marcado como privado" },
+
+  // learn view
+  "learn.tagline": { en: "Learn it phrase by phrase.", es: "Aprenda la canción frase por frase." },
+  "learn.lessonZero": { en: "Lesson zero", es: "Lección cero" },
+  "learn.listening": { en: "Listen.", es: "Escuche." },
+  "learn.phrase": { en: "Phrase {n} of {total}.", es: "Frase {n} de {total}." },
+  "learn.step": { en: "Step {n} of {total}", es: "Paso {n} de {total}" },
+  "learn.phraseDone": { en: "Correct. Phrase {n} of {total} done.", es: "Correcto. Frase {n} de {total} terminada." },
+  "learn.songDone": { en: "You played the whole song.", es: "Tocó la canción completa." },
+  "learn.nextPhrase": { en: "Next phrase", es: "Siguiente frase" },
+  "learn.repeatPhrase": { en: "Repeat phrase", es: "Repetir la frase" },
+  "learn.useShaded": { en: "Use the shaded key.", es: "Use la tecla sombreada." },
+  "learn.octave": { en: "Right note, other octave.", es: "Nota correcta, otra octava." },
+  "learn.transposeTo": { en: "Transpose to {key} major", es: "Transponer a {key} mayor" },
+  "learn.level": { en: "Level", es: "Nivel" },
+  "learn.notReady": { en: "This lesson is not ready yet.", es: "Esta lección aún no está lista." },
+  "learn.silent": { en: "The app does not play this song. It only tells you what to play.", es: "La aplicación no reproduce esta canción. Solo indica qué tocar." },
+};
