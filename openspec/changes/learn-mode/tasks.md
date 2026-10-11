@@ -249,13 +249,13 @@ Before approval (the default state of the chain): the assets guard test (15.6) i
 
 Specs: song-data-model (transcribed provenance), song-catalog.
 
-- [ ] 16.1 STOP GATE, source search (no repo change): search Mutopia Project first (LilyPond text), then IMSLP, for Beethoven's Symphony No. 9 finale theme or a public-domain piano reduction of the "Freude" theme; accept only Mutopia "Public Domain", "CC BY" or "CC BY-SA", or IMSLP files tagged Public Domain (US) with the license line visible. Record piece page URL, file URL, source ID, license, SHA-256 of the exact downloaded file, access date. Download only after the runtime permits it. **If no qualifying source exists, STOP and return to the orchestrator; write nothing from memory.**
-- [ ] 16.2 Create `tests/fixtures/<source>-ode-to-joy-onsets.json` extracted from the downloaded file only (onset tick, spelled pitch, duration, source SHA-256), following the pattern of `tests/fixtures/mutopia-chopin-op9n2-onsets.json` (read-only).
-- [ ] 16.3 Create `songs/ode-to-joy.json` (C major beginner level, right-hand melody transposed from the source key with `transposeInterval`, `transcribed: true`, `what` stating bars taken, reduction to the theme and the transposition, four `learn.phrases` of 4 bars, easy left hand with `role: "bass"` from the source bass or an original arrangement recorded as a second `original-arrangement` source, bilingual lesson text) and `songs/LICENSE-ode-to-joy.md` when the source license requires attribution. Do NOT edit `songs/index.json` yet (pr6b).
-- [ ] 16.4 Create `tests/songs-ode.test.js`: file validates, provenance fields complete (URL, license, SHA-256, access date), right-hand melody equals the fixture transposed by the recorded interval (counter-proof: a one-note change in a copy makes it fail), every learn phrase inside the song, no lyric text.
-- [ ] 16.5 Browser check on 8790 with a temporary local index entry (not committed): Listen then My turn on the first phrase, wrong key, right-hand then left-hand stages; screenshots read.
+- [x] 16.1 STOP GATE, source search (no repo change): search Mutopia Project first (LilyPond text), then IMSLP, for Beethoven's Symphony No. 9 finale theme or a public-domain piano reduction of the "Freude" theme; accept only Mutopia "Public Domain", "CC BY" or "CC BY-SA", or IMSLP files tagged Public Domain (US) with the license line visible. Record piece page URL, file URL, source ID, license, SHA-256 of the exact downloaded file, access date. Download only after the runtime permits it. **If no qualifying source exists, STOP and return to the orchestrator; write nothing from memory.**
+- [x] 16.2 Create `tests/fixtures/<source>-ode-to-joy-onsets.json` extracted from the downloaded file only (onset tick, spelled pitch, duration, source SHA-256), following the pattern of `tests/fixtures/mutopia-chopin-op9n2-onsets.json` (read-only).
+- [x] 16.3 Create `songs/ode-to-joy.json` (C major beginner level, right-hand melody transposed from the source key with `transposeInterval`, `transcribed: true`, `what` stating bars taken, reduction to the theme and the transposition, four `learn.phrases` of 4 bars, easy left hand with `role: "bass"` from the source bass or an original arrangement recorded as a second `original-arrangement` source, bilingual lesson text) and `songs/LICENSE-ode-to-joy.md` when the source license requires attribution. Do NOT edit `songs/index.json` yet (pr6b).
+- [x] 16.4 Create `tests/songs-ode.test.js`: file validates, provenance fields complete (URL, license, SHA-256, access date), right-hand melody equals the fixture transposed by the recorded interval (counter-proof: a one-note change in a copy makes it fail), every learn phrase inside the song, no lyric text.
+- [x] 16.5 Browser check on 8790 with a temporary local index entry (not committed): Listen then My turn on the first phrase, wrong key, right-hand then left-hand stages; screenshots read.
   Learner-level acceptance: the learner presses Listen and hears and sees the phrase lit slowly with the piano or synth voice, then presses My turn and is told one key at a time which finger to use; completing it says "Correct" and offers the next phrase.
-- [ ] 16.6 Verification: `node --test` full.
+- [x] 16.6 Verification: `node --test` full.
 
 ## Phase 17: Synthetic fixture and test migration (pr5b-test-migration, about 420 lines)
 
@@ -464,4 +464,5 @@ Phase 15 (pr3b-sampled-piano) is a STOP gate and is not approved, so this batch 
 | 3 | `feat/learn-mode-pr2b-stages` | 14.1 (plan and both-hands steps) | 217 |
 | 4 | `feat/learn-mode-pr2b2-stage-reducer` | 14.2, stage labels and Next stage of 14.3 | about 610 (`size:exception` recommended, see its description) |
 | 5 | `feat/learn-mode-pr2b3-stage-view` | metronome of 14.3, 14.4, 14.5 | 144 |
+| 6 | `feat/learn-mode-pr4b-ode-to-joy` | 16.1 to 16.6 | 537 (data file, `size:exception` recommended) |
 
