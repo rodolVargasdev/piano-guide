@@ -2,5 +2,6 @@
 openspec
 .atl
 docs
+!docs/STACK_TECNOLOGICO.md
 tools
 node_modules

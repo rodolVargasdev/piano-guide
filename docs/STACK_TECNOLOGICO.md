@@ -46,4 +46,20 @@ Unfixed advisories accepted: none. Because the result depends on the Alpine pack
 
 | Component | Exact version | Where it is used | Why | Audit | Status |
 |-----------|---------------|------------------|-----|-------|--------|
-| three.js | 0.186.1 (vendored under `assets/vendor/`) | 3D keyboard scene | Renders the keyboard and falling notes | OSV query, SHA-256 of both files | Pending: added in PR 11 |
+| three.js | 0.186.1 (vendored under `assets/vendor/`, core build only, no addons) | 3D keyboard scene, loaded lazily by the player through the import map | Renders the keyboard and falling notes | OSV query, SHA-256 of both files | In use from PR 11 |
+
+### three.js (vendored)
+
+- Files and SHA-256, computed on the copies in this repository on 2026-10-10 (they match the values recorded for the audited copy in the portfolio):
+
+  | File | SHA-256 |
+  |------|---------|
+  | `assets/vendor/three.module.min.js` | `3bc833fceb6577bd1a380388f832ae61cd6e2f78ad02b0bf0d5adf5a4a9334fe` |
+  | `assets/vendor/three.core.js` | `3b346151f65ffdfca3e4c002bd58966b78c423087fb48a873f83200de1bffc48` |
+
+- Source: the same copy already audited in the portfolio site (`portafolio-site/assets/vendor/`), a jsDelivr build of `three@0.186.1` (`build/three.module.js` and `build/three.core.js`, minified with Terser). `three.module.min.js` imports `./three.core.js`, so both files travel together.
+- Why vendored: a CDN import would add a runtime third party; the import map points at `./assets/vendor/three.module.min.js`.
+- Rejected alternatives: CDN import (runtime third party); vendoring the `examples/jsm` addons (more files to audit; the scene uses the core build only); Babylon.js or raw WebGL (weight and effort); a canvas-2D-only keyboard (no 3D reflections or perspective).
+- Audit: OSV query `POST https://api.osv.dev/v1/query` with package `three`, ecosystem `npm`, version `0.186.1`, run on 2026-10-10: HTTP 200, empty result (`{}`), so no advisory is published for this version on that date. Re-run in the last PR of the chain and whenever the version changes.
+- Unfixed advisories accepted: none.
+- Integrity guard: `tests/vendor.test.js` fails if either file changes by one byte or if the hashes above disappear from this document; `.gitattributes` marks `assets/vendor/*` as `-text` so line-ending conversion can never alter the hashed bytes. The portfolio's own stack document prints the core hash with an extra leading character (65 characters); the 64-character value above is the one computed here.

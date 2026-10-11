@@ -12,6 +12,9 @@ COPY tests/ ./tests/
 # Guards that read these files (CSP hash against the import map).
 COPY index.html nginx.conf ./
 COPY songs/ ./songs/
+# Guard that pins the vendored three.js bytes and the hashes in the stack document.
+COPY assets/vendor/ ./assets/vendor/
+COPY docs/STACK_TECNOLOGICO.md ./docs/STACK_TECNOLOGICO.md
 RUN node --test && touch /app/.tests-passed
 
 # Stage 2: static runtime on nginx, non-root, port 8080.
