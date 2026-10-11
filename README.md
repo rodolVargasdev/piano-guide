@@ -15,7 +15,7 @@ The images used (exact tags and digests) and their vulnerability audit are liste
 
 ## Run without Docker (dev server)
 
-Requires Node 22 or newer. No `npm install` is needed: the project has no dependencies.
+Requires Node 22 or newer (the Docker image uses Node 24 for its test stage). No `npm install` is needed: the project has no dependencies.
 
 ```sh
 PORT=8790 node tools/serve.mjs
@@ -51,7 +51,7 @@ The site uses hash routes, so it works on any static host and under a subpath wi
 
 | Hash | Shows |
 |------|-------|
-| `#/` | Song catalog (cards from `songs/index.json`) |
+| `#/` | Song catalog: a hero and one card per song from `songs/index.json` (no three.js and no player code is downloaded for it) |
 | `#/song/<id>` | Song player: 3D keyboard with falling notes, transport controls, position readout and BPM, and the grand-staff score under the keyboard. Add `?debug=1` to the page URL (or the hash) for the overlay (clock jitter, frame time, graphics tier and camera section) |
 | `#/song/<id>?level=<id>&names=<solfege or letters>&view=<both, scene or score>` | Same song with the level, note names and view preselected; the selector under the title changes them and rewrites the hash without a reload |
 | anything else | "Page not found" with a link to the catalog |
@@ -95,7 +95,7 @@ The panel under the transport drives `src/ui/practice-controller.js` (state, no 
 | Ramp from, by, to, Ramp, Hold | With a loop on, sets the BPM to the start value and raises it one step after each completed pass up to the target; Hold freezes it. Without a loop it says "Needs a loop" and does nothing |
 | Mute, Hide (left, right) | Mute silences a hand and keeps it visible; Hide removes it from the keyboard and the score and keeps it audible. Both hands muted still leaves the metronome. The flags survive seeks, loop wraps and level changes |
 | Full 88 | Frames the whole keyboard instead of the range of the level |
-| Quality | Manual graphics tier; it takes effect with the quality tiers of a later change |
+| Quality | Graphics tier of the keyboard view: Auto (default), High, Medium, Low or Minimum. A tier overrides Auto; choosing Auto again restarts it (see Scene) |
 
 ## Lesson card
 
@@ -105,11 +105,15 @@ Under the practice panel, `src/ui/lesson-card.js` shows the `lesson` entry of th
 
 `src/scene/` draws the 3D keyboard with three.js 0.186.1 (vendored under `assets/vendor/`, see `docs/STACK_TECNOLOGICO.md`). The player loads it lazily, so the catalog never downloads three.js; `render(tick, playing)` is called once per frame from the single animation loop and reads no clock of its own.
 
-- Colors: right hand orange (`#f59e0b`), left hand blue (`#3b82f6`). Hand identity does not rely on color alone: left-hand bars carry long dark stripes, right-hand bars are plain (finger markers with hand shapes arrive in a later PR).
+- Colors: right hand orange (`#f59e0b`), left hand blue (`#3b82f6`). Hand identity does not rely on color alone: left-hand bars carry long dark stripes, right-hand bars are plain, and finger markers are circles for the right hand and rounded squares for the left, each with a corner R or L.
 - Keys depress about their back edge and light up in the hand color with a soft glow while their note sounds. A paused scene lights no key.
 - Falling notes sit in tick space: a bar's lower edge reaches the key-top line at the moment its note starts, and its height is proportional to its duration. Only the parent group moves each frame. Two clipping planes bound the look-ahead (2 bars).
 - Range: the keyboard fits the song (3 semitones of padding, snapped outward to C and B, at least 3 octaves); the camera frames it. The practice panel has a "Full 88" toggle that shows all 88 keys and reframes.
 - `highlightNotes(midis)` outlines keys in a neutral teal that no hand uses, whatever the playback does (the lesson card calls it for its chord chips); an empty array clears it, keys outside the drawn range are ignored and the outline survives a range or level rebuild.
+- Finger markers (`marker-plan.js`, `markers.js`): a numbered marker on the key of every note that has a `finger` (full strength while it sounds, a ghost at 40 percent during the beat before), nothing for a note without one (its key still lights), and a pulsing ring one beat before a hand shift (a destination more than 5 semitones outside the previous onset group of that hand, from `shiftHints`; static under reduced motion). One instanced mesh, one draw call, drawn last so no effect covers a number.
+- Stage (`stage.js`, `keyboard.js`): a dark room with a faint backdrop, a warm key light with soft shadows, lacquered black keys, ivory white keys, a glossy floor and a pool of light, reflecting a small procedural studio through `PMREMGenerator`. No bloom, no post-processing, no addons.
+- Quality tiers: Auto starts at High (Medium with 4 cores or fewer or a touch pointer) and a frame-time watchdog (`scene/quality.js` over the pure `core/quality.js`) steps down one tier at a time when the average over 120 frames stays above 22 ms for 2 s (Medium: reflections off; Low: shadows, rim light and glow off; Minimum: pixel ratio 1 and a one-bar horizon) and up at most once after 20 s under 10 ms. Notes, key states and finger markers stay on in every tier. The Quality control overrides it.
+- Camera: one framing per song section with a 1.4 s tween across a boundary (also on a seek while paused); songs with one section never move it. `prefers-reduced-motion: reduce`, followed live, makes the camera cut instead, keeps the rings static and the score stepping per beat; keys still depress and notes still fall.
 - No WebGL, or a failed three.js import: the scene slot shows "3D view unavailable on this device" and the transport and audio keep working.
 - One `WebGLRenderer` is shared by the whole page; leaving the player disposes the scene's own geometry, materials and textures.
 
@@ -121,8 +125,17 @@ Under the practice panel, `src/ui/lesson-card.js` shows the `lesson` entry of th
 - Beginner (`notation: "labelled"`): larger noteheads colored by hand with the note name inside (solfege by default, letters with `names=letters`; a `label` field wins), a finger row above the treble staff and below the bass staff, and a chord row above the staff with the chord symbol only. Original (`notation: "engraved"`): empty noteheads, ornament signs, and optional roman numerals and analysis callouts.
 - A hidden hand is not drawn. Under `prefers-reduced-motion: reduce` the score steps once per beat instead of moving smoothly.
 - The SVG is `role="img"` with a title ("<song>, <level> score") and a description (key, meter, tempo, bars). Song text only ever reaches the page through `textContent`. Beyond 5000 nodes only the measures within 8 of the playhead stay mounted.
-- Known limits: no cross-staff notes and no multi-measure rests. On a phone in landscape the two views share the stage, so the score is small: choose `Score` in the View control (or `view=score`) to give it the whole width.
+- Glyphs are hand-drawn SVG paths (clefs, accidentals, rests, flags, ornaments) and spacing reserves room for accidentals so none prints over a neighbouring chord. Known limits: no cross-staff notes, no multi-measure rests, and no slurs, hairpins, dynamics or pedal signs. On a phone in landscape the two views share the stage, so the score is small: choose `Score` in the View control (or `view=score`) to give it the whole width.
 
 ### Levels and view
 
 The level opens from the hash `level`, then the last level chosen for that song in this session (`sessionStorage`), then the song default. The selector lists only the levels a song has (a single level is a static chip), shows the note-name toggle on the labelled notation only and the Analysis toggle only when the level has `analysis[]`. Switching level keeps the bar and beat, the BPM, the loop, the metronome and the hand state; while playing the engine drops its pending voices and schedules the new notes from the same tick in one call. The View control (`Both`, `Keyboard`, `Score`) hides the other slot and skips its drawing.
+
+## Performance notes
+
+Measured on 2026-10-10 (Chrome on an RTX 3050 laptop GPU through ANGLE and Direct3D 11, a local dev server and the built image). Details and what was not checked are in `openspec/changes/piano-guide-mvp/prs/`.
+
+- Draw calls per frame: 18 on High and Medium, 11 on Low and Minimum (budget: under 20).
+- Frame time on High at 1440 x 900 and 844 x 390: average 16.7 ms, p95 16.9 ms (the 60 Hz display period).
+- Catalog route: 37 KB over 13 requests from the image with gzip, no three.js.
+- `?debug=1` clock jitter, the gap between the audio clock and the frame clock per frame: 8.5 to 9 ms at most per 10-frame window. It is not the delay between what is heard and what is seen, which a page cannot measure.
