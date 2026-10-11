@@ -156,12 +156,13 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
         const s = state;
         const step = s.phase === "yourTurn" ? s.steps[s.stepIndex] : null;
         const first = step ?? s.steps[0];
-        const pos = first && s.phase !== "start" ? positionKeys(first.position, s.hand) : [];
+        // Hands together: each hand has its own position (a step where one hand rests has no position for it).
+        const pos = first && s.phase !== "start" ? (s.hand === "T" ? [...positionKeys(first.positions?.R, "R"), ...positionKeys(first.positions?.L, "L")] : positionKeys(first.position, s.hand)) : [];
         const phraseMidis = s.steps.flatMap((st) => st.keys.map((k) => k.midi));
         const stepKeys = step ? step.keys.map((k) => ({ midi: k.midi, finger: k.finger, hand: k.hand ?? s.hand })) : [];
         const { avail, maxWhite, h } = sizes();
         const next = learnRegion({ phraseMidis, positionMidis: pos.map((k) => k.midi), stepMidis: stepKeys.map((k) => k.midi), maxWhite });
-        const sig = `${s.timeline.key.tonic}|${s.phraseIndex}|${s.hand}`;
+        const sig = `${s.timeline.key.tonic}|${s.stage}|${s.hand}`;
         if (sig !== contextSig) {
           contextSig = sig;
           keyboard.setKeyContext(s.timeline.key);
@@ -249,14 +250,15 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
           raf = null;
           if (token !== listenToken || state.phase !== "listening") return keyboard.setSounding([]);
           const pos = engine.position?.();
-          if (pos) keyboard.setSounding(activeAt(state.timeline, pos.tick).filter((n) => n.hand === state.hand && isPlayable(n)).map((n) => n.midi), state.hand);
+          if (pos) keyboard.setSounding(activeAt(state.timeline, pos.tick).filter((n) => (state.hand === "T" || n.hand === state.hand) && isPlayable(n)).map((n) => n.midi), state.hand === "L" ? "L" : "R");
           frames(token);
         }) ?? null;
       }
       function listen(e) {
         const token = ++listenToken;
         engine.setTimeline(state.timeline);
-        Promise.resolve(engine.playRange({ startTick: e.startTick, endTick: e.endTick, hand: e.hand })).then(
+        // Only a full-tempo stage passes a BPM; without one the engine plays slowly.
+        Promise.resolve(engine.playRange({ startTick: e.startTick, endTick: e.endTick, hand: e.hand, ...(e.bpm !== undefined ? { bpm: e.bpm } : {}) })).then(
           ({ status } = {}) => {
             if (!disposed && token === listenToken && status !== "cancelled") act("LISTEN_DONE");
           },

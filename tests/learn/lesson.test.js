@@ -36,7 +36,7 @@ test("start: a public song goes to the phrase intro and saves the position; a pr
   const pub = act(lesson(), "START");
   assert.equal(pub.state.phase, "phraseIntro");
   assert.equal(pub.state.phraseIndex, 0);
-  assert.deepEqual(pub.effects, [{ type: "save", position: { songId: "example-song", levelId: "beginner", tonic: "C", phrase: 0, hand: "R" } }]);
+  assert.deepEqual(pub.effects, [{ type: "save", position: { songId: "example-song", levelId: "beginner", tonic: "C", phrase: 0, stage: 0, hand: "R" } }]);
   const priv = act(privateLesson(), "START");
   assert.equal(priv.state.phase, "yourTurn");
   assert.equal(priv.state.silent, true);
@@ -100,8 +100,8 @@ test("my turn: the same pitch class in another octave gets the octave feedback a
 });
 
 test("my turn: a chord is completed by its keys one at a time; a wrong key in the middle clears what was pressed", () => {
-  const atChord = act(started(), ...press(P.C4), ...press(P.D4)).state; // phrase 1 done, then NEXT_PHRASE below
-  assert.equal(atChord.phase, "phraseComplete");
+  const atChord = act(started(), ...press(P.C4), ...press(P.D4)).state; // right hand of phrase 1 done, then NEXT_PHRASE below
+  assert.equal(atChord.phase, "stageComplete", "phrase 1 also has a left hand, so another stage follows");
   const second = act(atChord, "NEXT_PHRASE", "MY_TURN").state;
   assert.equal(second.steps[0].keys.length, 3);
   const cleared = act(second, ...press(P.C4), ...press(P.E4), ...press(P.D4), ...press(P.G4));
@@ -110,21 +110,60 @@ test("my turn: a chord is completed by its keys one at a time; a wrong key in th
   assert.equal(done.state.stepIndex, 1);
 });
 
-test("the last step of a phrase gives phraseComplete, announces it and saves the NEXT phrase as the place to resume", () => {
+test("the last step of a stage that has another stage after it gives stageComplete and saves THAT stage as the place to resume", () => {
   const r = act(started(), ...press(P.C4), ...press(P.D4));
-  assert.equal(r.state.phase, "phraseComplete");
+  assert.equal(r.state.phase, "stageComplete");
   assert.deepEqual(effectTypes(r).slice(-2), ["announce", "save"]);
-  assert.equal(r.effects.at(-2).kind, "phraseDone");
-  assert.equal(r.effects.at(-1).position.phrase, 1);
+  assert.equal(r.effects.at(-2).kind, "stageDone");
+  assert.deepEqual(r.effects.at(-1).position, { songId: "example-song", levelId: "beginner", tonic: "C", phrase: 0, stage: 1, hand: "L" });
 });
 
-test("the last step of the last phrase gives songComplete with its announcement", () => {
-  let s = started();
-  s = act(s, ...press(P.C4), ...press(P.D4), "NEXT_PHRASE", "MY_TURN", ...press(P.G4), ...press(P.C4), ...press(P.E4), ...press(P.F4), "NEXT_PHRASE", "MY_TURN").state;
-  const r = act(s, ...press(P.E4));
+test("the last stage of a phrase gives phraseComplete, announces it and saves the NEXT phrase as the place to resume", () => {
+  // Phrase 2 has no left hand, so its right-hand stage is its only one.
+  const atSecond = act(started(), ...press(P.C4), ...press(P.D4), "NEXT_PHRASE", "MY_TURN").state;
+  const r = act(atSecond, ...press(P.G4), ...press(P.C4), ...press(P.E4), ...press(P.F4));
+  assert.equal(r.state.phase, "phraseComplete");
+  assert.equal(r.effects.at(-2).kind, "phraseDone");
+  assert.deepEqual(r.effects.at(-1).position, { songId: "example-song", levelId: "beginner", tonic: "C", phrase: 2, stage: 5, hand: "R" });
+});
+
+// Plays every key of every step of the current stage, one press at a time.
+const playStage = (s) => act(s, ...s.steps.flatMap((st) => st.keys.flatMap((k) => press(k.midi)))).state;
+const stageOf = (s) => `${s.plan[s.stage].scope}:${s.phraseIndex}:${s.hand}:${s.plan[s.stage].tempo}`;
+
+test("walking the whole lesson: every stage in order, Next stage inside a phrase, Next phrase between phrases, the song stage last, then songComplete", () => {
+  let s = act(started(), "REPEAT").state; // the first stage, at its first step
+  const visited = [];
+  const phases = [];
+  for (let guard = 0; guard < 40 && s.phase !== "songComplete"; guard += 1) {
+    visited.push(stageOf(s));
+    s = playStage(s);
+    phases.push(s.phase);
+    if (s.phase === "stageComplete") s = act(s, "NEXT_STAGE", "MY_TURN").state;
+    else if (s.phase === "phraseComplete") s = act(s, "NEXT_PHRASE", "MY_TURN").state;
+  }
+  assert.deepEqual(visited, [
+    "phrase:0:R:slow", "phrase:0:L:slow", "phrase:0:T:slow", "phrase:0:T:full",
+    "phrase:1:R:slow",
+    "phrase:2:R:slow", "phrase:2:L:slow", "phrase:2:T:slow", "phrase:2:T:full",
+    "song:0:T:full",
+  ]);
+  assert.deepEqual(phases, ["stageComplete", "stageComplete", "stageComplete", "phraseComplete", "phraseComplete", "stageComplete", "stageComplete", "stageComplete", "stageComplete", "songComplete"]);
+  assert.equal(s.phase, "songComplete");
+  assert.equal(act(s, "START").state.phase, "phraseIntro", "start over from the song end");
+});
+
+test("the last step of the last stage gives songComplete with its announcement and saves where the song ended", () => {
+  let s = act(started(), "REPEAT").state;
+  while (s.stage < s.plan.length - 1) {
+    s = playStage(s);
+    s = s.phase === "phraseComplete" ? act(s, "NEXT_PHRASE", "MY_TURN").state : act(s, "NEXT_STAGE", "MY_TURN").state;
+  }
+  assert.equal(s.plan[s.stage].scope, "song");
+  const r = act(s, ...s.steps.flatMap((st) => st.keys.flatMap((k) => press(k.midi))));
   assert.equal(r.state.phase, "songComplete");
-  assert.equal(r.effects.find((e) => e.type === "announce").kind, "songDone");
-  assert.equal(act(r.state, "START").state.phase, "phraseIntro", "start over from the song end");
+  assert.equal(r.effects.find((e) => e.type === "announce" && e.kind === "songDone").kind, "songDone");
+  assert.equal(r.effects.at(-1).position.stage, s.plan.length - 1);
 });
 
 test("Listen again from My turn returns to the same step afterwards", () => {
@@ -166,7 +205,7 @@ test("transposition keeps the phrase index, restarts at its first step, saves th
   assert.equal(g.state.phase, "phraseIntro");
   assert.equal(g.state.stepIndex, 0);
   assert.notDeepEqual(g.state.steps[0].keys.map((k) => k.midi), atPhrase2.steps[0].keys.map((k) => k.midi), "notes were moved");
-  assert.deepEqual(g.effects.at(-1), { type: "save", position: { songId: "example-song", levelId: "beginner", tonic: "G", phrase: 1, hand: "R" }, transpose: "G" });
+  assert.deepEqual(g.effects.at(-1), { type: "save", position: { songId: "example-song", levelId: "beginner", tonic: "G", phrase: 1, stage: 4, hand: "R" }, transpose: "G" });
   const back = act(g.state, { type: "SET_KEY", tonic: "C" });
   assert.equal(back.state.keyTonic, "C");
   assert.equal(back.effects.at(-1).transpose, null);
@@ -207,7 +246,7 @@ test("actions that do not apply in the current phase change nothing; an unknown 
 /** Feeds a seeded random sequence of every action; returns the types of all effects. */
 function fuzz(initial, seed, steps = 400) {
   const rand = mulberry32(seed);
-  const actions = ["START", "CONTINUE", "LISTEN", "LISTEN_DONE", "MY_TURN", "LISTEN_AGAIN", "NEXT_PHRASE", "REPEAT", "LEAVE", { type: "SET_KEY", tonic: "G" }, { type: "SET_KEY", tonic: "C" }, { type: "SET_HAND", hand: "L" }, { type: "SET_HAND", hand: "R" }];
+  const actions = ["START", "CONTINUE", "LISTEN", "LISTEN_DONE", "MY_TURN", "LISTEN_AGAIN", "NEXT_PHRASE", "NEXT_STAGE", "REPEAT", "LEAVE", { type: "SET_KEY", tonic: "G" }, { type: "SET_KEY", tonic: "C" }, { type: "SET_HAND", hand: "L" }, { type: "SET_HAND", hand: "R" }];
   let s = initial;
   const seen = [];
   for (let i = 0; i < steps; i += 1) {
@@ -319,4 +358,121 @@ test("a key held while lesson zero opens does not count for it", () => {
   const down = act(lesson(), on(P.C4), "LESSON_ZERO").state; // C4 pressed on the first screen and still down
   assert.equal(act(down, on(P.C4)).state.zero.part, 0);
   assert.equal(act(down, off(P.C4), on(P.C4)).state.zero.part, 1);
+});
+
+// ---- stages (pr2b2) -----------------------------------------------------------------------------------------
+
+const stageNames = (s) => s.plan.map((u) => `${u.scope}:${u.phraseIndex}:${u.hand}:${u.tempo}`);
+
+test("the plan of the fixture: phrase 1 and 3 have four stages, phrase 2 only the right hand, then the whole song", () => {
+  assert.deepEqual(stageNames(lesson()), [
+    "phrase:0:R:slow", "phrase:0:L:slow", "phrase:0:T:slow", "phrase:0:T:full",
+    "phrase:1:R:slow",
+    "phrase:2:R:slow", "phrase:2:L:slow", "phrase:2:T:slow", "phrase:2:T:full",
+    "song:0:T:full",
+  ]);
+});
+
+test("Next stage: only after a stage is done; it shows the next stage, saves it, and never skips one", () => {
+  const done = act(started(), ...press(P.C4), ...press(P.D4)).state; // R slow of phrase 1
+  assert.equal(done.phase, "stageComplete");
+  const next = act(done, "NEXT_STAGE");
+  assert.equal(stageOf(next.state), "phrase:0:L:slow");
+  assert.equal(next.state.phase, "phraseIntro");
+  assert.equal(next.state.hand, "L");
+  assert.deepEqual(next.state.steps.map((s) => s.keys.map((k) => k.midi)), [[P.C3]], "the left-hand stage has the left-hand keys only");
+  assert.equal(next.effects.at(-1).position.stage, 1);
+  // Counter-proof: Next stage does nothing while the stage is not done.
+  for (const state of [started(), lesson(), act(started(), ...press(P.C4)).state]) assert.equal(reduce(state, { type: "NEXT_STAGE" }).state, state);
+});
+
+test("Repeat after a stage restarts that same stage at its first step", () => {
+  const done = act(started(), ...press(P.C4), ...press(P.D4)).state;
+  const again = act(done, "REPEAT").state;
+  assert.equal(again.phase, "yourTurn");
+  assert.equal(again.stepIndex, 0);
+  assert.equal(stageOf(again), "phrase:0:R:slow");
+});
+
+test("Next phrase from a stage that is not the last of its phrase skips the other stages and lands on the followed hand", () => {
+  const done = act(started(), ...press(P.C4), ...press(P.D4)).state;
+  const skipped = act(done, "NEXT_PHRASE");
+  assert.equal(stageOf(skipped.state), "phrase:1:R:slow");
+  assert.equal(skipped.effects.at(-1).position.stage, 4);
+  // Following the left hand: the next phrase that has a left-hand stage.
+  const left = act(lesson(), { type: "SET_HAND", hand: "L" }, "START", "MY_TURN", ...press(P.C3));
+  assert.equal(left.state.phase, "stageComplete", "L slow is followed by both hands");
+  assert.equal(stageOf(act(left.state, "NEXT_PHRASE").state), "phrase:2:L:slow", "phrase 2 has no left hand, so it is skipped");
+});
+
+test("hands together: the expected keys of a step are the union of both hands, in any order, and one hand alone is not enough", () => {
+  let s = act(lesson(), "START", "MY_TURN").state;
+  s = { ...act(s, ...press(P.C4), ...press(P.D4), "NEXT_STAGE", "MY_TURN", ...press(P.C3), "NEXT_STAGE", "MY_TURN").state };
+  assert.equal(stageOf(s), "phrase:0:T:slow");
+  assert.deepEqual(s.matcher.expected, [P.C3, P.C4], "left C3 and right C4 together");
+  assert.equal(s.steps[0].keys.length, 2);
+  const one = act(s, ...press(P.C4));
+  assert.equal(one.state.stepIndex, 0, "the right hand alone does not finish the step");
+  assert.equal(one.state.feedback, null, "and it is not wrong either");
+  assert.equal(act(s, on(P.C3), on(P.C4)).state.stepIndex, 1, "either order completes it");
+  assert.equal(act(s, on(P.C4), on(P.C3)).state.stepIndex, 1);
+  assert.equal(act(s, on(P.D4)).state.feedback.kind, "wrong");
+});
+
+test("Listen at a stage: slow stages pass no BPM, full-tempo stages pass the song tempo, together plays both hands", () => {
+  const at = (index) => act({ ...lesson(), phase: "phraseIntro", stage: index }, "LISTEN").effects.at(-1);
+  const slow = at(0);
+  assert.equal("bpm" in slow, false);
+  assert.equal(slow.hand, "R");
+  assert.equal(at(1).hand, "L");
+  const together = at(2);
+  assert.equal(together.hand, null, "both hands");
+  assert.equal("bpm" in together, false, "slow");
+  const full = at(3);
+  assert.equal(full.hand, null);
+  assert.equal(full.bpm, lesson().timeline.tempo.bpm, "the song tempo, passed explicitly");
+  assert.deepEqual([full.startTick, full.endTick], [0, 2 * Q], "the slice of the phrase");
+});
+
+test("changing the key keeps the stage; changing the hand moves to that hand's stage of the phrase", () => {
+  const atTogether = act(started(), ...press(P.C4), ...press(P.D4), "NEXT_STAGE", "MY_TURN", ...press(P.C3), "NEXT_STAGE").state;
+  assert.equal(stageOf(atTogether), "phrase:0:T:slow");
+  const g = act(atTogether, { type: "SET_KEY", tonic: "G" });
+  assert.equal(stageOf(g.state), "phrase:0:T:slow", "same stage in the new key");
+  assert.equal(g.effects.at(-1).position.stage, 2);
+  const right = act(atTogether, { type: "SET_HAND", hand: "R" });
+  assert.equal(stageOf(right.state), "phrase:0:R:slow");
+  assert.equal(right.state.focus, "R");
+  const left = act(atTogether, { type: "SET_HAND", hand: "L" });
+  assert.equal(stageOf(left.state), "phrase:0:L:slow");
+});
+
+test("Continue resumes the saved stage and hand; a stale or missing stage falls back to the saved phrase and hand", () => {
+  const withSaved = (position) => ({ progress: withPosition(emptyProgress(), { songId: "example-song", levelId: "beginner", tonic: "C", date: "2026-10-11", ...position }) });
+  const resumed = act(lesson(withSaved({ phrase: 0, stage: 2, hand: "T" })), "CONTINUE").state;
+  assert.equal(stageOf(resumed), "phrase:0:T:slow");
+  assert.equal(resumed.hand, "T");
+  assert.deepEqual(act(lesson(withSaved({ phrase: 0, stage: 2, hand: "T" })), "CONTINUE").effects, []);
+  // The stage does not belong to the saved phrase (the song changed): fall back to the phrase and hand.
+  const stale = act(lesson(withSaved({ phrase: 2, stage: 1, hand: "L" })), "CONTINUE").state;
+  assert.equal(stageOf(stale), "phrase:2:L:slow");
+  // A position saved before stages existed has no stage: the phrase and the hand decide.
+  const legacy = act(lesson(withSaved({ phrase: 2, hand: "R" })), "CONTINUE").state;
+  assert.equal(stageOf(legacy), "phrase:2:R:slow");
+  // A stage index past the end of the plan is ignored.
+  assert.equal(stageOf(act(lesson(withSaved({ phrase: 0, stage: 99, hand: "R" })), "CONTINUE").state), "phrase:0:R:slow");
+});
+
+test("a silent lesson walks every stage with no Listen and no song audio effect", () => {
+  let s = act(privateLesson(), "START").state;
+  const effects = [];
+  for (let guard = 0; guard < 40 && s.phase !== "songComplete"; guard += 1) {
+    const r = act(s, ...s.steps.flatMap((st) => st.keys.flatMap((k) => press(k.midi))));
+    effects.push(...r.effects);
+    s = r.state;
+    if (s.phase === "stageComplete") s = act(s, "NEXT_STAGE").state;
+    else if (s.phase === "phraseComplete") s = act(s, "NEXT_PHRASE").state;
+  }
+  assert.equal(s.phase, "songComplete");
+  assert.ok(!effects.some((e) => e.type === "listen"));
 });

@@ -41,18 +41,18 @@ test("phrase intro of a public song: Listen first, My turn second, and the autho
   const s = step(lesson(), "START");
   const en = screenModel(s, { i18n: i18nFor("en") });
   assert.equal(en.heading, "Phrase 1 of 2.");
-  assert.equal(en.sub, "Take it slowly.");
+  assert.equal(en.sub, "Right hand, slowly. Take it slowly.", "the stage is named because phrase 1 has a left hand too");
   assert.deepEqual(en.actions.map((a) => [a.id, a.label, a.primary]), [["LISTEN", "Listen", true], ["MY_TURN", "My turn", false]]);
   const es = screenModel(s, { i18n: i18nFor("es") });
   assert.equal(es.heading, "Frase 1 de 2.");
-  assert.equal(es.sub, "Con calma.");
+  assert.equal(es.sub, "Mano derecha, despacio. Con calma.");
 });
 
 test("My turn: the heading is the one instruction of the step, in English and Spanish, with the progress line", () => {
   const s = step(lesson(), "START", "MY_TURN");
   const en = screenModel(s, { i18n: i18nFor("en") });
   assert.equal(en.heading, "Right hand: thumb on C (Do).");
-  assert.equal(en.progress, "Phrase 1 of 2. Step 1 of 3");
+  assert.equal(en.progress, "Phrase 1 of 2. Right hand, slowly. Step 1 of 3");
   assert.equal(en.sub, "Press the key marked with the finger number.");
   assert.equal(screenModel(s, { i18n: i18nFor("es") }).heading, "Mano derecha: pulgar en Do (C).");
   assert.deepEqual(ids(en), ["LISTEN_AGAIN", "REPEAT"]);
@@ -80,14 +80,48 @@ test("feedback: a wrong key shows Try again with a kind line, the octave variant
   assert.equal(screenModel(s, { i18n: i18nFor() }).chip, null, "no feedback before any key");
 });
 
-test("phrase complete and song complete: one sentence, the next action is the primary one", () => {
+const play = (s, midis) => midis.reduce((state, midi) => reduce(reduce(state, { type: "NOTE_ON", midi }).state, { type: "NOTE_OFF", midi }).state, s);
+
+test("stage complete: names what was done and what comes next in one plain sentence, Next stage is the primary action", () => {
   let s = step(lesson({}, { visibility: "private" }), "START");
-  for (const midi of [60, 62, 60, 64, 67]) s = reduce(reduce(s, { type: "NOTE_ON", midi }).state, { type: "NOTE_OFF", midi }).state;
-  assert.equal(s.phase, "phraseComplete");
+  s = play(s, [60, 62, 60, 64, 67]);
+  assert.equal(s.phase, "stageComplete", "phrase 1 has a left hand, so the right-hand stage is followed by another stage");
   const m = screenModel(s, { i18n: i18nFor() });
+  assert.equal(m.heading, "Correct. Stage done: Right hand.");
+  assert.equal(m.sub, "Now the left hand, slowly.");
+  assert.deepEqual(m.actions.map((a) => [a.id, a.primary]), [["NEXT_STAGE", true], ["NEXT_PHRASE", false], ["REPEAT", false]]);
+  const es = screenModel(s, { i18n: i18nFor("es") });
+  assert.equal(es.heading, "Correcto. Terminó esta etapa: Mano derecha.");
+  assert.equal(es.sub, "Ahora la mano izquierda, despacio.");
+  // The next stage reads "Left hand, slowly" and shows the left-hand instruction.
+  const left = step(s, "NEXT_STAGE");
+  const lm = screenModel(left, { i18n: i18nFor() });
+  assert.equal(lm.heading, "Left hand: little finger on C (Do).");
+  assert.equal(lm.progress, "Phrase 1 of 2. Left hand, slowly. Step 1 of 1");
+  // After the left hand comes both hands together, slowly, with one step per moment either hand starts.
+  const afterLeft = step(play(left, [48]), "NEXT_STAGE");
+  assert.equal(screenModel(afterLeft, { i18n: i18nFor() }).progress, "Phrase 1 of 2. Both hands, slowly. Step 1 of 3");
+});
+
+test("phrase complete, section and song stages and song complete: one sentence each, the next action is the primary one", () => {
+  // A right-hand song with two phrases: one stage per phrase, then the whole song at the song tempo.
+  const right = [note(0, Q, "C4"), note(Q, Q, "D4"), note(BAR, Q, "E4")];
+  const song2 = learnSong({ notes: right, bars: 2, learn: { phrases: [{ id: "a", startTick: 0, endTick: BAR }, { id: "b", startTick: BAR, endTick: 2 * BAR }] } }).song;
+  let s = step(initLesson({ song: { ...song2, visibility: "private" }, levelId: "beginner" }), "START");
+  s = play(s, [60, 62]);
+  assert.equal(s.phase, "phraseComplete");
+  let m = screenModel(s, { i18n: i18nFor() });
   assert.equal(m.heading, "Correct. Phrase 1 of 2 done.");
   assert.deepEqual(m.actions.map((a) => [a.id, a.primary]), [["NEXT_PHRASE", true], ["REPEAT", false]]);
-  s = step(s, "NEXT_PHRASE", { type: "NOTE_ON", midi: 64 });
+  s = play(step(s, "NEXT_PHRASE"), [64]);
+  assert.equal(s.phase, "stageComplete", "after the last phrase the whole song is the next stage");
+  m = screenModel(s, { i18n: i18nFor() });
+  assert.equal(m.sub, "Now the whole song.");
+  assert.deepEqual(ids(m), ["NEXT_STAGE", "REPEAT"], "no Next phrase when there is no later phrase");
+  s = step(s, "NEXT_STAGE");
+  assert.equal(s.phase, "yourTurn");
+  assert.equal(screenModel(s, { i18n: i18nFor() }).progress, "Whole song, right hand. Step 1 of 3");
+  s = play(s, [60, 62, 64]);
   assert.equal(s.phase, "songComplete");
   const done = screenModel(s, { i18n: i18nFor() });
   assert.equal(done.heading, "You played the whole song.");

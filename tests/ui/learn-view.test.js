@@ -46,17 +46,18 @@ function fakeWin() {
 function fakeEngine() {
   const calls = [];
   let resolveRange = null;
-  return {
+  const api = {
     calls,
     startNote: (midi) => calls.push(["startNote", midi]),
     releaseNote: (midi) => calls.push(["releaseNote", midi]),
     setTimeline: () => calls.push(["setTimeline"]),
-    playRange: (r) => (calls.push(["playRange", r.startTick, r.endTick, r.hand]), new Promise((res) => (resolveRange = res))),
+    playRange: (r) => (calls.push(["playRange", r.startTick, r.endTick, r.hand]), (api.lastRange = r), new Promise((res) => (resolveRange = res))),
     stopRange: () => calls.push(["stopRange"]),
     position: () => ({ tick: 0 }),
     dispose: () => calls.push(["dispose"]),
     finishRange: (status = "completed") => resolveRange?.({ status }),
   };
+  return api;
 }
 
 const textOfNode = (n) => (n.tag === "#text" ? n.text : n._text || n.children.map(textOfNode).join(""));
@@ -133,11 +134,11 @@ test("the shaded key advances; a wrong key says Try again and the shaded key sta
   assert.equal(v.text("learn-chip"), "Try again");
   assert.match(v.text("learn-chip-detail"), /Use the shaded key/);
   assert.deepEqual(v.expected(), [60], "the expected key is still shaded");
-  assert.equal(v.text("learn-progress"), "Phrase 1 of 2. Step 1 of 3");
+  assert.equal(v.text("learn-progress"), "Phrase 1 of 2. Right hand, slowly. Step 1 of 3");
   v.press(60);
   assert.equal(v.text("learn-chip"), "Correct");
   assert.equal(v.text("learn-instruction"), "Right hand: index finger on D (Re).");
-  assert.equal(v.text("learn-progress"), "Phrase 1 of 2. Step 2 of 3");
+  assert.equal(v.text("learn-progress"), "Phrase 1 of 2. Right hand, slowly. Step 2 of 3");
   assert.deepEqual(v.expected(), [62]);
 });
 
@@ -152,9 +153,10 @@ test("a chord is completed by single clicks in any order, with the instruction a
   v.press(60);
   assert.equal(v.phase(), "yourTurn", "two of three is not enough");
   v.press(64);
-  assert.equal(v.phase(), "phraseComplete");
-  assert.equal(v.text("learn-instruction"), "Correct. Phrase 1 of 2 done.");
-  assert.deepEqual(v.actions(), ["NEXT_PHRASE", "REPEAT"]);
+  assert.equal(v.phase(), "stageComplete", "the left hand has notes in phrase 1, so the next stage is offered");
+  assert.equal(v.text("learn-instruction"), "Correct. Stage done: Right hand.");
+  assert.equal(v.text("learn-sub"), "Now the left hand, slowly.");
+  assert.deepEqual(v.actions(), ["NEXT_STAGE", "NEXT_PHRASE", "REPEAT"]);
 });
 
 test("switching the language in the middle of a chord keeps the step and the keys already pressed", async () => {
@@ -165,11 +167,12 @@ test("switching the language in the middle of a chord keeps the step and the key
   v.press(60);
   v.i18n.setLang("es");
   assert.match(v.text("learn-instruction"), /^Mano derecha: pulgar en Do \(C\)\. Presione estas 3 teclas a la vez\./);
-  assert.equal(v.text("learn-progress"), "Frase 1 de 2. Paso 3 de 3");
+  assert.equal(v.text("learn-progress"), "Frase 1 de 2. Mano derecha, despacio. Paso 3 de 3");
   v.press(64);
   v.press(67);
-  assert.equal(v.phase(), "phraseComplete", "the key pressed before the switch was not lost");
-  assert.equal(v.text("learn-instruction"), "Correcto. Frase 1 de 2 terminada.");
+  assert.equal(v.phase(), "stageComplete", "the key pressed before the switch was not lost");
+  assert.equal(v.text("learn-instruction"), "Correcto. Terminó esta etapa: Mano derecha.");
+  assert.equal(v.text("learn-sub"), "Ahora la mano izquierda, despacio.");
 });
 
 test("the key toggle recomputes the names and fingers, keeps the phrase, and is remembered", async () => {
@@ -254,7 +257,7 @@ test("MIDI: the panel asks for permission only from its button, and a note from 
   await later();
   assert.equal(requests, 1);
   input.onmidimessage({ data: [0x90, 60, 90] });
-  assert.equal(v.text("learn-progress"), "Phrase 1 of 2. Step 2 of 3");
+  assert.equal(v.text("learn-progress"), "Phrase 1 of 2. Right hand, slowly. Step 2 of 3");
   assert.equal(v.engine.calls.some(([n]) => n === "startNote"), false, "MIDI does not sound by default");
 });
 
@@ -384,4 +387,73 @@ test("lesson zero: a language switch in the middle keeps the part", async () => 
   await later();
   assert.equal(v.text("learn-instruction"), "Siéntese derecho y curve los dedos.");
   assert.equal(v.phase(), "lessonZero");
+});
+
+// ---- stages in the view (pr2b2) -------------------------------------------------------------------------------
+
+test("stages: after the right hand the screen says plainly what comes next; each stage Listens with its hand and tempo; reload offers Continue at that stage", async () => {
+  const storage = memory();
+  const song = makeSong();
+  const v = await open({ song, storage });
+  v.click("START");
+  v.click("MY_TURN");
+  for (const midi of [60, 62, 60, 64, 67]) v.press(midi);
+  assert.equal(v.phase(), "stageComplete");
+  assert.equal(v.text("learn-instruction"), "Correct. Stage done: Right hand.");
+  assert.equal(v.text("learn-sub"), "Now the left hand, slowly.");
+  assert.deepEqual(v.actions(), ["NEXT_STAGE", "NEXT_PHRASE", "REPEAT"]);
+  assert.ok(hasClass(v.action("NEXT_STAGE"), "learn-primary"), "Next stage is the primary action");
+  assert.equal(hasClass(v.action("NEXT_PHRASE"), "learn-primary"), false);
+  v.click("NEXT_STAGE");
+  assert.equal(v.text("learn-instruction"), "Phrase 1 of 2.");
+  assert.equal(v.text("learn-sub"), "Left hand, slowly.");
+  v.click("LISTEN");
+  assert.equal(v.engine.lastRange.hand, "L");
+  assert.equal("bpm" in v.engine.lastRange, false, "a slow stage passes no BPM");
+  v.engine.finishRange("completed");
+  await later();
+  v.press(48);
+  assert.equal(v.phase(), "stageComplete");
+  assert.equal(v.text("learn-sub"), "Now both hands together, slowly.");
+  v.handle.dispose();
+  // Reload: Continue resumes at that exact stage.
+  const again = await open({ song, storage });
+  assert.deepEqual(again.actions(), ["CONTINUE", "START", "LESSON_ZERO", "RESET"]);
+  again.click("CONTINUE");
+  assert.equal(again.text("learn-instruction"), "Phrase 1 of 2.");
+  assert.equal(again.text("learn-sub"), "Both hands, slowly.");
+  again.click("MY_TURN");
+  assert.deepEqual(again.expected(), [48, 60], "both hands: the left C3 and the right C4 are shaded together");
+  assert.equal(again.text("learn-progress"), "Phrase 1 of 2. Both hands, slowly. Step 1 of 3");
+  assert.match(again.text("learn-instruction"), /^Both hands: /);
+  again.press(48);
+  assert.equal(again.text("learn-progress"), "Phrase 1 of 2. Both hands, slowly. Step 1 of 3", "one hand alone does not finish the step");
+  again.press(60);
+  assert.equal(again.text("learn-instruction"), "Right hand: index finger on D (Re).", "on the next beat only the right hand plays");
+  for (const midi of [62, 60, 64, 67]) again.press(midi);
+  assert.equal(again.phase(), "stageComplete");
+  assert.equal(again.text("learn-sub"), "Now both hands together at the song speed.");
+  again.click("NEXT_STAGE");
+  assert.equal(again.text("learn-sub"), "Both hands, song speed.");
+  again.click("LISTEN");
+  assert.equal(again.engine.lastRange.hand, null, "both hands");
+  assert.equal(again.engine.lastRange.bpm, song.tempo.bpm, "the song tempo, explicitly");
+});
+
+test("stages: the hand selector marks no hand while both hands are being practiced, and Reset progress clears the stage", async () => {
+  const storage = memory();
+  const v = await open({ song: privateSong(), storage });
+  v.click("START");
+  for (const midi of [60, 62, 60, 64, 67]) v.press(midi);
+  v.click("NEXT_STAGE");
+  v.press(48);
+  v.click("NEXT_STAGE");
+  assert.equal(v.text("learn-progress"), "Phrase 1 of 2. Both hands, slowly. Step 1 of 3");
+  const pressed = all(v.root, (n) => n.tag === "button" && n.attrs["aria-pressed"] === "true" && ["Right hand", "Left hand"].includes(textOfNode(n))).length;
+  assert.equal(pressed, 0, "neither hand button is marked in a both-hands stage");
+  assert.equal(JSON.parse(storage.data["piano-guide:learn:v1"]).songs["example-song"].beginner.C.hand, "T");
+  v.handle.dispose();
+  const second = await open({ song: privateSong(), storage });
+  second.click("RESET");
+  assert.equal(JSON.parse(storage.data["piano-guide:learn:v1"]).songs["example-song"], undefined);
 });
