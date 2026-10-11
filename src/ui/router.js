@@ -62,6 +62,41 @@ export function notFoundView(message) {
   };
 }
 
+// What a lazy view shows while its module loads and when it cannot be loaded.
+function showLazyState(root, kind) {
+  if (kind === "loading") root.replaceChildren(el("p", { class: "meta", role: "status" }, "Loading"));
+  else root.replaceChildren(el("section", { class: "panel", role: "alert" }, el("h2", {}, "This page could not be loaded"), el("a", { class: "button", href: "#/" }, "Back to the catalog")));
+}
+
+/**
+ * lazyView(load) wraps a view whose module is fetched on first use, so the catalog route does not
+ * download the player, the audio engine, the score and the scene. `load()` resolves to the view
+ * function ((route, mount) => { dispose() }). A dispose before the module arrives mounts nothing;
+ * a failed load shows a message instead of a blank page. `show(root, "loading" | "failed")` is injectable.
+ */
+export function lazyView(load, { show = showLazyState } = {}) {
+  return (route, root) => {
+    let inner = null;
+    let disposed = false;
+    show(root, "loading");
+    load().then(
+      (make) => {
+        if (!disposed) inner = make(route, root);
+      },
+      () => {
+        if (!disposed) show(root, "failed");
+      },
+    );
+    return {
+      dispose() {
+        disposed = true;
+        inner?.dispose();
+        inner = null;
+      },
+    };
+  };
+}
+
 /**
  * createRouter({ mount, views, store, win }) returns { start, stop }.
  * views: { catalog, song, unknown }, each (route, mount) => { dispose() }.
