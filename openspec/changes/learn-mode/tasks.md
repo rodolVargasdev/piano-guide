@@ -214,10 +214,10 @@ Specs: learn-mode (lesson zero), learner-language.
 
 - [x] 13.1 Create `src/learn/lesson-zero.js`: four parts as data (find C with groups of 2 and 3 black keys using the matcher in `pitchClass` mode over a C3 to B4 region; sitting and hand posture; fingers 1 to 5 on C4 D4 E4 F4 G4; input how-to including Casio line). Completion or skip saved globally in `lessonZero` of `piano-guide:learn:v1`. Test: `tests/learn/lesson-zero.test.js` (any C counts, other keys do not advance, five single-key steps with fingers 1 to 5, skip saves "skipped", completion saves "done").
 - [x] 13.2 Add `lz.*` keys (EN and ES) to `src/i18n/strings.js`; rerun `tests/i18n` guards.
-- [ ] 13.3 Create `assets/img/posture.svg` (original artwork, simple, text-free) and `src/ui/lesson-zero-view.js`; modify `src/ui/learn-view.js` (the `lessonZero` phase, "Lesson zero" button on the first screen when never done, skip always available) and `src/learn/lesson.js` (new phase and actions). Test: `tests/ui/lesson-zero-view.test.js`, `tests/learn/lesson.test.js` rows.
-- [ ] 13.4 Browser check on 8790, three viewports (screenshots read): complete lesson zero by pressing any C, then fingers 1 to 5; skip it; reload and confirm it does not reappear; Spanish and English.
+- [x] 13.3 Create `assets/img/posture.svg` (original artwork, simple, text-free) and `src/ui/lesson-zero-view.js`; modify `src/ui/learn-view.js` (the `lessonZero` phase, "Lesson zero" button on the first screen when never done, skip always available) and `src/learn/lesson.js` (new phase and actions). Test: `tests/ui/lesson-zero-view.test.js`, `tests/learn/lesson.test.js` rows.
+- [x] 13.4 Browser check on 8790, three viewports (screenshots read): complete lesson zero by pressing any C, then fingers 1 to 5; skip it; reload and confirm it does not reappear; Spanish and English.
   Learner-level acceptance: a person who has never seen a piano reads "Find a C: it is the white key just left of the two black keys", sees the groups of two black keys outlined, presses a C and gets "Correct"; pressing another key says "Try again" and keeps the hint.
-- [ ] 13.5 Verification: `node --test` full. Update `docs/USABILITY_CHECK.md` T1 availability note.
+- [x] 13.5 Verification: `node --test` full. Update `docs/USABILITY_CHECK.md` T1 availability note.
 
 ## Phase 14: Stages, tempo, metronome in Learn, resumable progress (pr2b-stages, about 400 lines)
 
@@ -460,4 +460,5 @@ Phase 15 (pr3b-sampled-piano) is a STOP gate and is not approved, so this batch 
 | Order | Branch | Tasks | Authored lines |
 |-------|--------|-------|----------------|
 | 1 | `feat/learn-mode-pr1b-lesson-zero` (base pr12a) | 13.1, 13.2, reducer half of 13.3 | 334 |
+| 2 | `feat/learn-mode-pr1b2-lesson-zero-view` | view half of 13.3, 13.4, 13.5 | 424 |
 
