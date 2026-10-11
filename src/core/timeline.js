@@ -1,10 +1,14 @@
 // Pure timeline queries over a resolved level. No DOM, no Web Audio.
 import { parsePitch } from "./pitch.js";
+import { isSilent } from "./visibility.js";
+import { ticksPerBar } from "./timing.js";
 
 /**
  * Resolved timeline of one level: every note gets its `midi`, notes are sorted
  * (tick, then midi, then hand), and the song-wide fields views need are copied
  * so no consumer has to carry the whole song.
+ * `silent` is true for a private song: the engine schedules no note of a timeline unless
+ * `silent === false` (core/practice `schedulableNotes`). `learn` is the level's learn block or null.
  * `range` is the lowest and highest MIDI of pitched notes, or null without notes.
  * `shifts` is the set of note indexes flagged by shiftHints for either hand.
  * Throws RangeError for a level the song does not have.
@@ -40,6 +44,38 @@ export function resolveLevel(song, levelId) {
     key: song.key,
     range: notes.some((n) => n.midi !== null) ? { low, high } : null,
     shifts,
+    silent: isSilent(song),
+    learn: level.learn ?? null,
+  };
+}
+
+/**
+ * A timeline with no notes, for the metronome of Practice exercises: `bars` whole bars of `meter` at `bpm` (quarter
+ * notes). It is `silent: false` so the engine runs its clock and clicks on it, and it has nothing to schedule, so no
+ * note can ever sound from it. Throws RangeError for a meter or a bar count that is not a positive whole number.
+ */
+export function makeTimeline({ meter = { num: 4, den: 4 }, bpm = 60, bars = 64 } = {}) {
+  if (!Number.isInteger(meter?.num) || !Number.isInteger(meter?.den) || meter.num < 1 || meter.den < 1) throw new RangeError("meter must be { num, den } whole numbers");
+  if (!Number.isInteger(bars) || bars < 1) throw new RangeError("bars must be a positive whole number");
+  return {
+    levelId: null,
+    label: null,
+    notation: "none",
+    strictBars: false,
+    meter: { num: meter.num, den: meter.den },
+    pickupTicks: 0,
+    tempo: { bpm, beatUnit: "quarter" },
+    lengthTicks: bars * ticksPerBar(meter),
+    notes: [],
+    chords: [],
+    sections: [],
+    pedal: [],
+    analysis: [],
+    key: null,
+    range: null,
+    shifts: new Set(),
+    silent: false,
+    learn: null,
   };
 }
 

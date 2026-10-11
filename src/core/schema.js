@@ -1,14 +1,17 @@
 // Pure song and index validators. No DOM, no dependencies.
 //
 // Result shape: { ok, errors: [{ path, message, rule }], warnings: [{ path, message, rule }] }.
-// `rule` names the rule that produced the finding (R1 to R11 for songs, I1 and I2 for the
+// `rule` names the rule that produced the finding (R1 to R14 for songs, I1 and I2 for the
 // index, W1 to W3 for warnings). `options.disabledRules` silences a rule: it exists so the
 // test suite can prove, for each rule, that its malformed case only fails because of that
 // rule (the counter-proof of every guard).
 
 import { parsePitch, inPianoRange, keyFifths } from "./pitch.js";
 import { ticksPerBar } from "./timing.js";
+import { visibilityOf } from "./visibility.js";
 
+const VISIBILITIES = ["public", "private"];
+const LANGUAGES = ["en", "es"];
 const BEAT_UNITS = ["quarter", "eighth", "dotted-quarter", "half"];
 const LEVEL_IDS = ["beginner", "original"];
 const NOTATIONS = ["labelled", "engraved"];
@@ -65,6 +68,17 @@ function scanLyrics(node, path, onFound) {
   }
 }
 
+// A text value is a plain string (read as English) or a LocalizedText { en, es }, both non-empty (R13).
+// `missingRule` keeps the rule a plain-string field already reported before LocalizedText existed.
+function checkText(c, value, path, missingRule, message) {
+  if (isObj(value)) {
+    for (const lang of LANGUAGES) if (!isStr(value[lang])) c.err("R13", `${path}.${lang}`, `${lang} text is missing or empty`);
+  } else if (!isStr(value)) c.err(missingRule, path, message);
+}
+
+// A sentence boundary is end punctuation followed by more text.
+const isOneSentence = (s) => !/[.!?]\s+\S/.test(s.trim());
+
 function checkKey(c, key, path) {
   if (!isObj(key)) return c.err("R1", path, "key must be an object { tonic, mode }");
   if (!parsePitch(`${key.tonic}4`)) c.err("R1", `${path}.tonic`, "tonic must be a spelled note name such as Eb or F#");
@@ -83,6 +97,9 @@ function checkHeader(c, song) {
   else checkKey(c, song.key, "key");
   if ("contentPolicy" in song && !["open", "chords-only"].includes(song.contentPolicy)) {
     c.err("R1", "contentPolicy", 'contentPolicy must be "open" or "chords-only"');
+  }
+  if ("visibility" in song && !VISIBILITIES.includes(song.visibility)) {
+    c.err("R12", "visibility", 'visibility must be "public" or "private"');
   }
   const k = song.key && keyFifths(song.key);
   if (k !== null && k !== undefined && Math.abs(k) > 4) c.warn("W2", "key", "key signature has more than 4 accidentals");
@@ -246,10 +263,50 @@ function checkStrictBars(c, group, levelPath, timing, hand, voice) {
   }
 }
 
+// R14: the optional per-level learn block { phrases?, transposeTo? }.
+function checkLearn(c, learn, path, length, song) {
+  if (!isObj(learn)) return c.err("R14", path, "learn must be an object { phrases?, transposeTo? }");
+  if (learn.phrases !== undefined) {
+    if (!Array.isArray(learn.phrases)) c.err("R14", `${path}.phrases`, "phrases must be an array");
+    else {
+      const ids = new Map(); // id -> index of the first phrase using it
+      let prev = null;
+      learn.phrases.forEach((ph, i) => {
+        const p = `${path}.phrases[${i}]`;
+        if (!isObj(ph)) return c.err("R14", p, "phrase must be an object");
+        if (!isStr(ph.id)) c.err("R14", `${p}.id`, "id is required");
+        else if (ids.has(ph.id)) c.err("R14", `${p}.id`, `duplicate phrase id "${ph.id}" (also phrases[${ids.get(ph.id)}])`);
+        else ids.set(ph.id, i);
+        const okTicks = isInt(ph.startTick) && isInt(ph.endTick) && ph.startTick >= 0 && ph.endTick > ph.startTick;
+        if (!okTicks) return c.err("R14", p, "startTick and endTick must be integers with 0 <= startTick < endTick");
+        if (length !== null && ph.endTick > length) c.err("R14", p, `phrase "${ph.id}" ends after lengthTicks`);
+        if (prev && ph.startTick < prev.startTick) c.err("R14", p, `phrases must be sorted by startTick ("${ph.id}" comes after "${prev.id}")`);
+        else if (prev && ph.startTick < prev.endTick) c.err("R14", p, `phrase "${ph.id}" overlaps phrase "${prev.id}"`);
+        prev = ph;
+        if (ph.title !== undefined) checkText(c, ph.title, `${p}.title`, "R14", "title must be a string or a LocalizedText");
+        if (ph.hint !== undefined) {
+          checkText(c, ph.hint, `${p}.hint`, "R14", "hint must be a string or a LocalizedText");
+          const texts = isObj(ph.hint) ? Object.values(ph.hint) : [ph.hint];
+          if (texts.some((t) => typeof t === "string" && !isOneSentence(t))) c.err("R14", `${p}.hint`, "hint must be a single sentence");
+        }
+      });
+    }
+  }
+  if (learn.transposeTo !== undefined) {
+    if (!Array.isArray(learn.transposeTo)) return c.err("R14", `${path}.transposeTo`, "transposeTo must be an array of tonic names");
+    const own = parsePitch(`${song.key?.tonic}4`);
+    learn.transposeTo.forEach((t, i) => {
+      const parsed = typeof t === "string" ? parsePitch(`${t}4`) : null;
+      if (!parsed) c.err("R14", `${path}.transposeTo[${i}]`, "must be a spelled tonic name such as C or Eb");
+      else if (own && (parsed.midi - own.midi) % 12 === 0) c.err("R14", `${path}.transposeTo[${i}]`, "transposeTo must differ from the song tonic");
+    });
+  }
+}
+
 function checkLevel(c, id, level, timing, song) {
   const path = `levels.${id}`;
   if (!isObj(level)) return c.err("R1", path, "level must be an object");
-  for (const f of ["label", "description"]) if (!isStr(level[f])) c.err("R1", `${path}.${f}`, "required string is missing");
+  for (const f of ["label", "description"]) checkText(c, level[f], `${path}.${f}`, "R1", "required string is missing");
   if (!NOTATIONS.includes(level.notation)) c.err("R1", `${path}.notation`, 'notation must be "labelled" or "engraved"');
   if (!Array.isArray(level.notes)) return c.err("R1", `${path}.notes`, "required array is missing");
   if (level.chords !== undefined) checkChordList(c, level.chords, `${path}.chords`, timing.length);
@@ -282,11 +339,14 @@ function checkLevel(c, id, level, timing, song) {
       const inside = (t) => isInt(t) && t >= 0 && (timing.length === null || t <= timing.length);
       if (!isObj(a) || !inside(a.tick) || (a.endTick !== undefined && (!inside(a.endTick) || a.endTick < a.tick))) {
         c.err("R11", p, "analysis ticks must be integers inside the song");
-      } else if (!ANALYSIS_KINDS.includes(a.kind) || !isStr(a.title) || !isStr(a.text)) {
+      } else if (!ANALYSIS_KINDS.includes(a.kind)) {
         c.err("R1", p, `analysis needs title, text and a kind of ${ANALYSIS_KINDS.join(", ")}`);
+      } else {
+        for (const f of ["title", "text"]) checkText(c, a[f], `${p}.${f}`, "R1", `analysis needs title, text and a kind of ${ANALYSIS_KINDS.join(", ")}`);
       }
     });
   }
+  if (level.learn !== undefined) checkLearn(c, level.learn, `${path}.learn`, timing.length, song);
 
   if (song.contentPolicy === "chords-only") {
     level.notes.forEach((n, i) => {
@@ -303,8 +363,8 @@ function checkLesson(c, song, levelIds) {
     if (!levelIds.includes(id)) c.warn("W3", p, "lesson entry for a level that does not exist");
     if (!isObj(l)) c.err("R1", p, "lesson entry must be an object");
     else {
-      if (!isStr(l.summary)) c.err("R1", `${p}.summary`, "summary is required");
-      if (!isStr(l.posture)) c.err("R1", `${p}.posture`, "posture is required");
+      checkText(c, l.summary, `${p}.summary`, "R1", "summary is required");
+      checkText(c, l.posture, `${p}.posture`, "R1", "posture is required");
       if (!Array.isArray(l.chordsUsed)) c.err("R1", `${p}.chordsUsed`, "chordsUsed must be an array");
       if (!Array.isArray(l.handPositions)) c.err("R1", `${p}.handPositions`, "handPositions must be an array");
       if (!Array.isArray(l.practicePlan)) c.err("R1", `${p}.practicePlan`, "practicePlan must be an array");
@@ -363,11 +423,30 @@ export function validateSong(json, options = {}) {
       c.err("R5", `levels.${id}.transcribed`, "transcribed level needs a public-domain-score source on mutopiaproject.org or imslp.org");
     }
   }
+  // R5 (private): a song built from a user-submitted source is never a transcription of a score.
+  const userSubmitted = Array.isArray(json.sources) && json.sources.some((s) => isObj(s) && s.kind === "user-submitted");
+  if (accepted && userSubmitted && visibilityOf(json) === "private") {
+    for (const id of levelIds) {
+      if (isObj(json.levels[id]) && json.levels[id].transcribed === true) {
+        c.err("R5", `levels.${id}.transcribed`, "a private song with a user-submitted source must not be marked transcribed");
+      }
+    }
+  }
   // R6: no lyrics text anywhere under chords-only.
   if (json.contentPolicy === "chords-only") {
     scanLyrics(json, "", (p) => c.err("R6", p.replace(/^\./, ""), "lyrics are not allowed under contentPolicy \"chords-only\""));
   }
   return c.result();
+}
+
+/**
+ * Null when an index entry and its song file agree on visibility, else the reason as text.
+ * An entry that does not declare `visibility` makes no claim, so it always agrees.
+ */
+export function visibilityMismatch(entry, song) {
+  if (!isObj(entry) || entry.visibility === undefined) return null;
+  const actual = visibilityOf(song);
+  return entry.visibility === actual ? null : `index entry "${entry.id}" says ${entry.visibility} but the song file is ${actual}`;
 }
 
 export function validateIndex(json, options = {}) {
@@ -390,6 +469,7 @@ export function validateIndex(json, options = {}) {
     if ("levels" in e && !(Array.isArray(e.levels) && e.levels.length > 0 && e.levels.every((l) => LEVEL_IDS.includes(l)))) {
       c.err("I1", `${p}.levels`, "levels must list beginner and/or original");
     }
+    if ("visibility" in e && !VISIBILITIES.includes(e.visibility)) c.err("I1", `${p}.visibility`, 'visibility must be "public" or "private"');
     if (typeof e.id === "string") {
       if (seen.has(e.id)) c.err("I2", `${p}.id`, `duplicate id "${e.id}"`);
       seen.add(e.id);

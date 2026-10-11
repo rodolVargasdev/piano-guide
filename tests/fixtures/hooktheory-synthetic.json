@@ -1,0 +1,61 @@
+{
+  "source": "https://example.org/synthetic-capture",
+  "api": "synthetic",
+  "accessed": "2026-10-11",
+  "kind": "user-submitted",
+  "note": "Synthetic converter input in the real shape. It is not a real song and holds no lyrics.",
+  "sections": {
+    "intro": {
+      "hash": "synthetic-intro",
+      "keys": [{ "beat": 1, "scale": "major", "tonic": "E" }],
+      "meters": [{ "beat": 1, "beatUnit": 1, "numBeats": 4 }],
+      "tempos": [{ "bpm": 75, "beat": 1, "swingBeat": 0.5, "swingFactor": 0 }],
+      "pickup": false,
+      "endBeat": 9,
+      "chords": [
+        { "beat": 1, "duration": 4, "root": 1, "type": 5, "inversion": 0, "applied": 0, "borrowed": "", "adds": [], "suspensions": [], "alterations": [], "omits": [], "substitutions": [], "alternate": "", "isRest": false, "pedal": null, "recordingEndBeat": null },
+        { "beat": 5, "duration": 4, "root": 4, "type": 5, "inversion": 0, "applied": 0, "borrowed": "", "adds": [9], "suspensions": [], "alterations": [], "omits": [], "substitutions": [], "alternate": "", "isRest": false, "pedal": null, "recordingEndBeat": null }
+      ],
+      "notes": []
+    },
+    "verse": {
+      "hash": "synthetic-verse",
+      "keys": [{ "beat": 1, "scale": "major", "tonic": "E" }],
+      "meters": [{ "beat": 1, "beatUnit": 1, "numBeats": 4 }],
+      "tempos": [{ "bpm": 75, "beat": 1, "swingBeat": 0.5, "swingFactor": 0 }],
+      "pickup": false,
+      "endBeat": 9,
+      "chords": [
+        { "beat": 1, "duration": 4, "root": 1, "type": 5, "inversion": 0, "applied": 0, "borrowed": "", "adds": [], "suspensions": [], "alterations": [], "omits": [], "substitutions": [], "alternate": "", "isRest": false, "pedal": null, "recordingEndBeat": null },
+        { "beat": 5, "duration": 4, "root": 6, "type": 5, "inversion": 0, "applied": 0, "borrowed": "", "adds": [], "suspensions": [], "alterations": [], "omits": [], "substitutions": [], "alternate": "", "isRest": false, "pedal": null, "recordingEndBeat": null }
+      ],
+      "notes": [
+        { "sd": "1", "beat": 1, "duration": 1, "octave": 0, "isRest": false },
+        { "sd": "3", "beat": 2, "duration": 0.5, "octave": 0, "isRest": false, "lyric": "synthetic lyric words" },
+        { "sd": "5", "beat": 2.5, "duration": 0.5, "octave": 0, "isRest": false },
+        { "sd": "1", "beat": 3, "duration": 1, "octave": 0, "isRest": true },
+        { "sd": "b7", "beat": 4, "duration": 1, "octave": 0, "isRest": false },
+        { "sd": "7", "beat": 5, "duration": 2, "octave": 0, "isRest": false },
+        { "sd": "1", "beat": 6, "duration": 1, "octave": -1, "isRest": false },
+        { "sd": "5", "beat": 7, "duration": 2, "octave": 0, "isRest": false }
+      ]
+    },
+    "chorus": {
+      "hash": "synthetic-chorus",
+      "keys": [{ "beat": 1, "scale": "major", "tonic": "E" }],
+      "meters": [{ "beat": 1, "beatUnit": 1, "numBeats": 4 }],
+      "tempos": [{ "bpm": 75, "beat": 1, "swingBeat": 0.5, "swingFactor": 0 }],
+      "pickup": true,
+      "endBeat": 13,
+      "chords": [
+        { "beat": 5, "duration": 4, "root": 5, "type": 5, "inversion": 1, "applied": 5, "borrowed": "", "adds": [], "suspensions": [], "alterations": [], "omits": [], "substitutions": [], "alternate": "", "isRest": false, "pedal": null, "recordingEndBeat": null },
+        { "beat": 9, "duration": 4, "root": 6, "type": 5, "inversion": 0, "applied": 0, "borrowed": "minor", "adds": [], "suspensions": [], "alterations": [], "omits": [], "substitutions": [], "alternate": "", "isRest": false, "pedal": null, "recordingEndBeat": null }
+      ],
+      "notes": [
+        { "sd": "5", "beat": 1, "duration": 1, "octave": -1, "isRest": false },
+        { "sd": "1", "beat": 5, "duration": 2, "octave": 0, "isRest": false },
+        { "sd": "3", "beat": 9, "duration": 4, "octave": 0, "isRest": false }
+      ]
+    }
+  }
+}

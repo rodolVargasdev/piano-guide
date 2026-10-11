@@ -3,5 +3,7 @@ openspec
 .atl
 docs
 !docs/STACK_TECNOLOGICO.md
+!docs/USABILITY_CHECK.md
 tools
+songs-private
 node_modules

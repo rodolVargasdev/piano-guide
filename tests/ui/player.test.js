@@ -17,16 +17,16 @@ test("pickLevel falls back to the default for a missing, unknown or inherited le
 });
 
 test("debugRequested is true only for debug=1 in the page query or the hash query", () => {
-  assert.equal(debugRequested("?debug=1", "#/song/cancer"), true);
-  assert.equal(debugRequested("", "#/song/cancer?debug=1"), true);
-  assert.equal(debugRequested("", "#/song/cancer?level=beginner&debug=1"), true);
+  assert.equal(debugRequested("?debug=1", "#/song/example-song"), true);
+  assert.equal(debugRequested("", "#/song/example-song?debug=1"), true);
+  assert.equal(debugRequested("", "#/song/example-song?level=beginner&debug=1"), true);
 });
 
 test("counter-proof: debugRequested is false without the parameter or with another value", () => {
-  assert.equal(debugRequested("", "#/song/cancer"), false);
+  assert.equal(debugRequested("", "#/song/example-song"), false);
   assert.equal(debugRequested("?debug=0", ""), false);
   assert.equal(debugRequested("?debug=11", ""), false);
-  assert.equal(debugRequested("?nodebug=1", "#/song/cancer?x=1"), false);
+  assert.equal(debugRequested("?nodebug=1", "#/song/example-song?x=1"), false);
   assert.equal(debugRequested(undefined, undefined), false);
 });
 

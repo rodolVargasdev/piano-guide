@@ -115,3 +115,94 @@ test("dispose releases everything", () => {
   synth.dispose();
   assert.equal(ctx.soundingAt(2).length, 0);
 });
+
+// Learner (held) voices: the learner's own keys, which sound until released.
+const envOf = (ctx, voiceIndex) => ctx.oscillators[voiceIndex * 3].connections[0].connections[0].connections[0];
+const releasesOf = (env) => env.gain.calls.filter((c) => c[0] === "target");
+
+test("startHeld sounds at the audio clock with no scheduled end, and returns distinct ids", () => {
+  const { ctx, synth } = setup();
+  ctx.currentTime = 2;
+  const a = synth.startHeld({ midi: 60 });
+  const b = synth.startHeld({ midi: 64, vel: 0.9, when: 2.5 });
+  assert.notEqual(a, b);
+  assert.equal(ctx.oscillators.length, 6);
+  assert.ok(ctx.oscillators.slice(0, 3).every((o) => o.startTime === 2 && o.stopTime === null), "no stop until release");
+  assert.ok(ctx.oscillators.slice(3).every((o) => o.startTime === 2.5));
+  const calls = envOf(ctx, 0).gain.calls;
+  assert.deepEqual(calls[0], ["set", 0, 2], "starts silent: no click");
+  assert.equal(releasesOf(envOf(ctx, 0)).length, 0, "nothing releases it by itself");
+  assert.equal(ctx.soundingAt(100).length, 6, "still sounding long after");
+});
+
+test("releaseHeld fades the voice with a smooth target ramp and stops its oscillators a moment later", () => {
+  const { ctx, synth } = setup();
+  const id = synth.startHeld({ midi: 60, when: 0 });
+  ctx.currentTime = 3;
+  synth.releaseHeld(id, 3);
+  const release = releasesOf(envOf(ctx, 0));
+  assert.equal(release.length, 1);
+  assert.equal(release[0][2], 3, "the fade starts at the release time");
+  assert.ok(release[0][3] > 0.03, "a time constant, not a hard cut");
+  assert.ok(ctx.oscillators.every((o) => o.stopTime > 3 && o.stopTime < 3.4), "the oscillators stop after the fade");
+  synth.releaseHeld(id, 4);
+  synth.releaseHeld(9999, 4);
+  assert.equal(releasesOf(envOf(ctx, 0)).length, 1, "a second release or an unknown id does nothing");
+});
+
+test("a held voice survives cancelPending (stop, pause, seek) while song voices are cancelled", () => {
+  const { ctx, synth } = setup();
+  synth.playNote({ midi: 60, when: 0, dur: 6 }); // song note, sounding at 1
+  synth.playNote({ midi: 62, when: 3, dur: 1 }); // song note, pending at 1
+  const id = synth.startHeld({ midi: 72, when: 0 });
+  ctx.currentTime = 1;
+  synth.cancelPending(1);
+  assert.equal(ctx.soundingAt(5).length, 3, "only the learner's three oscillators remain");
+  assert.equal(ctx.oscillators[6].stopTime, null);
+  synth.cancelPending(1, { releaseSounding: false });
+  assert.equal(ctx.oscillators[6].stopTime, null, "also through a tempo change");
+  synth.releaseHeld(id, 2);
+  assert.ok(ctx.oscillators[6].stopTime > 2, "released only by releaseHeld");
+});
+
+test("counter-proof: a song voice is released by cancelPending, so the survival above is the learner flag", () => {
+  const { ctx, synth } = setup();
+  synth.playNote({ midi: 60, when: 0, dur: 6 });
+  ctx.currentTime = 1;
+  synth.cancelPending(1);
+  assert.equal(ctx.soundingAt(5).length, 0);
+});
+
+test("learner voices count toward the voice cap: the oldest voice is released first, whatever its kind", () => {
+  const { ctx, synth } = setup({ maxVoices: 3 });
+  synth.startHeld({ midi: 60, when: 0 }); // learner, oldest
+  synth.playNote({ midi: 62, when: 0, dur: 9 });
+  synth.playNote({ midi: 64, when: 0, dur: 9 });
+  synth.startHeld({ midi: 65, when: 0 }); // a fourth voice: the oldest (the learner's first) goes
+  assert.ok(ctx.oscillators[0].stopTime < 1, "the oldest voice was cut short");
+  assert.equal(ctx.soundingAt(1).length / 3, 3, "three voices remain");
+  for (let i = 0; i < 20; i += 1) synth.startHeld({ midi: 50 + i, when: 0 });
+  assert.ok(ctx.soundingAt(1).length / 3 <= 3, "many fingers at once never exceed the cap and never throw");
+});
+
+test("counter-proof: with a large cap the same voices all keep sounding", () => {
+  const { ctx, synth } = setup({ maxVoices: 1000 });
+  for (let i = 0; i < 30; i += 1) synth.startHeld({ midi: 40 + i, when: 0 });
+  assert.equal(ctx.soundingAt(1).length / 3, 30);
+});
+
+test("releaseAllHeld releases every learner voice and leaves song voices alone; dispose does too", () => {
+  const { ctx, synth } = setup();
+  synth.startHeld({ midi: 60, when: 0 });
+  synth.startHeld({ midi: 64, when: 0 });
+  synth.playNote({ midi: 67, when: 0, dur: 9 });
+  ctx.currentTime = 2;
+  synth.releaseAllHeld(2);
+  assert.ok(ctx.oscillators.slice(0, 6).every((o) => o.stopTime !== null && o.stopTime < 2.5));
+  assert.ok(ctx.oscillators.slice(6).every((o) => o.stopTime > 5), "the song note keeps sounding");
+  const again = setup();
+  again.synth.startHeld({ midi: 60, when: 0 });
+  again.ctx.currentTime = 1;
+  again.synth.dispose();
+  assert.ok(again.ctx.oscillators.every((o) => o.stopTime !== null));
+});

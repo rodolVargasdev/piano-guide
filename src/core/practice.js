@@ -117,6 +117,15 @@ export function audibleNotes(notes, handModes) {
   return mergeTies(notes.filter((n) => isOn(handModes, n.hand, "muted")));
 }
 
+/**
+ * The notes the engine may schedule for a timeline: audible notes of a public song. Fails closed:
+ * a timeline whose `silent` is not exactly `false` (private, or built by hand without the field)
+ * schedules nothing, so no view can make a private song sound by mistake.
+ */
+export function schedulableNotes(timeline, handModes) {
+  return timeline?.silent === false ? audibleNotes(timeline.notes, handModes) : [];
+}
+
 /** Notes of hands that are not hidden. */
 export function visibleNotes(notes, handModes) {
   return notes.filter((n) => isOn(handModes, n.hand, "hidden"));

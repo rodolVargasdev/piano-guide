@@ -1,7 +1,8 @@
 // Hash router. `parseHash` is pure (testable under node); `createRouter` is the DOM dispatcher.
 //
 // Routes: "#/" is the catalog; "#/song/<id>?level=<id>&names=solfege|letters&view=both|scene|score"
-// is the player. Anything else is "unknown".
+// is the player; "#/learn/<id>?level=<id>" is Learn mode; "#/practice" and "#/practice/<id>" are the
+// practice exercises (the id is an exercise id, returned raw in `songId`). Anything else is "unknown".
 
 import { el } from "./dom.js";
 
@@ -24,7 +25,7 @@ function decode(s) {
 
 /**
  * Parses a location hash into { route, songId, level, names, view }.
- * route is "catalog", "song" or "unknown". songId is the raw decoded text: it is NOT
+ * route is "catalog", "song", "learn", "practice" or "unknown". songId is the raw decoded text: it is NOT
  * trusted here and must only be rendered through textContent. names and view fall back to
  * their defaults on any other value; level is null unless it is a well-formed id.
  */
@@ -48,6 +49,13 @@ export function parseHash(hash) {
       names: NAMES.includes(names) ? names : base.names,
       view: VIEWS.includes(view) ? view : base.view,
     };
+  }
+  if (parts[0] === "learn" && parts.length === 2 && parts[1] !== "") {
+    const level = new URLSearchParams(query).get("level");
+    return { route: "learn", ...base, songId: decode(parts[1]), level: level !== null && SONG_ID.test(level) ? level : null };
+  }
+  if (parts[0] === "practice" && parts.length <= 2) {
+    return { route: "practice", ...base, songId: parts[1] ? decode(parts[1]) : null };
   }
   return { route: "unknown", ...base };
 }

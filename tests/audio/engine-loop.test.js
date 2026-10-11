@@ -11,6 +11,7 @@ const quarters = (count) => ({
   lengthTicks: count * 480,
   notes: Array.from({ length: count }, (_, i) => ({ tick: i * 480, dur: 480, midi: 60 + i, hand: i % 2 ? "L" : "R" })),
   pedal: [],
+  silent: false, // a hand-built timeline must say it is public: the engine fails closed without it
 });
 const LOOP = { startTick: 960, endTick: 1920 }; // bar 1 beats 3 and 4 of an 8-quarter song
 

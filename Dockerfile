@@ -8,13 +8,14 @@ RUN apk upgrade --no-cache \
 WORKDIR /app
 COPY package.json ./
 COPY src/ ./src/
+COPY styles/ ./styles/
 COPY tests/ ./tests/
-# Guards that read these files (CSP hash against the import map, base images against the stack document).
-COPY index.html nginx.conf Dockerfile ./
+# Guards that read the stylesheet, the documents and these files (CSP hash against the import map, base images against the stack document).
+COPY index.html nginx.conf Dockerfile README.md .gitignore .dockerignore ./
 COPY songs/ ./songs/
-# Guard that pins the vendored three.js bytes and the hashes in the stack document.
-COPY assets/vendor/ ./assets/vendor/
-COPY docs/STACK_TECNOLOGICO.md ./docs/STACK_TECNOLOGICO.md
+# Guard that pins the vendored three.js bytes and the hashes in the stack document, and the guards that read the docs.
+COPY assets/ ./assets/
+COPY docs/STACK_TECNOLOGICO.md docs/USABILITY_CHECK.md ./docs/
 RUN node --test && touch /app/.tests-passed
 
 # Stage 2: static runtime on nginx, non-root, port 8080.

@@ -11,8 +11,16 @@ export function rig({ timeline = resolveLevel(validSong(), "beginner"), bpm, lat
   const notes = [];
   const clicks = [];
   const cancels = [];
+  const heldCalls = []; // learner voices: { type: "start" | "release", id, ... }
+  let heldId = 0;
   const makeSynth = () => ({
     playNote: (n) => notes.push(n),
+    startHeld: (o) => {
+      heldId += 1;
+      heldCalls.push({ type: "start", id: heldId, ...o });
+      return heldId;
+    },
+    releaseHeld: (id, now) => void heldCalls.push({ type: "release", id, now }),
     cancelPending: (now, opts) => cancels.push({ now, ...opts }),
     dispose() {},
   });
@@ -43,7 +51,7 @@ export function rig({ timeline = resolveLevel(validSong(), "beginner"), bpm, lat
       pending?.();
     }
   };
-  return { ctx, engine, notes, clicks, cancels, run, fire: () => pending?.(), hasTimer: () => pending !== null };
+  return { ctx, engine, notes, clicks, cancels, heldCalls, run, fire: () => pending?.(), hasTimer: () => pending !== null };
 }
 
 /** A bare 12/8 timeline (dotted-quarter beats) with no notes, 2 bars long. */

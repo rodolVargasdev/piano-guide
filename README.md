@@ -11,6 +11,8 @@ docker run --rm -p 8790:8080 piano-guide
 
 Then open `http://localhost:8790/`. The build runs the test suite inside the image (`node --test`), so the image only exists if the tests pass. Port 8790 is a suggestion: pick any free port.
 
+To see the private songs in the container, mount the folder read-only (see "Private songs").
+
 The images used (exact tags and digests) and their vulnerability audit are listed in `docs/STACK_TECNOLOGICO.md`.
 
 ## Run without Docker (dev server)
@@ -22,6 +24,59 @@ PORT=8790 node tools/serve.mjs
 ```
 
 On PowerShell: `$env:PORT=8790; node tools/serve.mjs`. The default port is 8790. Check that the port is free first.
+
+## Learn mode
+
+Open a song and press **Learn**. The screen says one thing at a time: which finger goes on which key ("Right hand: thumb on C (Do)."), with the key shaded on a close keyboard and the finger number on it. Press the key and the screen says "Correct" and gives the next step; press another key and it says "Try again" and keeps the shaded key. A phrase is a few steps; finish it and the next one opens. Progress (phrase, hand, key, language) is saved in the browser and "Continue" brings you back to it.
+
+- **Language**: the selector (English / Español) switches every text at once, also in the middle of a step.
+- **Key**: when a song offers it, a second key (for example "C major" for a song in E major) recomputes the note names and the fingers.
+- **Hand**: right or left hand, when the song has both.
+- **Private songs** have no Listen button: the app only tells you what to play. Your own key presses always sound.
+
+### Inputs
+
+All three work at the same time.
+
+| Input | How |
+|-------|-----|
+| On-screen keys | Click or tap the keys. Several fingers at once play several keys. Sliding off a key ends the note |
+| Computer keys | The home row plays white keys: `A S D F G H J K L ; '`. The row above plays the black keys between them: `W E R T Y U I O P [`. The map starts one white key below the current hand position and moves with it; the letters are drawn on the keys. Ctrl, Alt and Meta combinations, text fields and auto-repeat never play a note. The letters follow the physical keys (a Spanish keyboard shows its own letter on the `;` position in Chrome and Edge) |
+| MIDI piano | Chrome or Edge, a secure page (`localhost` counts). Press **Connect piano** and allow the permission; the chip shows the device name. The app does not add sound to MIDI notes by default (the piano already sounds); the setting "Sound from the app for MIDI" turns it on |
+
+Casio digital pianos: connect the USB TO HOST port to the computer with a USB cable, then press **Connect piano**. If the chip says "MIDI: no device", the piano may be exposing only USB audio; use the computer keys or tap the keys.
+
+### Private songs
+
+A song you must not publish goes in `songs-private/` (a folder next to `index.html`, ignored by git and by Docker). It joins the catalog on your machine with a "Private" chip and is silent in the app: the cursor and the falling bars move, nothing from the song sounds, and the play button says "Play (no sound)". Nothing in the repository, the image or GitHub Pages contains it.
+
+- Convert a Hooktheory capture: put it at `songs-private/sources/hooktheory-cancer.json` and run `node tools/convert-hooktheory.mjs` (writes `songs-private/cancer-private.json` and its index entry).
+- With Docker, mount the folder read-only: `docker run --rm -p 8790:8080 -v <path>/songs-private:/usr/share/nginx/html/songs-private:ro piano-guide`. Without the mount only the public songs appear and nothing is reported. The `sources/` folder is never served.
+- With the dev server, `NO_PRIVATE=1 node tools/serve.mjs` hides the whole folder, to see what GitHub Pages would show.
+
+### Usability check
+
+`docs/USABILITY_CHECK.md` is the protocol to test Learn mode with a person who has never played.
+
+## Practice exercises
+
+Open **Practice exercises** (the link in the header, or the button on the catalog). Nothing here is a song: every exercise is generated from music theory, so there is nothing to copy and no copyright. The page opens with a **Today** card (the 10-minute routine of the day, the key of the day on a circle of fifths and your days in a row) and then the exercises in four groups.
+
+| Group | Exercises |
+|-------|-----------|
+| Technique | Five-finger patterns, major scales (one or two octaves, right hand, left hand, then both together), arpeggios |
+| Harmony | Chords and inversions, the cadence I, IV, V, I, the progressions I, vi, IV, V and I, V, vi, IV (a left hand root and a right hand chord, with the smallest movement between chords) |
+| Ear training | Hear the interval (starts with major third, perfect fifth and octave), hear the chord (major or minor) |
+| Routine | The 10-minute routine |
+
+- **Doc card**: every exercise has a short card (goal, why it matters, how to do it, what good looks like, tempo steps) in English and Spanish, one tap away on the exercise page ("How this exercise works").
+- **A run**: press **Start**; the keys to press are shaded with the finger number, one step at a time. Right keys say "Correct", a wrong key says "Try again", keeps the step and makes the run "not clean". Taps, the computer keys and MIDI work like in Learn mode (same input panel). **Listen** plays the exercise first (generated notes only; it never plays a song).
+- **After a run**: **Again** (same key and tempo), **Faster** (the next tempo of the card after a clean run; it stops at the top and says so), **Next hand** (right, left, then both together) and **Next key**. The order of the keys is the circle of fifths, the circle of fourths, random (every key once before a repeat) or the same key; the key is also chosen on the circle of fifths. A scale opens on the first key without a clean run in the order C, G, D, F, A, E, B, Bb, Eb, Ab, Db, F#; it is a suggestion, every key can be chosen.
+- **Metronome**: a click at the page tempo while a run is going. Tempo is a pacing aid: nothing is timed, and a "clean run at 72" means no wrong key while the click was at 72.
+- **Ear drills**: **Play** the question (as often as you like), then pick a name or play it back on the keyboard (any octave counts). A second wrong answer shows the right one. A round is ten questions; 8 of 10 right unlock the next choice (perfect fourth, minor third, major sixth, major second, minor sixth, minor seventh, major seventh, tritone, minor second; chords add diminished and augmented).
+- **10-minute routine**: a warm-up (a five-finger pattern in the key after the last warm-up on the circle of fifths), a scale (the key practiced longest ago or never), chords (triads, the cadence or the I, V, vi, IV progression) and an ear drill, 2 + 3 + 3 + 2 minutes. **Skip block** at any moment; the summary says "N days in a row". A day counts when at least one block was done; skipping everything records nothing.
+- **Progress** (best clean tempo, clean streak, clean runs, last practiced, the days in a row, the unlocked ear choices) is saved in the browser under one key and shows on the list and on each exercise; **Reset progress** on the list asks "Reset all practice progress? Yes No" and clears it. It holds only ids, key names, counts, tempos and dates.
+- **Suggested fingering**: a fingering is marked "Suggested fingering" when method books disagree: the right hand of B-flat major and the left hand of F-sharp major scales, the left hand arpeggios of D-flat, E-flat, A-flat and B-flat, the left hand crossing finger of two-octave arpeggios, and the minor arpeggios of B, F-sharp and the flat keys. The scale and arpeggio cards also say "Standard fingering; some books differ."
 
 ## Tests
 
@@ -35,14 +90,14 @@ The runner is the built-in one; there is nothing to install.
 
 Songs are data. A new song needs a `songs/<id>.json` file and an entry in `songs/index.json`. The format is defined and enforced by `src/core/schema.js` (`validateSong`, `validateIndex`); an invalid song shows as "Unavailable" in the catalog with the reason.
 
-Levels and analysis, by example from `songs/cancer.json`:
+Levels and analysis, by example from `songs/chopin-nocturne-op9-no2.json` (and `tests/fixtures/chords-only-song.json`, a synthetic chords-only song used by the tests):
 
 - `levels` has up to two keys, `beginner` and `original`; `defaultLevel` names one of them and `songs/index.json` lists the same level ids. A song with one level shows a static chip instead of the selector.
 - `notation: "labelled"` draws note names inside enlarged noteheads (Beginner); `notation: "engraved"` draws standard notation (Original). `strictBars: true` asks the validator to check that every bar of every hand is exactly covered, and the score then draws only the rests you wrote.
 - `analysis` (optional, per level) is a list of `{ tick, endTick?, kind, title, text, roman?, function? }` with `kind` one of `harmony`, `voice-leading`, `ornament`, `rubato`, `dynamics`, `form`. It appears only when the Analysis toggle is on: roman numerals under the staff, a short callout per entry (keep `title` under about 18 characters) and the full text in the lesson card. A level with no `analysis` has no Analysis toggle.
 - `lesson` has one entry per level id; a level without one shows "No lesson for this level yet" and a validator warning.
-- `contentPolicy: "chords-only"` (Cancer) forbids `role: "melody"` and any `lyrics` string anywhere in the file; the arrangement is then described as a generic chord-based accompaniment.
-- A level with `transcribed: true` (the Chopin Nocturne) needs a `public-domain-score` source on mutopiaproject.org or imslp.org. Notes are read only from that source, never from memory, and the source entry records the piece page, the file URL, the ID, the license, the SHA-256 of the file and the access date. The Nocturne data is adapted from a Mutopia file licensed CC BY-SA 3.0 (typeset by Renato Biolcati Rinaldi from the 1881 G. Schirmer edition): keep that attribution and license with any copy or adaptation of `songs/chopin-nocturne-op9-no2.json`. The LilyPond file itself is not stored in the repository.
+- `contentPolicy: "chords-only"` (the fixture above) forbids `role: "melody"` and any `lyrics` string anywhere in the file; the arrangement is then described as a generic chord-based accompaniment.
+- A level with `transcribed: true` (the Chopin Nocturne and Ode to Joy) needs a `public-domain-score` source on mutopiaproject.org or imslp.org. Notes are read only from that source, never from memory, and the source entry records the piece page, the file URL, the ID, the license, the SHA-256 of the file and the access date. The Nocturne data is adapted from a Mutopia file licensed CC BY-SA 3.0 (typeset by Renato Biolcati Rinaldi from the 1881 G. Schirmer edition): keep that attribution and license with any copy or adaptation of `songs/chopin-nocturne-op9-no2.json`. The LilyPond file itself is not stored in the repository.
 - A `tie: true` note and the note that continues it (same hand and pitch, starting where it ends) sound once for both lengths; the score draws both.
 
 ## Routes
@@ -54,6 +109,9 @@ The site uses hash routes, so it works on any static host and under a subpath wi
 | `#/` | Song catalog: a hero and one card per song from `songs/index.json` (no three.js and no player code is downloaded for it) |
 | `#/song/<id>` | Song player: 3D keyboard with falling notes, transport controls, position readout and BPM, and the grand-staff score under the keyboard. Add `?debug=1` to the page URL (or the hash) for the overlay (clock jitter, frame time, graphics tier and camera section) |
 | `#/song/<id>?level=<id>&names=<solfege or letters>&view=<both, scene or score>` | Same song with the level, note names and view preselected; the selector under the title changes them and rewrites the hash without a reload |
+| `#/learn/<id>?level=<id>` | Learn mode: the step-by-step teacher (see "Learn mode" above) |
+| `#/practice` | Practice exercises: the Today card and the list of exercises (see "Practice exercises" above) |
+| `#/practice/<id>` | One exercise: `five-finger`, `scale-major`, `triads`, `arpeggios`, `cadence-i-iv-v-i`, `progression-i-vi-iv-v`, `progression-i-v-vi-iv`, `ear-intervals`, `ear-chords` or `routine`; any other id shows "Exercise not found" with a link back |
 | anything else | "Page not found" with a link to the catalog |
 
 An id that is not in the index shows "Song not found". The browser back button always disposes the previous view first.
@@ -82,6 +140,8 @@ An id that is not in the index shows "Song not found". The browser back button a
 | `dispose()` | Stops, disposes the voices and clicks, suspends the context and drops listeners |
 
 The scheduler runs every 25 ms with a 120 ms look-ahead (1.5 s while the tab is hidden). Everything is deterministic given the audio clock, so `node --test` covers it with a fake context (`tests/audio/`). Sound itself can only be judged by listening.
+
+The engine plays through `src/audio/voice.js`: a sampled piano (`src/audio/sampler.js`, 30 Salamander Grand Piano MP3 files under `assets/audio/piano/`, pitched between sample points by playback rate, never more than 3 semitones) with the oscillator synthesizer (`src/audio/synth.js`) as the automatic fallback. The samples load lazily on the first key or Play, never block the page, and a note requested before its sample is decoded, a missing file or a decode failure sounds on the synthesizer with no error shown. Listen on a public song and the learner's own key presses use this same voice; a private song still schedules no note at all.
 
 ## Practice tools
 
@@ -142,4 +202,4 @@ Measured on 2026-10-10 (Chrome on an RTX 3050 laptop GPU through ANGLE and Direc
 
 ## License
 
-The code and documentation are MIT licensed (`LICENSE`). The Nocturne data, `songs/chopin-nocturne-op9-no2.json`, is adapted from a Mutopia Project file and is licensed CC BY-SA 3.0; its attribution is in `songs/LICENSE-chopin-nocturne-op9-no2.md`. Cancer contains only chords, structure and tempo: no lyrics and no melody.
+The code and documentation are MIT licensed (`LICENSE`). The Nocturne data, `songs/chopin-nocturne-op9-no2.json`, is adapted from a Mutopia Project file and is licensed CC BY-SA 3.0; its attribution is in `songs/LICENSE-chopin-nocturne-op9-no2.md`. The Ode to Joy data, `songs/ode-to-joy.json`, is adapted from Mutopia Project piece 528, which is Public Domain (no attribution is required; the source, the license and the SHA-256 of the file are in `songs/LICENSE-ode-to-joy.md`); its left hand is an original arrangement. The piano samples in `assets/audio/piano/` are the Salamander Grand Piano by Alexander Holm, licensed CC BY 3.0 (`assets/audio/piano/LICENSE.txt`); the credit is shown in the footer of every page, in English and Spanish: "Piano: Salamander Grand Piano by Alexander Holm, CC BY 3.0, subset converted to MP3, via tonejs.github.io/audio". The source, the SHA-256 of every file and the rejected alternatives are in `docs/STACK_TECNOLOGICO.md`. A song you keep for yourself goes in the private folder described above and is never part of the public data.

@@ -101,10 +101,11 @@ function accidentalOverlaps(layout) {
   return found;
 }
 
-test("no accidental prints over the heads of its neighbours, on either song and level", () => {
-  for (const [file, levels] of [["chopin-nocturne-op9-no2.json", ["original", "beginner"]], ["cancer.json", ["original", "beginner"]]]) {
-    const data = JSON.parse(readFileSync(new URL(`../../songs/${file}`, import.meta.url), "utf8"));
-    for (const level of levels) {
+test("no accidental prints over the heads of its neighbours, on the real song and on the synthetic chords-only song, at both levels", () => {
+  const chordsOnly = new URL("../fixtures/chords-only-song.json", import.meta.url);
+  for (const [file, url] of [["chopin-nocturne-op9-no2.json", new URL("../../songs/chopin-nocturne-op9-no2.json", import.meta.url)], ["chords-only-song.json", chordsOnly]]) {
+    const data = JSON.parse(readFileSync(url, "utf8"));
+    for (const level of ["original", "beginner"]) {
       const layout = layoutScore(resolveLevel(data, level));
       assert.ok(layout.events.some((e) => e.notes?.some((n) => n.accidental)), `${file} ${level} has accidentals`);
       assert.deepEqual(accidentalOverlaps(layout), [], `${file} ${level}`);

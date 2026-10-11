@@ -1,13 +1,13 @@
 {
   "songs": [
     {
-      "id": "cancer",
-      "file": "cancer.json",
-      "title": "Cancer",
-      "composer": "My Chemical Romance",
-      "key": { "tonic": "E", "mode": "major" },
-      "defaultBpm": 72,
-      "levels": ["beginner", "original"]
+      "id": "ode-to-joy",
+      "file": "ode-to-joy.json",
+      "title": "Ode to Joy",
+      "composer": "Ludwig van Beethoven",
+      "key": { "tonic": "C", "mode": "major" },
+      "defaultBpm": 100,
+      "levels": ["beginner"]
     },
     {
       "id": "chopin-nocturne-op9-no2",
