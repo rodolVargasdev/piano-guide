@@ -1,4 +1,5 @@
 import { test } from "node:test";
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { fakeDoc, all } from "../score/fake-dom.js";
 import { createI18n } from "../../src/i18n/i18n.js";
@@ -124,4 +125,30 @@ test("fit changes the drawn width, and dispose removes the keyboard and stops fo
   keyboard.dispose();
   assert.equal(mount.children.length, 0);
   i18n.setLang("es"); // must not throw
+});
+
+// ---- stylesheet guards (the sizes themselves live in keyboard-labels.js and are tested above) ----------
+const css = readFileSync(new URL("../../styles/app.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+const ruleOf = (text, selector) => {
+  const start = text.indexOf(`\n${selector} {`);
+  if (start === -1) return null;
+  return text.slice(start, text.indexOf("}", start));
+};
+
+test("the stylesheet keeps the keyboard touchable and quiet: touch-action none, a hidden live region, a landscape rule", () => {
+  assert.match(ruleOf(css, ".lk-svg") ?? "", /touch-action:\s*none/);
+  assert.match(ruleOf(css, ".lk-live") ?? "", /clip-path:\s*inset\(50%\)/);
+  assert.match(css, /@media \(max-height: 480px\) and \(orientation: landscape\) \{\n  \.learn-keyboard/);
+});
+
+test("the stylesheet gives every state a shape and not only a color: outline, badge, hatch and check", () => {
+  for (const selector of [".lk-outline", ".lk-badge-R", ".lk-badge-L", ".lk-hatch-line", ".lk-mark-correct", ".lk-mark-wrong"]) assert.ok(ruleOf(css, selector), `missing ${selector}`);
+  assert.match(ruleOf(css, ".lk-key.lk-wrong") ?? "", /url\(#lk-hatch\)/);
+});
+
+test("counter-proof: the guard catches a keyboard rule that animates, and the real stylesheet has none", () => {
+  const animates = (text) => [...text.matchAll(/\n\.(?:lk-|learn-keyboard)[^{]*\{[^}]*\}/g)].some((m) => /transition|animation/.test(m[0]));
+  assert.equal(animates("\n.lk-white { fill: red; transition: fill 200ms; }"), true, "the fixture is detected");
+  assert.equal(animates(css), false);
+  assert.equal(ruleOf(css, ".lk-nope"), null, "a missing rule is reported as missing");
 });

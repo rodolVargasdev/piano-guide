@@ -856,3 +856,195 @@ body {
     opacity: 0.4; /* behind the text on a narrow screen */
   }
 }
+
+/* Learn keyboard (src/ui/learn-keyboard.js): an SVG drawn in CSS pixels, so label sizes live in the script
+   (keyboard-labels.js: 12 px minimum, white keys 36 px minimum). No state relies on color alone: shading
+   comes with an outline and a finger badge, a wrong key with hatching and a cross, a correct one with a
+   check mark, a pressed key sits 2 px lower. Nothing here animates, so reduced motion changes nothing. */
+.learn-keyboard {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-block: 0.5rem;
+}
+
+.lk-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lk-svg text {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  user-select: none;
+}
+
+.lk-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.lk-white {
+  fill: #f4efe3;
+  stroke: #8c877c;
+  stroke-width: 1;
+  cursor: pointer;
+}
+
+.lk-black {
+  fill: #12141b;
+  stroke: #000;
+  stroke-width: 1;
+  cursor: pointer;
+}
+
+.lk-name-primary {
+  font-weight: 700;
+}
+
+.lk-name {
+  fill: #1b1b1f;
+}
+
+.lk-name-secondary {
+  font-weight: 500;
+  fill: #4b5563;
+}
+
+.lk-strip-name {
+  fill: var(--text);
+}
+
+.lk-strip-name.lk-name-secondary {
+  fill: var(--muted);
+}
+
+.lk-white.lk-expected.lk-hand-R {
+  fill: #fcd34d;
+}
+
+.lk-white.lk-expected.lk-hand-L {
+  fill: #93c5fd;
+}
+
+.lk-black.lk-expected.lk-hand-R {
+  fill: #d97706;
+}
+
+.lk-black.lk-expected.lk-hand-L {
+  fill: #2563eb;
+}
+
+.lk-white.lk-sounding.lk-hand-R {
+  fill: #f59e0b;
+}
+
+.lk-white.lk-sounding.lk-hand-L {
+  fill: #60a5fa;
+}
+
+.lk-black.lk-sounding.lk-hand-R {
+  fill: #b45309;
+}
+
+.lk-black.lk-sounding.lk-hand-L {
+  fill: #1d4ed8;
+}
+
+.lk-white.lk-pressed {
+  fill: #d6cfba;
+}
+
+.lk-black.lk-pressed {
+  fill: #2d3242;
+}
+
+.lk-key.lk-wrong {
+  fill: url(#lk-hatch);
+}
+
+.lk-hatch-bg {
+  fill: #fee2e2;
+}
+
+.lk-hatch-line {
+  stroke: #b91c1c;
+  stroke-width: 3;
+}
+
+.lk-outline {
+  fill: none;
+  stroke-width: 3;
+}
+
+.lk-outline-inner {
+  stroke-width: 2;
+}
+
+.lk-outline.lk-hand-R {
+  stroke: #78350f;
+}
+
+.lk-outline.lk-hand-L {
+  stroke: #1e3a8a;
+}
+
+.lk-badge-R {
+  fill: #f59e0b;
+  stroke: #451a03;
+  stroke-width: 2;
+}
+
+.lk-badge-L {
+  fill: #60a5fa;
+  stroke: #172554;
+  stroke-width: 2;
+}
+
+.lk-finger {
+  fill: #0b0d12;
+  font-weight: 800;
+}
+
+.lk-quiet {
+  fill: #4b5563;
+  font-weight: 600;
+}
+
+.lk-letter-box {
+  fill: #1c2230;
+  stroke: #64748b;
+  stroke-width: 1;
+}
+
+.lk-letter {
+  fill: var(--text);
+  font-weight: 700;
+}
+
+.lk-mark-wrong {
+  fill: #b91c1c;
+  font-weight: 900;
+}
+
+.lk-mark-correct {
+  fill: none;
+  stroke: #15803d;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .learn-keyboard {
+    margin-block: 0.125rem;
+  }
+}
