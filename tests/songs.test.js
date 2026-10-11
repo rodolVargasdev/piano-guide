@@ -587,3 +587,29 @@ test("the Original lesson carries the attribution, the pedal and the interpretat
   assert.match(lessonO.interpretation.dynamics, /hairpin of bar 2/);
   assert.match(lessonO.interpretation.dynamics, /marked f/);
 });
+
+// ---- the public set after the catalog swap -------------------------------------------------------------------
+
+const EXPECTED_PUBLIC = ["chopin-nocturne-op9-no2", "ode-to-joy"];
+/** What is wrong with a list of public song ids (empty means it is exactly the expected public set). */
+const publicSetProblems = (ids) => {
+  const problems = [];
+  for (const id of EXPECTED_PUBLIC) if (!ids.includes(id)) problems.push(`missing ${id}`);
+  for (const id of ids) if (!EXPECTED_PUBLIC.includes(id)) problems.push(`unexpected ${id}`);
+  return problems;
+};
+
+test("the public catalog is exactly Ode to Joy and the Chopin Nocturne, none of them private, and the chords-only Cancer file is gone", () => {
+  assert.deepEqual(publicSetProblems(index.songs.map((e) => e.id)), []);
+  assert.equal(index.songs[0].id, "ode-to-joy", "the easiest song comes first: the hero opens it");
+  assert.ok(index.songs.every((e) => e.visibility !== "private"));
+  assert.equal(existsSync(new URL("../songs/cancer.json", import.meta.url)), false);
+  assert.deepEqual(index.songs.find((e) => e.id === "ode-to-joy").levels, ["beginner"]);
+  for (const e of index.songs) assert.equal(visibilityMismatch(e, read(e.file)), null, e.id);
+});
+
+test("counter-proof: the exact-set check notices the removed song coming back, a third song and a missing song", () => {
+  assert.deepEqual(publicSetProblems(["ode-to-joy", "chopin-nocturne-op9-no2", "cancer"]), ["unexpected cancer"]);
+  assert.deepEqual(publicSetProblems(["ode-to-joy"]), ["missing chopin-nocturne-op9-no2"]);
+  assert.deepEqual(publicSetProblems([]), ["missing chopin-nocturne-op9-no2", "missing ode-to-joy"]);
+});

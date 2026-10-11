@@ -70,14 +70,14 @@ The runner is the built-in one; there is nothing to install.
 
 Songs are data. A new song needs a `songs/<id>.json` file and an entry in `songs/index.json`. The format is defined and enforced by `src/core/schema.js` (`validateSong`, `validateIndex`); an invalid song shows as "Unavailable" in the catalog with the reason.
 
-Levels and analysis, by example from `songs/cancer.json`:
+Levels and analysis, by example from `songs/chopin-nocturne-op9-no2.json` (and `tests/fixtures/chords-only-song.json`, a synthetic chords-only song used by the tests):
 
 - `levels` has up to two keys, `beginner` and `original`; `defaultLevel` names one of them and `songs/index.json` lists the same level ids. A song with one level shows a static chip instead of the selector.
 - `notation: "labelled"` draws note names inside enlarged noteheads (Beginner); `notation: "engraved"` draws standard notation (Original). `strictBars: true` asks the validator to check that every bar of every hand is exactly covered, and the score then draws only the rests you wrote.
 - `analysis` (optional, per level) is a list of `{ tick, endTick?, kind, title, text, roman?, function? }` with `kind` one of `harmony`, `voice-leading`, `ornament`, `rubato`, `dynamics`, `form`. It appears only when the Analysis toggle is on: roman numerals under the staff, a short callout per entry (keep `title` under about 18 characters) and the full text in the lesson card. A level with no `analysis` has no Analysis toggle.
 - `lesson` has one entry per level id; a level without one shows "No lesson for this level yet" and a validator warning.
-- `contentPolicy: "chords-only"` (Cancer) forbids `role: "melody"` and any `lyrics` string anywhere in the file; the arrangement is then described as a generic chord-based accompaniment.
-- A level with `transcribed: true` (the Chopin Nocturne) needs a `public-domain-score` source on mutopiaproject.org or imslp.org. Notes are read only from that source, never from memory, and the source entry records the piece page, the file URL, the ID, the license, the SHA-256 of the file and the access date. The Nocturne data is adapted from a Mutopia file licensed CC BY-SA 3.0 (typeset by Renato Biolcati Rinaldi from the 1881 G. Schirmer edition): keep that attribution and license with any copy or adaptation of `songs/chopin-nocturne-op9-no2.json`. The LilyPond file itself is not stored in the repository.
+- `contentPolicy: "chords-only"` (the fixture above) forbids `role: "melody"` and any `lyrics` string anywhere in the file; the arrangement is then described as a generic chord-based accompaniment.
+- A level with `transcribed: true` (the Chopin Nocturne and Ode to Joy) needs a `public-domain-score` source on mutopiaproject.org or imslp.org. Notes are read only from that source, never from memory, and the source entry records the piece page, the file URL, the ID, the license, the SHA-256 of the file and the access date. The Nocturne data is adapted from a Mutopia file licensed CC BY-SA 3.0 (typeset by Renato Biolcati Rinaldi from the 1881 G. Schirmer edition): keep that attribution and license with any copy or adaptation of `songs/chopin-nocturne-op9-no2.json`. The LilyPond file itself is not stored in the repository.
 - A `tie: true` note and the note that continues it (same hand and pitch, starting where it ends) sound once for both lengths; the score draws both.
 
 ## Routes
@@ -178,4 +178,4 @@ Measured on 2026-10-10 (Chrome on an RTX 3050 laptop GPU through ANGLE and Direc
 
 ## License
 
-The code and documentation are MIT licensed (`LICENSE`). The Nocturne data, `songs/chopin-nocturne-op9-no2.json`, is adapted from a Mutopia Project file and is licensed CC BY-SA 3.0; its attribution is in `songs/LICENSE-chopin-nocturne-op9-no2.md`. Cancer contains only chords, structure and tempo: no lyrics and no melody.
+The code and documentation are MIT licensed (`LICENSE`). The Nocturne data, `songs/chopin-nocturne-op9-no2.json`, is adapted from a Mutopia Project file and is licensed CC BY-SA 3.0; its attribution is in `songs/LICENSE-chopin-nocturne-op9-no2.md`. The Ode to Joy data, `songs/ode-to-joy.json`, is adapted from Mutopia Project piece 528, which is Public Domain (no attribution is required; the source, the license and the SHA-256 of the file are in `songs/LICENSE-ode-to-joy.md`); its left hand is an original arrangement. A song you keep for yourself goes in the private folder described above and is never part of the public data.
