@@ -264,7 +264,7 @@ Specs: song-data-model, song-catalog (tests must stop depending on the public Ca
 - [x] 17.1 Re-measure the dependency on `songs/cancer.json`: run `rg -i -c "cancer" tests` and `rg -n "songs/cancer|\"cancer\"" tests`; the design measured 94 matches in 7 files on 2026-10-11 (`songs.test.js` 55, `level-select.test.js` 12, `router-dispatch.test.js` 9, `router.test.js` 8, `player.test.js` 5, `score/render.test.js` 4, `score/engraving-polish.test.js` 1). Record the new counts, which matches are file references versus prose or ids, and the resulting PR size in `openspec/changes/learn-mode/apply-notes.md`; if the migration exceeds about 450 lines, split it into two PRs (`pr5b-test-migration` for `songs.test.js` and `pr5b2-...` for the UI and score tests) and note it in the tracker.
 - [x] 17.2 Create `tests/fixtures/chords-only-song.json`: synthetic chords-only public song covering what the Cancer tests assert (confidence per section, chords-only copyright guard shape, levels, tempo, key), no real melody.
 - [x] 17.3 Migrate `tests/songs.test.js` so no assertion needs `songs/cancer.json` (use the fixture for the chords-only guard, keep the Chopin assertions), keeping every guard that still applies; each migrated guard keeps its counter-proof. Test: `node --test tests/songs.test.js`.
-- [ ] 17.4 Migrate `tests/ui/level-select.test.js`, `tests/ui/router-dispatch.test.js`, `tests/ui/router.test.js`, `tests/ui/player.test.js`, `tests/score/render.test.js`, `tests/score/engraving-polish.test.js` to the fixture or to Chopin. Test: `node --test tests/ui tests/score`.
+- [x] 17.4 Migrate `tests/ui/level-select.test.js`, `tests/ui/router-dispatch.test.js`, `tests/ui/router.test.js`, `tests/ui/player.test.js`, `tests/score/render.test.js`, `tests/score/engraving-polish.test.js` to the fixture or to Chopin. Test: `node --test tests/ui tests/score`.
 - [x] 17.5 Verification: `node --test` full green with `songs/cancer.json` still present (pr6b removes it), and a temporary local check that renaming `songs/cancer.json` makes no test fail (do not commit the rename; restore it).
 
 ## Phase 18: Public catalog swap (pr6b-catalog-swap, about 200 lines)
@@ -466,4 +466,5 @@ Phase 15 (pr3b-sampled-piano) is a STOP gate and is not approved, so this batch 
 | 5 | `feat/learn-mode-pr2b3-stage-view` | metronome of 14.3, 14.4, 14.5 | 144 |
 | 6 | `feat/learn-mode-pr4b-ode-to-joy` | 16.1 to 16.6 | 537 (data file, `size:exception` recommended) |
 | 7 | `feat/learn-mode-pr5b-test-migration` | 17.1, 17.2, 17.3, 17.5 | about 545 (356 are the fixture's JSON; `size:exception` recommended for the data file). Re-measure: 121 matches in 12 files, only 2 files read `songs/cancer.json` |
+| 8 | `feat/learn-mode-pr5b2-ui-test-migration` | 17.4 | 76 |
 
