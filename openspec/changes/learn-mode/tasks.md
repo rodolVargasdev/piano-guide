@@ -145,7 +145,7 @@ Split point: 6.4 (reducer) as its own PR.
 
 Specs: playback-engine (range playback, single notes, held learner voices).
 
-- [ ] 7.1 Modify `src/audio/synth.js`: `startHeld({ midi, vel, when })` and `releaseHeld(voiceId, now)`; learner voices excluded from `cancelPending`, counted in the shared voice cap. Test: `tests/audio/synth.test.js` additions (held note survives `cancelPending`, cap includes learner voices, release ramps).
+- [x] 7.1 Modify `src/audio/synth.js`: `startHeld({ midi, vel, when })` and `releaseHeld(voiceId, now)`; learner voices excluded from `cancelPending`, counted in the shared voice cap. Test: `tests/audio/synth.test.js` additions (held note survives `cancelPending`, cap includes learner voices, release ramps).
 - [ ] 7.2 Modify `src/audio/engine.js`: `startNote`, `releaseNote`, `releaseAllNotes`, `playRange({ startTick, endTick, hand, bpm })` resolving `{ status }` (`completed`, `cancelled`, `silent`, `empty`; omitted `bpm` means slow, explicit `bpm` allowed), `stopRange`, `playNotes`, `stopNotes`. Test: new `tests/audio/engine-range.test.js` with the recording rig: range plays only notes inside it and stops itself, empty range immediate, private timeline resolves `silent` with zero `playNote` calls, `releaseAllNotes` leaves nothing held, `playNotes` generated notes play even when the loaded song is private.
 - [ ] 7.3 Add guard test in `tests/audio/engine-silent.test.js` (or `tests/learn-guard.test.js`): modules under `src/learn/` never import `playNotes` (static text scan with a counter-proof fixture string that does).
 - [ ] 7.4 Verification: `node --test tests/audio` and full run.
