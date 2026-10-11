@@ -121,5 +121,10 @@ export const STRINGS = {
   "learn.transposeTo": { en: "Transpose to {key} major", es: "Transponer a {key} mayor" },
   "learn.level": { en: "Level", es: "Nivel" },
   "learn.notReady": { en: "This lesson is not ready yet.", es: "Esta lección aún no está lista." },
+  "learn.howTo": { en: "Press Start. The screen tells you which finger goes on which key, one step at a time.", es: "Pulse Empezar. La pantalla indica qué dedo va en qué tecla, un paso a la vez." },
+  "learn.hintKeys": { en: "Press the key marked with the finger number.", es: "Presione la tecla marcada con el número del dedo." },
+  "learn.key": { en: "Key", es: "Tonalidad" },
+  "learn.hand": { en: "Hand", es: "Mano" },
+  "common.loading": { en: "Loading", es: "Cargando" },
   "learn.silent": { en: "The app does not play this song. It only tells you what to play.", es: "La aplicación no reproduce esta canción. Solo indica qué tocar." },
 };
