@@ -9,6 +9,8 @@ import { loadCatalog } from "./catalog.js";
 import { notFoundView } from "./router.js";
 import { createTransport } from "./transport.js";
 import { resolveLevel } from "../core/timeline.js";
+import { createPractice } from "./practice-controller.js";
+import { createPracticePanel } from "./practice-panel.js";
 import { createLevelSelect, resolveLevelId, controlsFor, readRemembered, remember, mapPosition, updateHash } from "./level-select.js";
 import { FULL_RANGE } from "../core/keyboard-layout.js";
 import { createAudio } from "../audio/context.js";
@@ -45,16 +47,9 @@ export function frameStats(samples) {
 
 const FRAME_WINDOW = 120;
 
-function createDebugOverlay({ onToggleRange }) {
+function createDebugOverlay() {
   const label = el("span", {}, "debug");
-  const range = el("button", { type: "button", "aria-pressed": "false" }, "Full 88");
-  const element = el("div", { class: "debug" }, label, range);
-  let full = false;
-  range.addEventListener("click", () => {
-    full = !full;
-    range.setAttribute("aria-pressed", String(full));
-    onToggleRange(full);
-  });
+  const element = el("div", { class: "debug" }, label);
   let prevTs = null;
   let prevSeconds = 0;
   let worst = 0;
@@ -119,9 +114,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
       const engine = makeEngine();
       engine.setTimeline(timeline);
 
-      const debug = debugRequested(win.location.search, win.location.hash)
-        ? createDebugOverlay({ onToggleRange: (full) => { scene.setRange(full ? FULL_RANGE : null); requestFrame(); } })
-        : null;
+      const debug = debugRequested(win.location.search, win.location.hash) ? createDebugOverlay() : null;
       let score = NOOP_VIEW;
       let scene = NOOP_VIEW;
       let raf = null;
@@ -141,6 +134,37 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
       }
 
       const transport = createTransport({ engine, timeline, onChange: requestFrame });
+      // Practice state (loop, ramp, hands, range) lives in the controller; these effects fan it out.
+      // Hand flags are kept by the engine, scene and score, so they survive a seek, a loop wrap and a level change.
+      const practice = createPractice({
+        timeline,
+        position: () => engine.position().tick,
+        effects: {
+          setLoop: (loop) => {
+            engine.setLoop(loop);
+            requestFrame();
+          },
+          setBpm: (n) => {
+            engine.setBpm(n);
+            transport.syncBpm();
+          },
+          getBpm: () => engine.getBpm(),
+          setHands: (modes) => {
+            engine.setHandModes(modes);
+            scene.setHandModes(modes);
+            score.setHandModes(modes);
+            transport.setHandModes(modes);
+            requestFrame();
+          },
+          setRange: (range) => {
+            scene.setRange(range);
+            requestFrame();
+          },
+          setQuality: (q) => scene.setQuality(q),
+        },
+      });
+      const panel = createPracticePanel({ practice, timeline });
+      const offPass = engine.on("loop-pass", () => practice.onPass());
       const key = `${song.key.tonic} ${song.key.mode}`;
       const sceneSlot = el("div", { class: "slot", "data-slot": "scene" }, el("p", { class: "meta", role: "status" }, "Loading keyboard view"));
       const scoreSlot = el("div", { class: "slot", "data-slot": "score" });
@@ -179,6 +203,8 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
         engine.setTimeline(next, { tick: mapPosition(engine.position().tick, timeline, next) });
         scene.setTimeline(next);
         score.setTimeline(next, { title: song.title });
+        practice.setTimeline(next);
+        panel.setTimeline(next);
         timeline = next;
         levelId = id;
         applyMode();
@@ -205,6 +231,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
           ),
           stage,
           transport.element,
+          panel.element,
           debug?.element,
         ),
       );
@@ -230,6 +257,9 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
             return;
           }
           if (timeline !== built) created.setTimeline(timeline); // the level changed while the scene loaded
+          const { hands, full } = practice.state(); // the panel may have changed while the scene loaded
+          created.setHandModes(hands);
+          if (full) created.setRange(FULL_RANGE);
           scene = created;
         } catch {
           if (closed) return;
@@ -247,6 +277,8 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
           if (raf !== null) win.cancelAnimationFrame(raf);
           raf = null;
           scene.dispose(); // frees geometry, materials, textures and the renderer
+          offPass();
+          panel.dispose();
           transport.dispose();
           engine.dispose(); // stops audio, releases voices and suspends the context
         },

@@ -555,3 +555,21 @@ a:focus-visible {
     height: 12rem;
   }
 }
+
+/* Practice panel: same card as the transport, a little denser. */
+.practice .btn {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.875rem;
+}
+
+.practice select.bpm {
+  width: auto;
+}
+
+.practice input.bpm {
+  width: 4rem;
+}
+
+.loop-text {
+  font-variant-numeric: tabular-nums;
+}

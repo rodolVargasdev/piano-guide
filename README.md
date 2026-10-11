@@ -73,6 +73,20 @@ An id that is not in the index shows "Song not found". The browser back button a
 
 The scheduler runs every 25 ms with a 120 ms look-ahead (1.5 s while the tab is hidden). Everything is deterministic given the audio clock, so `node --test` covers it with a fake context (`tests/audio/`). Sound itself can only be judged by listening.
 
+## Practice tools
+
+The panel under the transport drives `src/ui/practice-controller.js` (state, no DOM) and `src/ui/practice-panel.js` (the controls).
+
+| Control | What it does |
+|---------|--------------|
+| Set A here, Set B here | Take the playhead as the start or the end of the loop. The range is swapped when inverted and snapped to the bar or beat (A down, B up); the panel always shows the normalized range, or "Loop not set" when nothing loopable results. A valid range turns the loop on |
+| Loop a section | Loops the named section as it is |
+| Loop | Turns the loop on or off; turning it off also stops the ramp |
+| Ramp from, by, to, Ramp, Hold | With a loop on, sets the BPM to the start value and raises it one step after each completed pass up to the target; Hold freezes it. Without a loop it says "Needs a loop" and does nothing |
+| Mute, Hide (left, right) | Mute silences a hand and keeps it visible; Hide removes it from the keyboard and the score and keeps it audible. Both hands muted still leaves the metronome. The flags survive seeks, loop wraps and level changes |
+| Full 88 | Frames the whole keyboard instead of the range of the level |
+| Quality | Manual graphics tier; it takes effect with the quality tiers of a later change |
+
 ## Scene
 
 `src/scene/` draws the 3D keyboard with three.js 0.186.1 (vendored under `assets/vendor/`, see `docs/STACK_TECNOLOGICO.md`). The player loads it lazily, so the catalog never downloads three.js; `render(tick, playing)` is called once per frame from the single animation loop and reads no clock of its own.

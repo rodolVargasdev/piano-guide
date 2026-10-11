@@ -46,7 +46,7 @@ const button = (label, onClick) => {
 };
 
 /**
- * createTransport({ engine, timeline, onChange }) returns { element, update(pos), setHandModes(modes), dispose() }.
+ * createTransport({ engine, timeline, onChange }) returns { element, update(pos), syncBpm(), setHandModes(modes), dispose() }.
  * `onChange` runs after any control changes the engine so the player can draw a frame at once.
  */
 export function createTransport({ engine, timeline, onChange = () => {} }) {
@@ -124,6 +124,11 @@ export function createTransport({ engine, timeline, onChange = () => {} }) {
         lastReadout = text;
       }
       if (!dragging && seek.valueAsNumber !== Math.round(pos.tick)) seek.value = String(Math.round(pos.tick));
+    },
+    /** Show the engine BPM in the field (the practice ramp changes it without a click here). */
+    syncBpm() {
+      bpm.value = String(engine.getBpm());
+      refreshNote();
     },
     setHandModes(modes) {
       const text = handsMessage(modes);

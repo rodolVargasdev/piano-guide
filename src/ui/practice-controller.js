@@ -66,8 +66,13 @@ export function createPractice({ timeline, effects, position = () => 0 }) {
     setTimeline(next) {
       tl = next;
     },
+    /**
+     * Set A. While a loop is active the playhead cannot leave it, so choosing A after a finished
+     * range starts a new one: the old loop stops and B is chosen again.
+     */
     setA(tick = position()) {
       s.a = tick;
+      if (s.loop) s.b = null;
       apply(both());
       emit();
     },

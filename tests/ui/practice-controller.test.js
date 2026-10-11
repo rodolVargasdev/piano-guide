@@ -46,6 +46,17 @@ test("A and B snap to bars: A down, B up, and the loop turns on", () => {
   assert.equal(p.state().loopOn, true);
 });
 
+test("Set A after a finished range starts a new one: the old loop stops until B is chosen again", () => {
+  const { p, log } = rig();
+  p.setA(0);
+  p.setB(1920);
+  p.setA(5760);
+  assert.equal(last(log.loops), null, "the old loop is released so the playhead can move past its end");
+  assert.equal(p.state().b, null);
+  p.setB(9600);
+  assert.deepEqual(last(log.loops), { startTick: 5760, endTick: 9600 });
+});
+
 test("an inverted range is swapped and the normalized range is what the state shows", () => {
   const { p, log } = rig();
   p.setA(5760);
