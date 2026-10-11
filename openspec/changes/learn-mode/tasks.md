@@ -212,8 +212,8 @@ Specs: private-song-library (Docker), lesson-guide, success criteria (usability 
 
 Specs: learn-mode (lesson zero), learner-language.
 
-- [ ] 13.1 Create `src/learn/lesson-zero.js`: four parts as data (find C with groups of 2 and 3 black keys using the matcher in `pitchClass` mode over a C3 to B4 region; sitting and hand posture; fingers 1 to 5 on C4 D4 E4 F4 G4; input how-to including Casio line). Completion or skip saved globally in `lessonZero` of `piano-guide:learn:v1`. Test: `tests/learn/lesson-zero.test.js` (any C counts, other keys do not advance, five single-key steps with fingers 1 to 5, skip saves "skipped", completion saves "done").
-- [ ] 13.2 Add `lz.*` keys (EN and ES) to `src/i18n/strings.js`; rerun `tests/i18n` guards.
+- [x] 13.1 Create `src/learn/lesson-zero.js`: four parts as data (find C with groups of 2 and 3 black keys using the matcher in `pitchClass` mode over a C3 to B4 region; sitting and hand posture; fingers 1 to 5 on C4 D4 E4 F4 G4; input how-to including Casio line). Completion or skip saved globally in `lessonZero` of `piano-guide:learn:v1`. Test: `tests/learn/lesson-zero.test.js` (any C counts, other keys do not advance, five single-key steps with fingers 1 to 5, skip saves "skipped", completion saves "done").
+- [x] 13.2 Add `lz.*` keys (EN and ES) to `src/i18n/strings.js`; rerun `tests/i18n` guards.
 - [ ] 13.3 Create `assets/img/posture.svg` (original artwork, simple, text-free) and `src/ui/lesson-zero-view.js`; modify `src/ui/learn-view.js` (the `lessonZero` phase, "Lesson zero" button on the first screen when never done, skip always available) and `src/learn/lesson.js` (new phase and actions). Test: `tests/ui/lesson-zero-view.test.js`, `tests/learn/lesson.test.js` rows.
 - [ ] 13.4 Browser check on 8790, three viewports (screenshots read): complete lesson zero by pressing any C, then fingers 1 to 5; skip it; reload and confirm it does not reappear; Spanish and English.
   Learner-level acceptance: a person who has never seen a piano reads "Find a C: it is the white key just left of the two black keys", sees the groups of two black keys outlined, presses a C and gets "Correct"; pressing another key says "Try again" and keeps the hint.
@@ -450,3 +450,14 @@ Full suite on the tip: 1266 tests, 0 failures (1152 at the start of the batch). 
 - The transport still shows its other labels in English (only the play button is bilingual); the catalog hero and cards, Learn and the input panel are fully bilingual.
 
 Next in the chain: Milestone B starts with pr1b-lesson-zero, based on `feat/learn-mode-pr12a-docs-docker`.
+
+## Batch 4: Milestone B without the sampled piano (chain as built, local branches, nothing pushed)
+
+### Reorder: pr3b (sampled piano) is deferred to the end of the chain
+
+Phase 15 (pr3b-sampled-piano) is a STOP gate and is not approved, so this batch skips it entirely (no audio file, no dependency, no stack entry) and runs phases 13, 14, 16, 17 and 18. The chain order of Milestone B for now is pr1b, pr1b2, pr2b, pr2b2, pr2b3, pr4b, pr5b, pr5b2, pr6b; pr3b will be appended after pr6b when approved, based on the then tip (it touches `engine.js`, `main.js`, `nginx.conf`, `tools/serve.mjs` and `docs/STACK_TECNOLOGICO.md`, none of which the other Milestone B PRs change in a conflicting way). Tasks 15.1 to 15.8 stay unchecked.
+
+| Order | Branch | Tasks | Authored lines |
+|-------|--------|-------|----------------|
+| 1 | `feat/learn-mode-pr1b-lesson-zero` (base pr12a) | 13.1, 13.2, reducer half of 13.3 | 334 |
+
