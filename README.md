@@ -42,7 +42,7 @@ The site uses hash routes, so it works on any static host and under a subpath wi
 | Hash | Shows |
 |------|-------|
 | `#/` | Song catalog (cards from `songs/index.json`) |
-| `#/song/<id>` | Song player: transport controls, position readout and BPM; the keyboard and score views arrive later. Add `?debug=1` to the page URL (or the hash) for the drift and frame-time overlay |
+| `#/song/<id>` | Song player: 3D keyboard with falling notes, transport controls, position readout and BPM; the score view arrives later. Add `?debug=1` to the page URL (or the hash) for the drift and frame-time overlay |
 | `#/song/<id>?level=<id>&names=<solfege or letters>&view=<both, scene or score>` | Same song with the level, note names and view preselected |
 | anything else | "Page not found" with a link to the catalog |
 
@@ -72,3 +72,14 @@ An id that is not in the index shows "Song not found". The browser back button a
 | `dispose()` | Stops, disposes the voices and clicks, suspends the context and drops listeners |
 
 The scheduler runs every 25 ms with a 120 ms look-ahead (1.5 s while the tab is hidden). Everything is deterministic given the audio clock, so `node --test` covers it with a fake context (`tests/audio/`). Sound itself can only be judged by listening.
+
+## Scene
+
+`src/scene/` draws the 3D keyboard with three.js 0.186.1 (vendored under `assets/vendor/`, see `docs/STACK_TECNOLOGICO.md`). The player loads it lazily, so the catalog never downloads three.js; `render(tick, playing)` is called once per frame from the single animation loop and reads no clock of its own.
+
+- Colors: right hand orange (`#f59e0b`), left hand blue (`#3b82f6`). Hand identity does not rely on color alone: left-hand bars carry long dark stripes, right-hand bars are plain (finger markers with hand shapes arrive in a later PR).
+- Keys depress about their back edge and light up in the hand color with a soft glow while their note sounds. A paused scene lights no key.
+- Falling notes sit in tick space: a bar's lower edge reaches the key-top line at the moment its note starts, and its height is proportional to its duration. Only the parent group moves each frame. Two clipping planes bound the look-ahead (2 bars).
+- Range: the keyboard fits the song (3 semitones of padding, snapped outward to C and B, at least 3 octaves); the camera frames it. With `?debug=1` a "Full 88" button shows all 88 keys and reframes; the regular control arrives with the practice panel.
+- No WebGL, or a failed three.js import: the scene slot shows "3D view unavailable on this device" and the transport and audio keep working.
+- One `WebGLRenderer` is shared by the whole page; leaving the player disposes the scene's own geometry, materials and textures.

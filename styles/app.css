@@ -297,6 +297,23 @@ a:focus-visible {
   pointer-events: none;
 }
 
+.debug button {
+  margin-left: 0.5rem;
+  padding: 0 0.375rem;
+  border: 1px solid #86efac;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.debug button[aria-pressed="true"] {
+  background: #86efac;
+  color: #000;
+}
+
 @media (max-height: 480px) and (orientation: landscape) {
   header,
   main {

@@ -8,6 +8,7 @@ import { loadCatalog } from "./catalog.js";
 import { notFoundView } from "./router.js";
 import { createTransport } from "./transport.js";
 import { resolveLevel } from "../core/timeline.js";
+import { FULL_RANGE } from "../core/keyboard-layout.js";
 import { createAudio } from "../audio/context.js";
 import { createEngine } from "../audio/engine.js";
 
@@ -27,28 +28,54 @@ export function driftMs(prevSeconds, seconds) {
   return Math.max(0, (seconds - prevSeconds) * 1000);
 }
 
-const NOOP_VIEW = Object.freeze({ render() {}, dispose() {} });
+const NOOP_VIEW = Object.freeze({ render() {}, dispose() {}, resize() {}, setRange() {}, setHandModes() {}, setTimeline() {} });
 
 // One audio object for the whole page: leaving the player suspends the context, returning resumes it.
 let sharedAudio = null;
 const defaultMakeEngine = () => createEngine({ audio: (sharedAudio ??= createAudio()) });
 
-function createDebugOverlay() {
-  const element = el("p", { class: "debug", "aria-hidden": "true" }, "debug");
+/** Frame statistics over the last 120 frames: { avg, p95 } in milliseconds (debug overlay only). */
+export function frameStats(samples) {
+  if (samples.length === 0) return { avg: 0, p95: 0 };
+  const sorted = [...samples].sort((a, b) => a - b);
+  const avg = sorted.reduce((a, b) => a + b, 0) / sorted.length;
+  return { avg, p95: sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95) - 1)] };
+}
+
+const FRAME_WINDOW = 120;
+
+function createDebugOverlay({ onToggleRange }) {
+  const label = el("span", {}, "debug");
+  const range = el("button", { type: "button", "aria-pressed": "false" }, "Full 88");
+  const element = el("div", { class: "debug" }, label, range);
+  let full = false;
+  range.addEventListener("click", () => {
+    full = !full;
+    range.setAttribute("aria-pressed", String(full));
+    onToggleRange(full);
+  });
   let prevTs = null;
   let prevSeconds = 0;
   let worst = 0;
   let frames = 0;
+  const dts = [];
   return {
     element,
     update(pos, ts, playing) {
       const dt = prevTs === null ? 0 : ts - prevTs;
-      if (playing) worst = Math.max(worst, driftMs(prevSeconds, pos.seconds));
+      if (playing) {
+        worst = Math.max(worst, driftMs(prevSeconds, pos.seconds));
+        if (prevTs !== null) {
+          dts.push(dt);
+          if (dts.length > FRAME_WINDOW) dts.shift();
+        }
+      } else dts.length = 0;
       prevTs = ts;
       prevSeconds = pos.seconds;
       frames += 1;
       if (frames % 10 === 0) {
-        element.textContent = `drift max ${worst.toFixed(1)} ms | frame ${dt.toFixed(1)} ms | tier n/a`;
+        const { avg, p95 } = frameStats(dts);
+        label.textContent = `drift max ${worst.toFixed(1)} ms | frame avg ${avg.toFixed(1)} p95 ${p95.toFixed(1)} ms | tier n/a`;
         worst = 0;
       }
     },
@@ -90,7 +117,9 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
       const engine = makeEngine();
       engine.setTimeline(timeline);
 
-      const debug = debugRequested(win.location.search, win.location.hash) ? createDebugOverlay() : null;
+      const debug = debugRequested(win.location.search, win.location.hash)
+        ? createDebugOverlay({ onToggleRange: (full) => { scene.setRange(full ? FULL_RANGE : null); requestFrame(); } })
+        : null;
       const score = NOOP_VIEW;
       let scene = NOOP_VIEW;
       let raf = null;

@@ -35,3 +35,16 @@ test("driftMs is the musical time between two drawn positions and never negative
   assert.equal(driftMs(2, 1), 0, "a backward seek is not drift");
   assert.equal(driftMs(0, 0), 0);
 });
+
+test("frameStats gives the average and the 95th percentile of the frame window", async () => {
+  const { frameStats } = await import("../../src/ui/player.js");
+  assert.deepEqual(frameStats([]), { avg: 0, p95: 0 });
+  const flat = frameStats(new Array(100).fill(16));
+  assert.equal(flat.avg, 16);
+  assert.equal(flat.p95, 16);
+  // 95 fast frames and 5 slow ones: the average moves a little, the p95 still reads as fast; 6 slow ones tip it.
+  const mixed = [...new Array(95).fill(10), ...new Array(5).fill(100)];
+  assert.equal(frameStats(mixed).p95, 10);
+  assert.ok(frameStats(mixed).avg > 10 && frameStats(mixed).avg < 20);
+  assert.equal(frameStats([...new Array(94).fill(10), ...new Array(6).fill(100)]).p95, 100);
+});
