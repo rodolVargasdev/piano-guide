@@ -1,1 +1,13 @@
-{ "songs": [] }
+{
+  "songs": [
+    {
+      "id": "cancer",
+      "file": "cancer.json",
+      "title": "Cancer",
+      "composer": "My Chemical Romance",
+      "key": { "tonic": "E", "mode": "major" },
+      "defaultBpm": 72,
+      "levels": ["beginner"]
+    }
+  ]
+}

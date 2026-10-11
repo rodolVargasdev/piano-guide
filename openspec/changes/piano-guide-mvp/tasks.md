@@ -99,11 +99,11 @@ Conventions for every task below: TDD mode is `strict_tdd: false`, tests land in
 
 ## Phase 7 (PR 7, S2): Cancer Beginner data
 
-- [ ] 7.1 Fetch and record Cancer chord sources: open the user-submitted progression source(s) (record URL and access date `2026-10-10` or the actual date) and note whether a second source agrees. No lyrics, no vocal melody. If no source can be read, stop and report instead of writing chords from memory. Check: the URLs are recorded in the data in 7.2.
-- [ ] 7.2 Create `songs/cancer.json` (E major, 4/4, 72 BPM quarter, `contentPolicy: "chords-only"`, sections, `chords` with `roman` and `function`, Beginner level only: LH roots, RH triads, `strictBars: true`, fingering, `sources[]` with `kind` `user-submitted` or `reference`, `confidence` with `chords:verse` medium and `chords:chorus` low unless a second source agrees; defaultLevel `beginner`). Check: `validateSong` passes via 7.4.
-- [ ] 7.3 Update `songs/index.json` with the Cancer entry (id, file, title, composer "My Chemical Romance", key, `defaultBpm` 72, levels `["beginner"]`).
-- [ ] 7.4 Extend `tests/songs.test.js`: index validates; every indexed song validates; index fields match the files; Cancer recursive scan finds no `lyrics` and no `role: "melody"` anywhere (counter-proof: a mutated copy with a `lyrics` string fails). Check: `node --test tests/songs.test.js`.
-- [ ] 7.5 Browser check on 8790: catalog shows the Cancer card with key and BPM; rename the file locally and confirm the "Unavailable" card, then restore.
+- [x] 7.1 Fetch and record Cancer chord sources: open the user-submitted progression source(s) (record URL and access date `2026-10-10` or the actual date) and note whether a second source agrees. No lyrics, no vocal melody. If no source can be read, stop and report instead of writing chords from memory. Check: the URLs are recorded in the data in 7.2.
+- [x] 7.2 Create `songs/cancer.json` (E major, 4/4, 72 BPM quarter, `contentPolicy: "chords-only"`, sections, `chords` with `roman` and `function`, Beginner level only: LH roots, RH triads, `strictBars: true`, fingering, `sources[]` with `kind` `user-submitted` or `reference`, `confidence` with `chords:verse` medium and `chords:chorus` low unless a second source agrees; defaultLevel `beginner`). Check: `validateSong` passes via 7.4.
+- [x] 7.3 Update `songs/index.json` with the Cancer entry (id, file, title, composer "My Chemical Romance", key, `defaultBpm` 72, levels `["beginner"]`).
+- [x] 7.4 Extend `tests/songs.test.js`: index validates; every indexed song validates; index fields match the files; Cancer recursive scan finds no `lyrics` and no `role: "melody"` anywhere (counter-proof: a mutated copy with a `lyrics` string fails). Check: `node --test tests/songs.test.js`.
+- [x] 7.5 Browser check on 8790: catalog shows the Cancer card with key and BPM; rename the file locally and confirm the "Unavailable" card, then restore.
 
 ## Phase 8 (PR 8, S2): Audio engine
 

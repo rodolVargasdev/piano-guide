@@ -35,3 +35,71 @@ test("counter-proof: a duplicated and an incomplete entry make the same index in
   const broken = { songs: [...index.songs, ...index.songs, { id: "x", file: "x.json" }] };
   assert.equal(validateIndex(broken).ok, false);
 });
+
+const cancer = read("cancer.json");
+
+// Recursive scan helpers, deliberately independent of the validator's own scan.
+function keysDeep(node, out = []) {
+  if (Array.isArray(node)) node.forEach((x) => keysDeep(x, out));
+  else if (node && typeof node === "object") {
+    for (const [k, v] of Object.entries(node)) {
+      out.push(k, ...(typeof v === "string" ? [`${k}=${v}`] : []));
+      keysDeep(v, out);
+    }
+  }
+  return out;
+}
+const copyrightFindings = (song) =>
+  keysDeep(song).filter((k) => k.toLowerCase().startsWith("lyrics") || k === "role=melody");
+
+test("Cancer is chords-only: no lyrics key and no melody role anywhere", () => {
+  assert.equal(cancer.contentPolicy, "chords-only");
+  assert.deepEqual(copyrightFindings(cancer), []);
+});
+
+test("counter-proof: a copy with a lyrics string or a melody role is caught", () => {
+  const withLyrics = structuredClone(cancer);
+  withLyrics.lesson = { beginner: { lyrics: "some words" } };
+  assert.ok(copyrightFindings(withLyrics).length > 0);
+  assert.equal(validateSong(withLyrics).ok, false);
+  const withMelody = structuredClone(cancer);
+  withMelody.levels.beginner.notes[0].role = "melody";
+  assert.ok(copyrightFindings(withMelody).length > 0);
+  assert.equal(validateSong(withMelody).ok, false);
+});
+
+test("Cancer data matches the recorded sources: key, meter, tempo and chord progression", () => {
+  assert.deepEqual(cancer.key, { tonic: "E", mode: "major" });
+  assert.deepEqual(cancer.meter, { num: 4, den: 4 });
+  assert.deepEqual(cancer.tempo, { bpm: 72, beatUnit: "quarter" });
+  const bySection = (id) => {
+    const s = cancer.sections.find((x) => x.id === id);
+    return cancer.chords.filter((c) => c.tick >= s.startTick && c.tick < s.endTick).map((c) => c.roman);
+  };
+  assert.deepEqual(bySection("intro"), ["I", "V"]);
+  assert.deepEqual(bySection("verse"), ["I", "V", "vi", "iv"]);
+  assert.deepEqual(bySection("chorus"), ["IV", "V6/V", "vi", "iv", "ii"]);
+  assert.deepEqual(cancer.chords.filter((c) => c.roman === "iv").map((c) => c.symbol), ["Am", "Am"]);
+});
+
+test("Cancer records its sources with kind, access date and confidence per scope", () => {
+  assert.deepEqual(cancer.sources.map((s) => s.kind).sort(), ["reference", "user-submitted"]);
+  for (const s of cancer.sources) {
+    assert.match(s.url, /^https:\/\//);
+    assert.match(s.accessed, /^\d{4}-\d{2}-\d{2}$/);
+  }
+  const level = (scope) => cancer.confidence.find((c) => c.scope === scope)?.level;
+  assert.equal(level("chords:verse"), "medium");
+  assert.equal(level("chords:chorus"), "low");
+});
+
+test("Cancer Beginner: every bar has one bass note and a right-hand triad, all editorial fingering", () => {
+  const notes = cancer.levels.beginner.notes;
+  const bars = cancer.lengthTicks / 1920;
+  for (let b = 0; b < bars; b += 1) {
+    const inBar = notes.filter((n) => n.tick === b * 1920);
+    assert.equal(inBar.filter((n) => n.hand === "L").length, 1, `bar ${b + 1} left hand`);
+    assert.equal(inBar.filter((n) => n.hand === "R").length, 3, `bar ${b + 1} right hand`);
+  }
+  assert.ok(notes.every((n) => n.fingeringSource === "editorial" && n.finger >= 1 && n.finger <= 5));
+});
