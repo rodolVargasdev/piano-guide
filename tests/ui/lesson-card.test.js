@@ -55,6 +55,54 @@ function make(extra = {}) {
   return { card, root: card.element, calls };
 }
 
+const paragraphs = (root) => all(root, (n) => n.tag === "p").map(textOf);
+const localized = {
+  lesson: {
+    ...song.lesson,
+    beginner: { ...song.lesson.beginner, summary: { en: "Four chords.", es: "Cuatro acordes." }, posture: { en: "Sit centered.", es: "Siéntese al centro." } },
+  },
+  levels: {
+    ...song.levels,
+    original: { ...song.levels.original, analysis: [{ tick: 480, kind: "harmony", title: { en: "Borrowed iv", es: "iv prestado" }, text: { en: "Minor four.", es: "Cuarto menor." } }] },
+  },
+};
+
+test("LocalizedText summary and posture show in English by default and in the chosen language", () => {
+  const en = createLessonCard({ song: { ...song, ...localized } });
+  en.setLevel("beginner");
+  assert.ok(paragraphs(en.element).includes("Four chords.") && paragraphs(en.element).includes("Sit centered."));
+  const es = createLessonCard({ song: { ...song, ...localized }, lang: "es" });
+  es.setLevel("beginner");
+  assert.ok(paragraphs(es.element).includes("Cuatro acordes.") && paragraphs(es.element).includes("Siéntese al centro."));
+  assert.equal(paragraphs(es.element).includes("Four chords."), false, "counter-proof: the English text is not shown beside it");
+});
+
+test("setLang redraws the shown level in the new language and does nothing before a level is shown", () => {
+  const card = createLessonCard({ song: { ...song, ...localized } });
+  assert.doesNotThrow(() => card.setLang("es"));
+  assert.equal(card.element.children.length, 0, "nothing drawn yet");
+  card.setLevel("beginner");
+  assert.ok(paragraphs(card.element).includes("Cuatro acordes."), "setLevel after setLang uses Spanish");
+  card.setLang("en");
+  assert.ok(paragraphs(card.element).includes("Four chords."));
+  assert.equal(heads(card.element)[0], "Overview", "the same sections are redrawn");
+});
+
+test("a missing Spanish text falls back to English and plain strings read the same in Spanish", () => {
+  const onlyEnglish = { ...song, lesson: { ...song.lesson, beginner: { ...song.lesson.beginner, summary: { en: "Four chords." } } } };
+  const card = createLessonCard({ song: onlyEnglish, lang: "es" });
+  card.setLevel("beginner");
+  assert.ok(paragraphs(card.element).includes("Four chords."));
+  assert.ok(paragraphs(card.element).includes("Sit centered, forearms level."), "a plain string is English text in every language");
+});
+
+test("analysis title and text accept LocalizedText", () => {
+  const card = createLessonCard({ song: { ...song, ...localized }, lang: "es" });
+  card.setLevel("original", { analysis: true });
+  const items = all(card.element, (n) => n.tag === "li").map(textOf);
+  assert.ok(items.some((t) => t.includes("iv prestado") && t.includes("Cuarto menor.")), JSON.stringify(items));
+});
+
 test("barLabel counts the pickup as Pickup and then Bar 1, 2, ...", () => {
   assert.equal(barLabel(0, song), "Pickup");
   assert.equal(barLabel(479, song), "Pickup");
