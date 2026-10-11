@@ -7,7 +7,7 @@
       "composer": "My Chemical Romance",
       "key": { "tonic": "E", "mode": "major" },
       "defaultBpm": 72,
-      "levels": ["beginner"]
+      "levels": ["beginner", "original"]
     }
   ]
 }

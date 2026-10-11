@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { validateIndex, validateSong } from "../src/core/schema.js";
 import { parseChord } from "../src/core/chords.js";
+import { parsePitch } from "../src/core/pitch.js";
 
 const read = (rel) => JSON.parse(readFileSync(new URL(`../songs/${rel}`, import.meta.url), "utf8"));
 const index = read("index.json");
@@ -142,4 +143,56 @@ test("the lesson states the arrangement is a generic chord-based accompaniment, 
   assert.match(lesson.arrangementNote, /generic chord-based accompaniment/);
   assert.match(lesson.arrangementNote, /not a transcription/);
   assert.match(lesson.summary, /generic chord-based accompaniment, not a transcription/);
+});
+
+// ---- Cancer Original: built only from the chord track ----
+const pitchClass = (pitch) => parsePitch(pitch).midi % 12;
+const chordAt = (song, tick) => song.chords.find((c) => tick >= c.tick && tick < c.tick + c.dur);
+// Notes whose pitch class is not a tone of the chord sounding at their tick: an invented chord shows up here.
+const strangers = (song, levelId) =>
+  song.levels[levelId].notes.filter((n) => !new Set(parseChord(chordAt(song, n.tick).symbol).pitches.map(pitchClass)).has(pitchClass(n.pitch)));
+
+test("every note of both Cancer levels is a tone of the chord at that tick (no invented chords)", () => {
+  assert.deepEqual(strangers(cancer, "beginner"), []);
+  assert.deepEqual(strangers(cancer, "original"), []);
+});
+
+test("counter-proof: one wrong note in a copy is found", () => {
+  const bad = structuredClone(cancer);
+  bad.levels.original.notes.find((n) => n.pitch === "C5").pitch = "D5"; // Am has no D
+  assert.equal(strangers(bad, "original").length, 1);
+  const bad2 = structuredClone(cancer);
+  bad2.levels.original.notes.find((n) => n.pitch === "G#4").pitch = "G4"; // E and C#m have G#, not G
+  assert.ok(strangers(bad2, "original").length >= 1);
+});
+
+test("Cancer Original is engraved with strict bars and uses accompaniment and bass roles only", () => {
+  const level = cancer.levels.original;
+  assert.equal(level.notation, "engraved");
+  assert.equal(level.strictBars, true);
+  assert.equal(level.transcribed, undefined, "it is an arrangement, not a transcription");
+  assert.deepEqual([...new Set(level.notes.map((n) => n.role))].sort(), ["accompaniment", "bass"]);
+  assert.deepEqual(copyrightFindings(cancer), []);
+});
+
+test("Cancer Original: each bar has a four-note bass arpeggio and a held four-note chord holding every chord tone", () => {
+  const notes = cancer.levels.original.notes;
+  cancer.chords.forEach((c, i) => {
+    const bar = notes.filter((n) => n.tick >= c.tick && n.tick < c.tick + c.dur);
+    const left = bar.filter((n) => n.hand === "L");
+    const right = bar.filter((n) => n.hand === "R");
+    assert.deepEqual(left.map((n) => n.dur), [480, 480, 480, 480], `bar ${i + 1} bass`);
+    assert.equal(right.length, 4, `bar ${i + 1} chord`);
+    assert.ok(right.every((n) => n.tick === c.tick && n.dur === c.dur), `bar ${i + 1} chord is held for the bar`);
+    const triad = new Set(parseChord(c.symbol).names.map((x) => pitchClass(`${x}4`)));
+    assert.deepEqual(new Set(right.map((n) => pitchClass(n.pitch))), triad, `bar ${i + 1} has root, third and fifth`);
+  });
+});
+
+test("Cancer Original starts every bar on the bass note of the chord, the slash bass included", () => {
+  const first = (c) => cancer.levels.original.notes.find((n) => n.hand === "L" && n.tick === c.tick).pitch;
+  cancer.chords.forEach((c) => {
+    const chord = parseChord(c.symbol);
+    assert.equal(first(c).replace(/[0-9]+$/, ""), chord.bass ?? chord.root, c.symbol);
+  });
 });
