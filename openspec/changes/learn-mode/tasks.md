@@ -462,7 +462,7 @@ Phase 15 (pr3b-sampled-piano) is a STOP gate and is not approved, so this batch 
 | 1 | `feat/learn-mode-pr1b-lesson-zero` (base pr12a) | 13.1, 13.2, reducer half of 13.3 | 334 |
 | 2 | `feat/learn-mode-pr1b2-lesson-zero-view` | view half of 13.3, 13.4, 13.5 | 424 |
 | 3 | `feat/learn-mode-pr2b-stages` | 14.1 (plan and both-hands steps) | 217 |
-| 4 | `feat/learn-mode-pr2b2-stage-reducer` | 14.2, stage labels and Next stage of 14.3 | about 610 (`size:exception` recommended, see its description) |
+| 4 | `feat/learn-mode-pr2b2-stage-reducer` | 14.2, stage labels and Next stage of 14.3 | 590 (`size:exception` recommended, see its description) |
 | 5 | `feat/learn-mode-pr2b3-stage-view` | metronome of 14.3, 14.4, 14.5 | 144 |
 | 6 | `feat/learn-mode-pr4b-ode-to-joy` | 16.1 to 16.6 | 537 (data file, `size:exception` recommended) |
 | 7 | `feat/learn-mode-pr5b-test-migration` | 17.1, 17.2, 17.3, 17.5 | about 545 (356 are the fixture's JSON; `size:exception` recommended for the data file). Re-measure: 121 matches in 12 files, only 2 files read `songs/cancer.json` |
