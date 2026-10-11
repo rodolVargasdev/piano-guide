@@ -133,7 +133,7 @@ The level opens from the hash `level`, then the last level chosen for that song 
 
 ## Performance notes
 
-Measured on 2026-10-10 (Chrome on an RTX 3050 laptop GPU through ANGLE and Direct3D 11, a local dev server and the built image). Details and what was not checked are in `openspec/changes/piano-guide-mvp/prs/`.
+Measured on 2026-10-10 (Chrome on an RTX 3050 laptop GPU through ANGLE and Direct3D 11, a local dev server and the built image). Details and what was not checked are in `openspec/changes/archive/2026-10-11-piano-guide-mvp/prs/`.
 
 - Draw calls per frame: 18 on High and Medium, 11 on Low and Minimum (budget: under 20).
 - Frame time on High at 1440 x 900 and 844 x 390: average 16.7 ms, p95 16.9 ms (the 60 Hz display period).
