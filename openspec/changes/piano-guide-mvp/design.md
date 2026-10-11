@@ -310,7 +310,7 @@ Normative source: `specs/song-data-model/spec.md`. Summary:
 | `chords` | `[{ tick, dur, symbol, roman?, function? }]` | sorted, `tick + dur` inside length |
 | `levels` | map, keys `beginner` / `original` | at least one |
 | `defaultLevel` | string | key of `levels` |
-| `lesson` | map by level id | `{ summary, chordsUsed[], handPositions[{ tick, hand, anchor, text }], posture, practicePlan[], interpretation?: { rubato, dynamics }, arrangementNote? }` |
+| `lesson` | map by level id | `{ summary, chordsUsed[], handPositions[{ tick, hand, anchor, text }], posture, practicePlan[], interpretation?: { rubato, dynamics }, ornaments?: [{ tick, name, text }], arrangementNote? }` (added in PR 20b: the card lists each ornament with its bar, as `specs/lesson-guide/spec.md` requires) |
 | `sources` | `[{ url, what, accessed, kind, license?, sha256? }]` | at least one; kind in `public-domain-score`, `user-submitted`, `original-arrangement`, `reference` |
 | `confidence` | `[{ scope, level, note }]` | at least one; level `high`, `medium`, `low` |
 

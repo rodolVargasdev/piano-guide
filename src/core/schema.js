@@ -308,6 +308,14 @@ function checkLesson(c, song, levelIds) {
       if (!Array.isArray(l.chordsUsed)) c.err("R1", `${p}.chordsUsed`, "chordsUsed must be an array");
       if (!Array.isArray(l.handPositions)) c.err("R1", `${p}.handPositions`, "handPositions must be an array");
       if (!Array.isArray(l.practicePlan)) c.err("R1", `${p}.practicePlan`, "practicePlan must be an array");
+      if (l.ornaments !== undefined) {
+        if (!Array.isArray(l.ornaments)) c.err("R1", `${p}.ornaments`, "ornaments must be an array");
+        else {
+          l.ornaments.forEach((o, i) => {
+            if (!isObj(o) || !isInt(o.tick) || o.tick < 0 || !isStr(o.name) || !isStr(o.text)) c.err("R1", `${p}.ornaments[${i}]`, "ornament needs an integer tick, a name and a text");
+          });
+        }
+      }
     }
   }
   for (const id of levelIds) if (!(id in song.lesson)) c.warn("W3", `lesson.${id}`, "level has no lesson");

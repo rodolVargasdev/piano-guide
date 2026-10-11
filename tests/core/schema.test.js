@@ -26,6 +26,9 @@ const MALFORMED = [
   { name: "R1 bad key tonic", rule: "R1", path: "key.tonic", mutate: (s) => void (s.key.tonic = "H") },
   { name: "R1 length is not whole bars", rule: "R1", path: "lengthTicks", mutate: (s) => void (s.lengthTicks = 3841) },
   { name: "R1 schemaVersion 2", rule: "R1", path: "schemaVersion", mutate: (s) => void (s.schemaVersion = 2) },
+  { name: "R1 lesson ornaments is not an array", rule: "R1", path: "lesson.beginner.ornaments", mutate: (s) => void (s.lesson.beginner.ornaments = "turn") },
+  { name: "R1 lesson ornament without text", rule: "R1", path: "lesson.beginner.ornaments[0]", mutate: (s) => void (s.lesson.beginner.ornaments = [{ tick: 0, name: "Turn" }]) },
+  { name: "R1 lesson ornament with a fractional tick", rule: "R1", path: "lesson.beginner.ornaments[0]", mutate: (s) => void (s.lesson.beginner.ornaments = [{ tick: 1.5, name: "Turn", text: "Quick." }]) },
   // Rule 2: levels
   { name: "R2 levels empty", rule: "R2", path: "levels", mutate: (s) => void (s.levels = {}) },
   { name: "R2 defaultLevel missing from levels", rule: "R2", path: "defaultLevel", mutate: (s) => void (s.defaultLevel = "original") },
@@ -234,6 +237,11 @@ test("warning: key signature beyond 4 accidentals (4 stays silent)", () => {
   assert.equal(key("E").warnings.length, 0);
   assert.equal(key("Ab").warnings.length, 0);
   assert.ok(hasWarning(key("Db"), "key")); // 5 flats
+});
+
+test("a well-formed lesson ornaments list passes, and so does a lesson without one", () => {
+  assert.equal(validateSong(mutated((s) => void (s.lesson.beginner.ornaments = [{ tick: 480, name: "Turn", text: "Four quick notes around the main one." }]))).ok, true);
+  assert.equal(validateSong(mutated(() => {})).ok, true);
 });
 
 test("warning: a level without a lesson", () => {

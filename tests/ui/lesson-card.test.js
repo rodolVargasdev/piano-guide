@@ -31,6 +31,7 @@ const song = {
       practicePlan: ["Slowly."],
       arrangementNote: "A generic chord-based accompaniment, not a transcription.",
       interpretation: { rubato: "Breathe at the phrase ends.", dynamics: "Start soft." },
+      ornaments: [{ tick: 960, name: "Turn", text: "Four quick notes around the main one." }, { tick: 0, name: "Pickup trill", text: "Short and light." }],
     },
   },
   sources: [
@@ -144,10 +145,21 @@ test("a level without lesson shows the short notice and nothing else", () => {
 test("switching level swaps the content; Original adds arrangement and interpretation", () => {
   const { card, root } = make();
   card.setLevel("original");
-  assert.deepEqual(heads(root), ["Overview", "Chords", "Hands", "How to sit", "Practice plan", "Arrangement", "Interpretation", "Sources", "Confidence"]);
+  assert.deepEqual(heads(root), ["Overview", "Chords", "Hands", "How to sit", "Practice plan", "Arrangement", "Interpretation", "Ornaments", "Sources", "Confidence"]);
   assert.match(textOf(root), /generic chord-based accompaniment, not a transcription/);
   assert.match(textOf(root), /Rubato: Breathe at the phrase ends\./);
   assert.match(textOf(root), /Dynamics: Start soft\./);
+});
+
+test("the Ornaments section names each ornament with its bar (the pickup counts as Pickup) and is absent without entries", () => {
+  const { card, root } = make();
+  card.setLevel("original");
+  assert.match(textOf(root), /Bar 1, Turn: Four quick notes around the main one./);
+  assert.match(textOf(root), /Pickup, Pickup trill: Short and light./);
+  card.setLevel("beginner");
+  assert.ok(!heads(root).includes("Ornaments"), "counter-proof: a lesson with no ornaments has no section");
+  card.setLevel("original");
+  assert.ok(heads(root).includes("Ornaments"));
 });
 
 test("the Analysis section appears only when Analysis is on and the level has entries", () => {

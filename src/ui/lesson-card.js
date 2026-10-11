@@ -105,6 +105,7 @@ export function createLessonCard({ song, onHighlight = () => {} }) {
         section("Practice plan", list("ol", lesson.practicePlan)),
         lesson.arrangementNote && section("Arrangement", el("p", {}, lesson.arrangementNote)),
         lesson.interpretation && section("Interpretation", el("p", {}, `Rubato: ${lesson.interpretation.rubato}`), el("p", {}, `Dynamics: ${lesson.interpretation.dynamics}`)),
+        lesson.ornaments?.length > 0 && section("Ornaments", list("ul", lesson.ornaments.map((o) => `${barLabel(o.tick, song)}, ${o.name}: ${o.text}`))),
         analysis && entries.length > 0 && analysisSection(entries),
         sourcesSection(),
         confidenceSection(),
