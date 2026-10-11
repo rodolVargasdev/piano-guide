@@ -139,3 +139,7 @@ Measured on 2026-10-10 (Chrome on an RTX 3050 laptop GPU through ANGLE and Direc
 - Frame time on High at 1440 x 900 and 844 x 390: average 16.7 ms, p95 16.9 ms (the 60 Hz display period).
 - Catalog route: 37 KB over 13 requests from the image with gzip, no three.js.
 - `?debug=1` clock jitter, the gap between the audio clock and the frame clock per frame: 8.5 to 9 ms at most per 10-frame window. It is not the delay between what is heard and what is seen, which a page cannot measure.
+
+## License
+
+The code and documentation are MIT licensed (`LICENSE`). The Nocturne data, `songs/chopin-nocturne-op9-no2.json`, is adapted from a Mutopia Project file and is licensed CC BY-SA 3.0; its attribution is in `songs/LICENSE-chopin-nocturne-op9-no2.md`. Cancer contains only chords, structure and tempo: no lyrics and no melody.
