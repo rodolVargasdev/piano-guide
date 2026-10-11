@@ -322,4 +322,9 @@ export const STRINGS = {
   "practice.octaves_other": { en: "{count} octaves", es: "{count} octavas" },
   "practice.direction.up": { en: "Up", es: "Subir" },
   "practice.direction.updown": { en: "Up and back", es: "Subir y bajar" },
+  // practice: tempo, keys, the circle of fifths, progress and reset
+  "practice.cof.label": { en: "Choose a key on the circle of fifths", es: "Elija una tonalidad en el círculo de quintas" },
+  "practice.cof.done": { en: "practiced", es: "practicada" },
+  "practice.cof.next": { en: "suggested next", es: "sugerida a continuación" },
+  "practice.cof.current": { en: "selected", es: "elegida" },
 };
