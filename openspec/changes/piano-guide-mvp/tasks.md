@@ -94,8 +94,8 @@ Conventions for every task below: TDD mode is `strict_tdd: false`, tests land in
 
 ## Phase 6 (PR 6, S2): Practice core
 
-- [ ] 6.1 Create `tests/core/practice.test.js` (RED first): `clampBpm(500)` gives 240 and `clampBpm(5)` gives 20; `effectiveBpm` with slow mode 0.5; `normalizeLoop` swap, snap A down and B up on bar and beat grids (beat unit from `tempo.beatUnit`), clamp to `[0, lengthTicks]`, zero-length returns `null`; `loopFromSection`; `passesBetween` (one pass, two passes, no pass, exact boundary); ramp sequence 50, 55, 60, 65, 70 with target 70; gap case 68 to 70; never below start; `normalizeRamp` swap; `canRamp(null)` false; `audibleNotes` and `visibleNotes` per `handModes` (both muted gives empty audible).
-- [ ] 6.2 Create `src/core/practice.js` per design signatures, including `normalizeLoop(range, { snap, meter, pickupTicks, lengthTicks, tempo })` (the `tempo` field matches `specs/practice-tools/spec.md` after the wording fix), `BPM_MIN = 20`, `BPM_MAX = 240`. Spec: `practice-tools`. Check: `node --test tests/core/practice.test.js`.
+- [x] 6.1 Create `tests/core/practice.test.js` (RED first): `clampBpm(500)` gives 240 and `clampBpm(5)` gives 20; `effectiveBpm` with slow mode 0.5; `normalizeLoop` swap, snap A down and B up on bar and beat grids (beat unit from `tempo.beatUnit`), clamp to `[0, lengthTicks]`, zero-length returns `null`; `loopFromSection`; `passesBetween` (one pass, two passes, no pass, exact boundary); ramp sequence 50, 55, 60, 65, 70 with target 70; gap case 68 to 70; never below start; `normalizeRamp` swap; `canRamp(null)` false; `audibleNotes` and `visibleNotes` per `handModes` (both muted gives empty audible).
+- [x] 6.2 Create `src/core/practice.js` per design signatures, including `normalizeLoop(range, { snap, meter, pickupTicks, lengthTicks, tempo })` (the `tempo` field matches `specs/practice-tools/spec.md` after the wording fix), `BPM_MIN = 20`, `BPM_MAX = 240`. Spec: `practice-tools`. Check: `node --test tests/core/practice.test.js`.
 
 ## Phase 7 (PR 7, S2): Cancer Beginner data
 
