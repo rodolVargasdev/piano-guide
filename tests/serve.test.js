@@ -81,3 +81,26 @@ test("the server still refuses paths outside the root", { skip }, async () => {
     assert.equal(await status(base, "/%00"), 400);
   });
 });
+
+test("an audio file is served as audio/mpeg with a year of immutable cache, and other files are not cached", { skip }, async () => {
+  await withServer({}, async (base, dir) => {
+    mkdirSync(join(dir, "assets", "audio", "piano"), { recursive: true });
+    writeFileSync(join(dir, "assets", "audio", "piano", "A0.mp3"), "ID3");
+    writeFileSync(join(dir, "assets", "audio", "piano", "x.m4a"), "m4a");
+    const mp3 = await fetch(base + "/assets/audio/piano/A0.mp3");
+    assert.equal(mp3.status, 200);
+    assert.equal(mp3.headers.get("content-type"), "audio/mpeg");
+    assert.equal(mp3.headers.get("cache-control"), "public, max-age=31536000, immutable");
+    const m4a = await fetch(base + "/assets/audio/piano/x.m4a");
+    assert.equal(m4a.headers.get("content-type"), "audio/mp4");
+    const other = await fetch(base + "/songs/index.json");
+    assert.equal(other.headers.get("cache-control"), "no-store", "counter-proof: outside the audio folder nothing is cached");
+  });
+});
+
+test("nginx.conf serves /assets/audio/ with audio types and a year of cache (counter-proof: a config without the block fails)", () => {
+  const conf = readFileSync(new URL("../nginx.conf", import.meta.url), "utf8");
+  const audioBlock = (text) => /location \^~ \/assets\/audio\/ \{\s*types \{[^}]*audio\/mpeg mp3;[^}]*audio\/mp4 m4a;[^}]*\}\s*expires 1y;\s*\}/.test(text);
+  assert.equal(audioBlock(conf), true);
+  assert.equal(audioBlock(conf.replace("location ^~ /assets/audio/", "location ^~ /assets/other/")), false);
+});

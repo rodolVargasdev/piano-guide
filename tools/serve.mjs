@@ -17,7 +17,13 @@ const MIME = {
   ".css": "text/css; charset=utf-8",
   ".svg": "image/svg+xml",
   ".txt": "text/plain; charset=utf-8",
+  ".mp3": "audio/mpeg",
+  ".m4a": "audio/mp4",
 };
+
+// The sample files never change under the same name (their hashes are pinned): cache them for a year. Everything else is not stored.
+const AUDIO_PREFIX = "/assets/audio/";
+const cacheControlFor = (pathname) => (pathname.startsWith(AUDIO_PREFIX) ? "public, max-age=31536000, immutable" : "no-store");
 
 // Returns the absolute path inside `root`, or a numeric HTTP status on rejection.
 export function resolveRequestPath(urlPath, root = ROOT) {
@@ -65,7 +71,7 @@ export function createDevServer({ root = ROOT, noPrivate = process.env.NO_PRIVAT
       const body = await readFile(file);
       res.writeHead(200, {
         "Content-Type": MIME[extname(file).toLowerCase()] || "application/octet-stream",
-        "Cache-Control": "no-store",
+        "Cache-Control": cacheControlFor(pathname),
         "X-Content-Type-Options": "nosniff",
       });
       res.end(body);
