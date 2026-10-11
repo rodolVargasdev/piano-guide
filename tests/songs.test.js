@@ -263,3 +263,114 @@ test("counter-proof: the voice-leading check fails when a voicing is changed", (
   const voices = saved.levels.original.notes.filter((n) => n.hand === "R" && n.tick === 9600).map((n) => parsePitch(n.pitch).midi).sort((a, b) => a - b);
   assert.notEqual(voices.join(), rightVoices(6).join(), "the mutated bar differs from the real one");
 });
+
+// ---- Chopin Nocturne Op. 9 No. 2: pickup and bars 1 to 4, transcribed from the Mutopia LilyPond source ----
+const chopin = read("chopin-nocturne-op9-no2.json");
+const chopinNotes = chopin.levels.original.notes;
+const onsets = JSON.parse(readFileSync(new URL("./fixtures/mutopia-chopin-op9n2-onsets.json", import.meta.url), "utf8"));
+const PICKUP = 240;
+const BAR = 2880;
+const barStart = (bar) => (bar === 0 ? 0 : PICKUP + (bar - 1) * BAR);
+const midiOf = (pitch) => parsePitch(pitch).midi;
+// First event of a hand at the start of a bar: the lowest pitch, or "rest".
+const firstOf = (notes, hand, bar) => {
+  const at = notes.filter((n) => n.hand === hand && n.tick === barStart(bar));
+  return at.length === 0 ? undefined : at[0].rest ? "rest" : at.map((n) => n.pitch).sort((a, b) => midiOf(a) - midiOf(b))[0];
+};
+const bassOnBeat = (notes, bar, beat) => notes.find((n) => n.hand === "L" && n.role === "bass" && n.tick === barStart(bar) + (beat - 1) * 720)?.pitch;
+// Onsets as "tick:midi+midi" strings per hand, ties collapsed (a tied continuation has no onset).
+function onsetsOf(notes, hand) {
+  const heads = notes.filter((n) => n.hand === hand && !n.rest);
+  const continuation = (n) => heads.some((h) => h.tie === true && h.pitch === n.pitch && h.tick + h.dur === n.tick);
+  const byTick = new Map();
+  for (const n of heads) if (!continuation(n)) (byTick.get(n.tick) ?? byTick.set(n.tick, []).get(n.tick)).push(midiOf(n.pitch));
+  return [...byTick].sort((a, b) => a[0] - b[0]).map(([t, m]) => `${t}:${m.sort((a, b) => a - b).join("+")}`).join(" ");
+}
+
+test("Chopin validates, is transcribed and strict,", () => {
+  const r = validateSong(chopin);
+  assert.deepEqual(r.errors, []);
+  assert.deepEqual(r.warnings.map((w) => w.path), ["lesson.original"]);
+  assert.equal(chopin.levels.original.transcribed, true);
+  assert.equal(chopin.levels.original.strictBars, true);
+  assert.equal(chopin.levels.original.notation, "engraved");
+  assert.equal(chopin.defaultLevel, "original");
+  assert.equal(chopin.contentPolicy, "open");
+});
+
+test("Chopin timing: E-flat major, 12/8 counted in dotted quarters at 44 (the printed eighth = 132), a one-eighth pickup and four bars", () => {
+  assert.deepEqual(chopin.key, { tonic: "Eb", mode: "major" });
+  assert.deepEqual(chopin.meter, { num: 12, den: 8 });
+  assert.equal(chopin.tempo.beatUnit, "dotted-quarter");
+  assert.equal(chopin.tempo.bpm * 3, 132);
+  assert.equal(chopin.pickupTicks, PICKUP);
+  assert.equal(chopin.lengthTicks, PICKUP + 4 * BAR);
+});
+
+test("the Mutopia source entry names the transcribed bars and records URL, ID, license, SHA-256, date and maintainer", () => {
+  const s = chopin.sources.find((x) => x.kind === "public-domain-score");
+  assert.match(s.what, /pickup/i);
+  assert.match(s.what, /bars? 1/i);
+  assert.match(s.what, /4/);
+  assert.equal(new URL(s.url).hostname, "www.mutopiaproject.org");
+  assert.equal(new URL(s.fileUrl).hostname, "www.mutopiaproject.org");
+  assert.match(s.fileUrl, /chopin_nocturne_op9_n2\.ly$/);
+  assert.equal(s.mutopiaId, "Mutopia-2014/12/18-1590");
+  assert.match(s.url, /id=1590$/);
+  assert.equal(s.license, "CC BY-SA 3.0");
+  assert.equal(s.licenseUrl, "https://creativecommons.org/licenses/by-sa/3.0/");
+  assert.match(s.sha256, /^[0-9a-f]{64}$/);
+  assert.match(s.accessed, /^\d{4}-\d{2}-\d{2}$/);
+  assert.match(s.what, /Renato Biolcati Rinaldi/);
+  assert.match(s.what, /ShareAlike/);
+});
+
+test("counter-proof: without the Mutopia source the transcribed level is rejected", () => {
+  const bad = structuredClone(chopin);
+  bad.sources = bad.sources.filter((s) => s.kind !== "public-domain-score");
+  assert.equal(validateSong(bad).ok, false);
+  assert.ok(validateSong(bad).errors.some((e) => e.rule === "R5"));
+});
+
+test("each bar's first pitch is the one read from the source (relative octaves resolved bar by bar)", () => {
+  assert.deepEqual([0, 1, 2, 3, 4].map((b) => firstOf(chopinNotes, "R", b)), ["Bb4", "G5", "G5", "F5", "Bb4"]);
+  assert.deepEqual([0, 1, 2, 3, 4].map((b) => firstOf(chopinNotes, "L", b)), ["rest", "Eb2", "C2", "Bb2", "Bb2"]);
+});
+
+test("the bass of bar 1 is Eb2, Eb3, Eb2, D2 on the four dotted-quarter beats", () => {
+  assert.deepEqual([1, 2, 3, 4].map((beat) => bassOnBeat(chopinNotes, 1, beat)), ["Eb2", "Eb3", "Eb2", "D2"]);
+});
+
+test("counter-proof: a mutated first pitch or bass note is caught by the same pins", () => {
+  const bad = structuredClone(chopinNotes);
+  bad.find((n) => n.hand === "R" && n.tick === barStart(1)).pitch = "G4";
+  assert.notEqual(firstOf(bad, "R", 1), "G5");
+  bad.find((n) => n.hand === "L" && n.role === "bass" && n.tick === barStart(1)).pitch = "Eb3";
+  assert.notEqual(bassOnBeat(bad, 1, 1), "Eb2");
+});
+
+test("bar 1 melody descends G, F, Eb, and the pickup is the Bb below", () => {
+  const bar1 = chopinNotes.filter((n) => n.hand === "R" && !n.rest && n.tick >= barStart(1) && n.tick < barStart(2));
+  const names = [...new Set(bar1.map((n) => n.pitch))];
+  assert.deepEqual(names.slice(0, 3), ["G5", "F5", "Eb5"]);
+  assert.equal(bar1.find((n) => n.tie).tie, true, "the dotted-quarter G is tied to the eighth G");
+  assert.equal(chopinNotes.find((n) => n.tick === 0 && n.hand === "R").pitch, "Bb4");
+});
+
+test("every onset of both hands equals the onsets of the Mutopia MIDI file (30 right-hand, 48 left-hand)", () => {
+  assert.equal(onsetsOf(chopinNotes, "R"), onsets.upper);
+  assert.equal(onsetsOf(chopinNotes, "L"), onsets.lower);
+  assert.equal(onsets.upper.split(" ").length, 30);
+  assert.equal(onsets.lower.split(" ").length, 48);
+});
+
+test("counter-proof: one wrong octave, one wrong tick and one missing note each break the MIDI comparison", () => {
+  const octave = structuredClone(chopinNotes);
+  octave.find((n) => n.pitch === "D6").pitch = "D5";
+  assert.notEqual(onsetsOf(octave, "R"), onsets.upper);
+  const tick = structuredClone(chopinNotes);
+  tick.find((n) => n.hand === "L" && n.pitch === "Eb2" && n.tick === barStart(1)).tick += 240;
+  assert.notEqual(onsetsOf(tick, "L"), onsets.lower);
+  const missing = chopinNotes.filter((n) => !(n.hand === "L" && n.pitch === "Ab3" && n.tick === barStart(1) + 960));
+  assert.notEqual(onsetsOf(missing, "L"), onsets.lower);
+});

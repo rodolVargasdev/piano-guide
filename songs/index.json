@@ -8,6 +8,15 @@
       "key": { "tonic": "E", "mode": "major" },
       "defaultBpm": 72,
       "levels": ["beginner", "original"]
+    },
+    {
+      "id": "chopin-nocturne-op9-no2",
+      "file": "chopin-nocturne-op9-no2.json",
+      "title": "Nocturne in E-flat major, Op. 9 No. 2",
+      "composer": "Frédéric Chopin",
+      "key": { "tonic": "Eb", "mode": "major" },
+      "defaultBpm": 44,
+      "levels": ["original"]
     }
   ]
 }

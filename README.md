@@ -42,6 +42,7 @@ Levels and analysis, by example from `songs/cancer.json`:
 - `analysis` (optional, per level) is a list of `{ tick, endTick?, kind, title, text, roman?, function? }` with `kind` one of `harmony`, `voice-leading`, `ornament`, `rubato`, `dynamics`, `form`. It appears only when the Analysis toggle is on: roman numerals under the staff, a short callout per entry (keep `title` under about 18 characters) and the full text in the lesson card. A level with no `analysis` has no Analysis toggle.
 - `lesson` has one entry per level id; a level without one shows "No lesson for this level yet" and a validator warning.
 - `contentPolicy: "chords-only"` (Cancer) forbids `role: "melody"` and any `lyrics` string anywhere in the file; the arrangement is then described as a generic chord-based accompaniment.
+- A level with `transcribed: true` (the Chopin Nocturne) needs a `public-domain-score` source on mutopiaproject.org or imslp.org. Notes are read only from that source, never from memory, and the source entry records the piece page, the file URL, the ID, the license, the SHA-256 of the file and the access date. The Nocturne data is adapted from a Mutopia file licensed CC BY-SA 3.0 (typeset by Renato Biolcati Rinaldi from the 1881 G. Schirmer edition): keep that attribution and license with any copy or adaptation of `songs/chopin-nocturne-op9-no2.json`. The LilyPond file itself is not stored in the repository.
 - A `tie: true` note and the note that continues it (same hand and pitch, starting where it ends) sound once for both lengths; the score draws both.
 
 ## Routes
