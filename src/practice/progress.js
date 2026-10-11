@@ -16,7 +16,7 @@ const isDate = (v) => typeof v === "string" && DATE.test(v) && !Number.isNaN(Dat
 
 /** A fresh, empty progress value. */
 export function emptyPracticeProgress() {
-  return { v: 1, exercises: {}, routine: { lastDate: null, dayStreak: 0, lastWarmupKey: null, scaleLastPracticed: {} } };
+  return { v: 1, exercises: {}, routine: { lastDate: null, dayStreak: 0, lastWarmupKey: null, scaleLastPracticed: {} }, ear: {} };
 }
 
 function cleanEntry(e) {
@@ -37,6 +37,8 @@ function normalize(raw) {
       }
     }
   }
+  // How many extra choices each ear drill has unlocked (a small count, never a pitch).
+  if (isObj(raw.ear)) for (const [id, grown] of Object.entries(raw.ear)) if (ID.test(id) && Number.isInteger(grown) && grown >= 0 && grown <= 20) out.ear[id] = grown;
   const r = raw.routine;
   if (isObj(r)) {
     if (isDate(r.lastDate)) out.routine.lastDate = r.lastDate;
@@ -90,6 +92,17 @@ export function localIsoDate(now = new Date()) {
 export function daysBetween(a, b) {
   if (!isDate(a) || !isDate(b)) return NaN;
   return Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400000);
+}
+
+/** How many extra choices an ear drill has unlocked so far (0 when none). */
+export function earGrown(progress, exerciseId) {
+  return progress.ear?.[exerciseId] ?? 0;
+}
+
+/** A new progress with the unlocked choices of an ear drill set; unusable input returns the same progress. */
+export function withEarGrown(progress, exerciseId, grown) {
+  if (!ID.test(exerciseId ?? "") || !Number.isInteger(grown) || grown < 0 || grown > 20) return progress;
+  return { ...progress, ear: { ...progress.ear, [exerciseId]: grown } };
 }
 
 // ---- recording ---------------------------------------------------------------------------------------
