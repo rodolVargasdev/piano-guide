@@ -18,7 +18,8 @@ export function usabilityProblems(doc) {
     else if (!/\d+ min/.test(task)) problems.push(`${id} has no time limit`);
     if (!new RegExp(`^\\| ${id}\\b[^\\n]*\\d+ min|^\\| ${id}\\b[^\\n]*\\| 0 \\|`, "m").test(thresholds)) problems.push(`${id} has no pass threshold`);
   }
-  for (const id of ["T1", "T3", "T5"]) {
+  // T1 (lesson zero) is available since Milestone B part 1; T3 and T5 wait for their milestone.
+  for (const id of ["T3", "T5"]) {
     const row = new RegExp(`^\\| ${id}\\b[^\\n]*`, "m").exec(doc)?.[0] ?? "";
     if (!/after Milestone [BC]/.test(row)) problems.push(`${id} is not marked as available after its milestone`);
   }
@@ -49,6 +50,8 @@ test("counter-proof: a protocol without T3, without a threshold row or without t
   assert.ok(usabilityProblems(doc.replace(/^\| T3\b[^\n]*\n/gm, "")).some((p) => p.startsWith("T3")));
   assert.ok(usabilityProblems(doc.replace(/^Revised on:[^\n]*\n/m, "")).includes("no 'Revised on' line"));
   assert.ok(usabilityProblems(doc.replace("after Milestone B (Ode to Joy)", "now")).some((p) => p.includes("T3")));
+  assert.match(doc, /^\| T1\b[^\n]*\| now /m, "lesson zero exists, so T1 is available now");
+  assert.doesNotMatch(doc.replace(/^(\| T1\b[^\n]*)\| now /m, "$1| after Milestone B "), /^\| T1\b[^\n]*\| now /m, "counter-proof of the pattern");
   assert.ok(usabilityProblems(doc.slice(0, doc.indexOf("## Pass thresholds"))).some((p) => p.includes("pass threshold")));
   assert.ok(usabilityProblems("").length >= 5);
 });

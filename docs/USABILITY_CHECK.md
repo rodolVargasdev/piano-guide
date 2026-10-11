@@ -31,7 +31,7 @@ For T2 the private song must be available on the observer's machine (the local l
 
 | Task | Read aloud | Time limit | Available |
 |------|------------|------------|-----------|
-| T1 | "Find the note C on the piano." (lesson zero) | 2 min | after Milestone B (lesson zero) |
+| T1 | "Find the note C on the piano." (lesson zero) | 2 min | now (the "Lesson zero" button on the first screen of any song) |
 | T2 | "Play the first part of this song with your right hand." Once in the original key, once in C major (use the key toggle) | 10 min per key | now (private Cancer on the observer's machine) |
 | T3 | "Play the first phrase of Ode to Joy." | 5 min | after Milestone B (Ode to Joy) |
 | T4 | Close the page in the middle of a phrase. "Open it again and carry on where you were." | 2 min | now |
@@ -57,7 +57,7 @@ A task passes when all of these hold:
 | T4 | 2 min | 0 | 0 | not counted |
 | T5 | 10 min | at most 3 | 0 | not counted |
 
-The check as a whole passes when T2 and T4 pass with two different participants, and T1, T3 and T5 pass once they are available.
+The check as a whole passes when T2 and T4 pass with two different participants, and T3 and T5 pass once they are available (T1 already is).
 
 ## After the session
 
