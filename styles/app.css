@@ -639,3 +639,200 @@ a:focus-visible {
 .low {
   color: var(--warn);
 }
+
+/* Catalog landing: a hero with falling notes over a drawn keyboard (CSS only), and polished cards. */
+body {
+  background: radial-gradient(120% 55% at 50% -8%, #151b2b, var(--bg) 60%) no-repeat fixed var(--bg);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  letter-spacing: 0.01em;
+}
+
+.brand::before {
+  content: "";
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 0.3rem;
+  background: linear-gradient(90deg, #f59e0b 0 33%, #1c2230 33% 38%, #3b82f6 38% 71%, #e9e3d6 71%);
+  box-shadow: 0 0 0.9rem rgba(245, 158, 11, 0.35);
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 1.5rem;
+  padding: 2.5rem 1.5rem 8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.875rem;
+  background:
+    radial-gradient(55% 90% at 12% 0%, rgba(245, 158, 11, 0.17), transparent 62%),
+    radial-gradient(55% 90% at 92% 8%, rgba(59, 130, 246, 0.17), transparent 62%),
+    linear-gradient(180deg, #111522, #0b0d12);
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero h2 {
+  max-width: 16ch;
+  margin: 0.75rem 0 0.5rem;
+  font-size: clamp(1.75rem, 5vw, 2.875rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
+.hero-lead {
+  max-width: 34rem;
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+}
+
+.hero-badge {
+  display: inline-block;
+  margin: 0;
+  padding: 0.125rem 0.625rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.hero .button {
+  box-shadow: 0 0.5rem 1.5rem rgba(245, 158, 11, 0.25);
+}
+
+/* The notes fall inside the stage and land on the drawn keys at its lower edge. */
+.hero-stage {
+  position: absolute;
+  inset: 0 0 4.5rem;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-note {
+  position: absolute;
+  width: 1.3rem;
+  border-radius: 0.3rem;
+  animation: hero-fall 7s linear infinite;
+}
+
+.hero-note.hand-r {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+  box-shadow: 0 0 1.25rem rgba(245, 158, 11, 0.5);
+}
+
+.hero-note.hand-l {
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  box-shadow: 0 0 1.25rem rgba(59, 130, 246, 0.5);
+}
+
+/* With animations off (reduced motion) the notes rest where they are listed here. */
+.hero-note.n1 { left: 62%; top: 46%; height: 3.5rem; animation-delay: -0.5s; }
+.hero-note.n2 { left: 67%; top: 22%; height: 4.75rem; animation-delay: -3s; }
+.hero-note.n3 { left: 72%; top: 58%; height: 2.25rem; animation-delay: -5.5s; }
+.hero-note.n4 { left: 77%; top: 12%; height: 4rem; animation-delay: -1.8s; }
+.hero-note.n5 { left: 82%; top: 40%; height: 2.75rem; animation-delay: -4.2s; }
+.hero-note.n6 { left: 87%; top: 6%; height: 3.25rem; animation-delay: -6.2s; }
+.hero-note.n7 { left: 92%; top: 30%; height: 2.5rem; animation-delay: -2.4s; }
+
+@keyframes hero-fall {
+  from {
+    top: -6rem;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* A drawn keyboard: white keys 2.15rem wide, black keys over the 1st, 2nd, 4th, 5th and 6th joints. */
+.hero-keys {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 0;
+  height: 4.5rem;
+  border-top: 2px solid #05060a;
+  background: repeating-linear-gradient(90deg, #ece6d9 0 2.1rem, #8c877c 2.1rem 2.15rem);
+  box-shadow: 0 -1.5rem 3rem rgba(245, 158, 11, 0.12);
+  pointer-events: none;
+}
+
+.hero-keys::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 58%;
+  background: linear-gradient(90deg, transparent 0 1.5rem, #0c0d11 1.5rem 2.8rem, transparent 2.8rem 3.65rem, #0c0d11 3.65rem 4.95rem, transparent 4.95rem 7.95rem, #0c0d11 7.95rem 9.25rem, transparent 9.25rem 10.1rem, #0c0d11 10.1rem 11.4rem, transparent 11.4rem 12.25rem, #0c0d11 12.25rem 13.55rem, transparent 13.55rem);
+  background-size: 15.05rem 100%;
+}
+
+.hero-keys::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 13, 18, 0), rgba(11, 13, 18, 0.55));
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, #f59e0b, #3b82f6);
+  opacity: 0.8;
+}
+
+.card:not(.card-unavailable):hover {
+  transform: translateY(-3px);
+  border-color: #3a4358;
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.5);
+}
+
+.card h3 {
+  margin-top: 0.25rem;
+}
+
+.chip-beginner {
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fcd34d;
+}
+
+.chip-original {
+  border-color: rgba(147, 197, 253, 0.45);
+  color: #bfdbfe;
+}
+
+@media (max-width: 40rem) {
+  .hero {
+    padding: 1.75rem 1rem 6.5rem;
+  }
+
+  .hero-keys {
+    height: 3.5rem;
+  }
+
+  .hero-stage {
+    inset: 0 0 3.5rem;
+    opacity: 0.4; /* behind the text on a narrow screen */
+  }
+}

@@ -97,3 +97,25 @@ test("song files are fetched in parallel, not one after another", async () => {
     ["ok", "ok", "ok"],
   );
 });
+
+test("heroModel counts the usable songs and levels and names the first usable song for the call to action", async () => {
+  const { heroModel } = await import("../../src/ui/catalog.js");
+  const ok = (id, title, levels) => ({ status: "ok", entry: { id, title, levels } });
+  const m = heroModel([ok("a", "Alpha", ["beginner", "original"]), ok("b", "Beta", ["beginner"])]);
+  assert.equal(m.badge, "2 songs | 2 levels");
+  assert.deepEqual(m.start, { id: "a", title: "Alpha" });
+  assert.ok(m.title.length > 0 && m.lead.length > 0);
+  assert.equal(heroModel([ok("a", "Alpha", ["beginner"])]).badge, "1 song | 1 level", "singular forms");
+});
+
+test("heroModel ignores unavailable songs, and has no call to action when none is usable", async () => {
+  const { heroModel } = await import("../../src/ui/catalog.js");
+  const broken = { status: "unavailable", entry: { id: "x", title: "Broken", levels: ["original"] } };
+  const good = { status: "ok", entry: { id: "g", title: "Good", levels: ["beginner"] } };
+  assert.deepEqual(heroModel([broken, good]).start, { id: "g", title: "Good" }, "the first usable one, not the first listed");
+  assert.equal(heroModel([broken, good]).badge, "1 song | 1 level", "the broken song's level is not counted");
+  const none = heroModel([broken]);
+  assert.equal(none.start, null);
+  assert.equal(none.badge, "0 songs | 0 levels");
+  assert.equal(heroModel([]).start, null);
+});

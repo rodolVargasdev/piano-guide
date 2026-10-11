@@ -53,8 +53,43 @@ export async function loadCatalog(fetchJson = defaultFetchJson) {
 
 const keyText = (key) => `${key.tonic} ${key.mode}`;
 
+/**
+ * What the hero says, as plain data (so it can be tested without a DOM): a badge counting the
+ * songs and levels that are usable, and the song the call to action opens. A catalog whose songs
+ * are all unavailable has no call to action.
+ */
+export function heroModel(entries) {
+  const usable = entries.filter((e) => e.status === "ok");
+  const levels = new Set(usable.flatMap((e) => e.entry.levels)).size;
+  const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  return {
+    title: "See the piece before you play it",
+    lead: "Falling notes on a 3D keyboard, a clean score and slow practice tools.",
+    badge: `${plural(usable.length, "song")} | ${plural(levels, "level")}`,
+    start: usable[0] ? { id: usable[0].entry.id, title: usable[0].entry.title } : null,
+  };
+}
+
+// Decorative falling notes over a drawn keyboard, all CSS: no canvas, no three.js on the catalog
+// route. Hidden from assistive technology; frozen by the global reduced-motion rule.
+const HERO_NOTES = ["n1 hand-r", "n2 hand-l", "n3 hand-r", "n4 hand-l", "n5 hand-r", "n6 hand-l", "n7 hand-r"];
+
+function hero(entries) {
+  const m = heroModel(entries);
+  return el(
+    "section",
+    { class: "hero", "aria-label": "Piano Guide" },
+    el("p", { class: "hero-badge" }, m.badge),
+    el("h2", {}, m.title),
+    el("p", { class: "hero-lead" }, m.lead),
+    m.start ? el("a", { class: "button", href: `#/song/${m.start.id}` }, `Start with ${m.start.title}`) : null,
+    el("div", { class: "hero-stage", "aria-hidden": "true" }, HERO_NOTES.map((c) => el("span", { class: `hero-note ${c}` }))),
+    el("div", { class: "hero-keys", "aria-hidden": "true" }),
+  );
+}
+
 function card({ entry, status, reason, reasons }) {
-  const chips = entry.levels.map((l) => el("span", { class: "chip" }, l));
+  const chips = entry.levels.map((l) => el("span", { class: `chip chip-${l}` }, l));
   if (status !== "ok") {
     return el(
       "li",
@@ -87,7 +122,7 @@ export function renderCatalog(mount, { error, entries }) {
     mount.replaceChildren(el("section", { class: "panel" }, el("h2", {}, "No songs yet")));
     return;
   }
-  mount.replaceChildren(el("ul", { class: "cards" }, entries.map(card)));
+  mount.replaceChildren(hero(entries), el("ul", { class: "cards" }, entries.map(card)));
 }
 
 /** Router view: shows a loading line, then the catalog. dispose() stops a late response from rendering. */
