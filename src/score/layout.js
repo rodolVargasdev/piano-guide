@@ -83,6 +83,18 @@ function gapWidth(gap, m) {
   return Math.min(m.maxGap, Math.max(m.minGap, m.gapK * (gap / 480) ** 0.75));
 }
 
+export const ACCIDENTAL_COLUMN = 1.4; // distance between accidental columns, staff spaces
+const ACCIDENTAL_WIDTH = 1.3; // widest accidental glyph (the flat and the sharp)
+
+/**
+ * Room an onset with `columns` accidentals needs after the previous onset, so they never print
+ * over its heads: the previous heads (one of them may be pushed right, two half widths), a small
+ * margin, the glyph columns, and this chord's own heads (one of them may be pushed left).
+ */
+export function accidentalRoom(columns, m) {
+  return columns === 0 ? 0 : m.headW * 2 + 0.45 + ACCIDENTAL_WIDTH + (columns - 1) * ACCIDENTAL_COLUMN;
+}
+
 function makeTickToX(anchors) {
   const last = anchors.length - 1;
   return (tick) => {
@@ -206,15 +218,21 @@ export function layoutScore(tl, { notation = tl.notation } = {}) {
     if (a.endTick !== undefined) ticks.add(a.endTick);
   }
   const sorted = [...ticks].filter((t) => t >= 0 && t <= tl.lengthTicks).sort((a, b) => a - b);
+  assignAccidentals(events, sig, tl);
+  // The most accidentals any chord at an onset prints: the gap before it must hold their columns.
+  const columns = new Map();
+  for (const e of events) {
+    if (e.kind !== "note" || e.grace) continue;
+    columns.set(e.tick, Math.max(columns.get(e.tick) ?? 0, e.notes.filter((n) => n.accidental).length));
+  }
   const anchors = [];
   let x = 0;
   sorted.forEach((tick, i) => {
-    if (i > 0) x += gapWidth(tick - sorted[i - 1], metrics) + (barStarts.has(tick) ? BAR_PAD : 0);
+    if (i > 0) x += Math.max(gapWidth(tick - sorted[i - 1], metrics), accidentalRoom(columns.get(tick) ?? 0, metrics)) + (barStarts.has(tick) ? BAR_PAD : 0);
     anchors.push({ tick, x });
   });
   const tickToX = makeTickToX(anchors);
 
-  assignAccidentals(events, sig, tl);
   placeLedgers(events);
   placeStems(events, metrics);
   for (const e of events) e.x = tickToX(e.tick);

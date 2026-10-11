@@ -24,7 +24,7 @@ const withClass = (nodes, c) => nodes.filter((n) => (n.attrs.class ?? "").split(
 test("fingers: one row above the treble staff and one below the bass staff, lowest note first", () => {
   const { out } = draw([R(0, 1920, "E4", { finger: 1 }), R(0, 1920, "G4", { finger: 3 }), R(0, 1920, "B4", { finger: 5 }), L(0, 1920, "E2", { finger: 5 })]);
   const rows = withClass(body(out), "finger");
-  assert.deepEqual(rows.map((r) => [r.text, r.attrs.y]), [["5", (BASS_TOP + 4 + 3.2) * U], ["1 3 5", (TREBLE_TOP - 2) * U]]);
+  assert.deepEqual(rows.map((r) => [r.text, r.attrs.y]), [["5", (BASS_TOP + 4 + 3.2) * U], ["1 3 5", (TREBLE_TOP - 3.2) * U]]);
 });
 
 test("no finger, no number: events without finger draw nothing, a partial chord draws only the fingered notes", () => {

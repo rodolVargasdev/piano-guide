@@ -97,7 +97,7 @@ test("stems run from the head to the tip, a lone eighth keeps a flag, a beamed e
   assert.equal(stems.length, 5);
   assert.ok(stems.every((s) => Math.abs(s.attrs.y1 - s.attrs.y2) >= 3 * U));
   assert.equal(withClass(body(out), "beam").length, 1, "one beam over the 960 and 1200 pair");
-  const flags = body(out).filter((n) => n.tag === "path" && n.attrs.class?.includes("glyph-stroke"));
+  const flags = body(out).filter((n) => n.tag === "path" && n.attrs.class?.includes("glyph-fill") && !n.attrs.class.includes("rest"));
   assert.equal(flags.length, 1, "only the lone eighth at tick 480 has a flag");
 });
 

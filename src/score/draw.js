@@ -5,7 +5,7 @@
 
 import { GLYPHS, restGlyph, restHooks, waveLine, bracketPath } from "./glyphs.js";
 import { noteName } from "../core/pitch.js";
-import { BAR_OFFSET } from "./layout.js";
+import { BAR_OFFSET, ACCIDENTAL_COLUMN } from "./layout.js";
 
 // Vertical layout in staff spaces from the top of the drawing.
 export const TREBLE_TOP = 8;
@@ -13,7 +13,7 @@ export const BASS_TOP = 19;
 const STAFF_TOP = { treble: TREBLE_TOP, bass: BASS_TOP };
 export const HEIGHT_SP = 28;
 export const HEIGHT_ANALYSIS_SP = 32;
-const FINGER_ABOVE_SP = 2; // finger row baseline above the treble staff
+const FINGER_ABOVE_SP = 3.2; // finger row baseline above the treble staff, clear of the ornament signs
 const FINGER_BELOW_SP = 3.2; // finger row baseline below the bass staff
 const CHORD_Y_SP = 1.8;
 const ROMAN_Y_SP = 28.6;
@@ -33,7 +33,7 @@ export function glyph(name, x, y, unit, cls = "") {
   const g = GLYPHS[name];
   const transform = `translate(${round(x)} ${round(y)}) scale(${round(unit)})`;
   const out = [];
-  if (g.stroke) out.push(node("path", { d: g.stroke, transform, class: `glyph-stroke ${cls}`.trim(), "stroke-width": g.w }));
+  for (const [path, w] of g.strokes ?? []) out.push(node("path", { d: path, transform, class: `glyph-stroke ${cls}`.trim(), "stroke-width": w }));
   if (g.fill) out.push(node("path", { d: g.fill, transform, class: `glyph-fill ${cls}`.trim() }));
   return out;
 }
@@ -52,19 +52,24 @@ function measureIndexOf(measures, x) {
   return lo;
 }
 
+// Header geometry in staff spaces: the clef, then the key signature, then the time signature.
+const CLEF_X = 2.1;
+const SIG_X = 5.6;
+const SIG_STEP = 1.3;
+
 function drawHeader(layout, tl, unit) {
   const nodes = [];
   const sig = layout.keySignature;
-  nodes.push(...glyph("gClef", 1.6 * unit, yOf("treble", 2, unit), unit));
-  nodes.push(...glyph("fClef", 1.6 * unit, yOf("bass", 6, unit), unit));
+  nodes.push(...glyph("gClef", CLEF_X * unit, yOf("treble", 2, unit), unit));
+  nodes.push(...glyph("fClef", CLEF_X * unit, yOf("bass", 6, unit), unit));
   nodes.push(node("line", { class: "barline", x1: 0.5 * unit, x2: 0.5 * unit, y1: TREBLE_TOP * unit, y2: (BASS_TOP + 4) * unit }));
   for (const staff of ["treble", "bass"]) {
-    sig[staff].forEach((a, i) => nodes.push(...glyph(sig.kind, (4.2 + i * 1.1) * unit, yOf(staff, a.pos, unit), unit)));
-    const x = (4.2 + sig[staff].length * 1.1 + 1.4) * unit;
+    sig[staff].forEach((a, i) => nodes.push(...glyph(sig.kind, (SIG_X + i * SIG_STEP) * unit, yOf(staff, a.pos, unit), unit)));
+    const x = (SIG_X + sig[staff].length * SIG_STEP + 1.1) * unit;
     nodes.push(node("text", { class: "time-sig", x, y: (STAFF_TOP[staff] + 1.95) * unit, "font-size": 2.3 * unit, "text-anchor": "middle" }, tl.meter.num));
     nodes.push(node("text", { class: "time-sig", x, y: (STAFF_TOP[staff] + 3.95) * unit, "font-size": 2.3 * unit, "text-anchor": "middle" }, tl.meter.den));
   }
-  return { nodes, width: (4.2 + sig.treble.length * 1.1 + 1.4 + 2.4) * unit };
+  return { nodes, width: (SIG_X + sig.treble.length * SIG_STEP + 1.1 + 2.4) * unit };
 }
 
 function drawNoteEvent(e, layout, opts, out) {
@@ -92,7 +97,7 @@ function drawNoteEvent(e, layout, opts, out) {
       out.push(node("ellipse", { class: cls, cx, cy, rx: 0.62 * unit * s, ry: 0.45 * unit * s, transform: `rotate(-20 ${round(cx)} ${round(cy)})` }));
     }
     if (n.accidental) {
-      out.push(...glyph(n.accidental, left - (0.9 + column * 1.1) * unit * s, cy, unit * s, "accidental"));
+      out.push(...glyph(n.accidental, left - (1 + column * ACCIDENTAL_COLUMN) * unit * s, cy, unit * s, "accidental"));
       column += 1;
     }
     for (let k = 0; k < e.dots; k += 1) out.push(node("circle", { class: "dot", cx: cx + (headW / 2 + 0.6 + k * 0.5) * unit, cy: n.pos % 2 === 0 ? cy - 0.5 * unit : cy, r: 0.18 * unit }));
@@ -128,10 +133,15 @@ function drawBeam(b, unit, out) {
   }
 }
 
+// A tie is a crescent: two curves from one end to the other, the outer one deeper, so it is
+// thickest in the middle and meets in points at the heads.
 function drawTie(t, unit, out) {
   const y = yOf(t.staff, t.pos, unit) + (t.dir === "up" ? -0.8 : 0.8) * unit;
-  const lift = (t.dir === "up" ? -1.1 : 1.1) * unit;
-  out.push(node("path", { class: "tie", d: `M${round(t.x1 * unit)} ${round(y)}Q${round(((t.x1 + t.x2) / 2) * unit)} ${round(y + lift)} ${round(t.x2 * unit)} ${round(y)}` }));
+  const sign = t.dir === "up" ? -1 : 1;
+  const mid = round(((t.x1 + t.x2) / 2) * unit);
+  const outer = round(y + sign * 1.25 * unit);
+  const inner = round(y + sign * 0.6 * unit);
+  out.push(node("path", { class: "tie", d: `M${round(t.x1 * unit)} ${round(y)}Q${mid} ${outer} ${round(t.x2 * unit)} ${round(y)}Q${mid} ${inner} ${round(t.x1 * unit)} ${round(y)}z` }));
 }
 
 function drawTuplet(t, unit, out) {

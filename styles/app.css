@@ -268,10 +268,15 @@ a:focus-visible {
   stroke-width: 1.4;
 }
 
-.score-svg .tie,
 .score-svg .tuplet {
   fill: none;
   stroke-width: 1.2;
+}
+
+.score-svg .tie {
+  fill: #1b1b1f;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
 }
 
 .score-svg .glyph-stroke {
@@ -354,6 +359,11 @@ a:focus-visible {
 .score-svg .roman {
   fill: #1b1b1f;
   font-style: italic;
+}
+
+.score-svg .ornament-text {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
 }
 
 .score-svg .callout-box {

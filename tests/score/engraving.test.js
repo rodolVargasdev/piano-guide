@@ -146,7 +146,7 @@ test("grace notes are small, keep their written tick and sit before the main not
 test("ornament signs sit above the note, and a fioritura spans the ornament-role notes after it", () => {
   const l = layoutScore(timelineOf([R(0, 480, "C5", { ornament: "turn" }), R(480, 480, "E4", { ornament: "fioritura" }), R(960, 240, "F4", { role: "ornament" }), R(1200, 240, "G4", { role: "ornament" }), R(1440, 480, "C5")]));
   assert.deepEqual(l.ornaments.map((o) => o.kind), ["turn", "fioritura"]);
-  assert.ok(l.ornaments[0].pos >= 11, "above the staff");
+  assert.ok(l.ornaments[0].pos >= 10, "at least a space above the top line (pos 8)");
   const f = l.ornaments[1];
   assert.equal(f.x2, l.events[3].x + l.metrics.headW / 2, "the bracket ends at the last ornament note, not at the next ordinary note");
   const single = layoutScore(timelineOf([R(0, 1920, "C5", { ornament: "fioritura" })])).ornaments[0];

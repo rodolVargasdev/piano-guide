@@ -215,7 +215,7 @@ export function placeOrnaments(events, metrics) {
         for (let j = i + 1; j < list.length && list[j].notes.every((q) => q.role === "ornament"); j += 1) x2 = list[j].x + metrics.headW / 2;
       }
       const top = e.dir === "up" && e.stem ? e.stem.toPos : e.notes[e.notes.length - 1].pos;
-      out.push({ kind: n.ornament, staff: e.staff, event: e.id, x: e.x, x1: e.x - metrics.headW / 2, x2, pos: Math.max(8, top) + 3 });
+      out.push({ kind: n.ornament, staff: e.staff, event: e.id, x: e.x, x1: e.x - metrics.headW / 2, x2, pos: Math.max(8, top) + 2 });
     });
   }
   return out;

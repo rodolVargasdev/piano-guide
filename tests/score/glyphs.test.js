@@ -38,10 +38,10 @@ test("pathProblem accepts good data and rejects malformed data (counter-proof of
 
 test("every glyph has well-formed stroke and fill data and a positive stroke width when stroked", () => {
   for (const [name, g] of Object.entries(GLYPHS)) {
-    assert.ok(g.stroke || g.fill, `${name} draws something`);
-    if (g.stroke) {
-      assert.equal(pathProblem(g.stroke), null, `${name} stroke`);
-      assert.ok(g.w > 0, `${name} has a stroke width`);
+    assert.ok(g.strokes?.length || g.fill, `${name} draws something`);
+    for (const [d, w] of g.strokes ?? []) {
+      assert.equal(pathProblem(d), null, `${name} stroke`);
+      assert.ok(w > 0 && w < 1, `${name} has a stroke width`);
     }
     if (g.fill) assert.equal(pathProblem(g.fill), null, `${name} fill`);
   }
