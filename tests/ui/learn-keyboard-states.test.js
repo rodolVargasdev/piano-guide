@@ -191,3 +191,42 @@ test("dispose clears pending timers and stops following the bus", () => {
   bus.noteOn(60, { source: "midi" });
   assert.equal(hasClass(keyRect(svg, 60), "lk-pressed"), false);
 });
+
+test("a hint is a dashed outline and a class on the key, not color alone; clearing it removes both (lesson zero)", () => {
+  const { keyboard, svg } = setup();
+  keyboard.setHints([61, 63]);
+  assert.ok(hasClass(keyRect(svg, 61), "lk-hint") && hasClass(keyRect(svg, 63), "lk-hint"));
+  assert.equal(hasClass(keyRect(svg, 62), "lk-hint"), false);
+  assert.equal(inOverlay(svg, (n) => hasClass(n, "lk-hint-outline")).length, 2, "one dashed outline per hinted key");
+  keyboard.setHints([]);
+  assert.equal(hasClass(keyRect(svg, 61), "lk-hint"), false);
+  assert.equal(inOverlay(svg, (n) => hasClass(n, "lk-hint-outline")).length, 0);
+});
+
+test("a release anywhere on the page ends the note, so a key never stays down when the layout shifts under the finger", () => {
+  const doc = fakeDoc();
+  doc.createElement = (tag) => doc.make(tag);
+  const docListeners = {};
+  doc.addEventListener = (type, fn) => (docListeners[type] ??= []).push(fn);
+  doc.removeEventListener = (type, fn) => void (docListeners[type] = (docListeners[type] ?? []).filter((f) => f !== fn));
+  const mount = doc.make("div");
+  mount.clientWidth = 900;
+  const i18n = createI18n({ table: STRINGS, navigatorLanguage: "en", warn: () => {} });
+  const bus = createNoteBus({ now: () => 0 });
+  const events = [];
+  bus.on("noteOn", (e) => events.push(["on", e.midi]));
+  bus.on("noteOff", (e) => events.push(["off", e.midi]));
+  const keyboard = createLearnKeyboard({ mount, i18n, bus, doc });
+  keyboard.fit({ width: 900, height: 600 });
+  const svg = mount.children[0].children[0];
+  fire(keyRect(svg, 64), "pointerdown", { pointerId: 7 });
+  assert.deepEqual(events, [["on", 64]]);
+  // The key is redrawn and the finger comes up over a part of the page that is not a key: only the document hears it.
+  (docListeners.pointerup ?? []).forEach((fn) => fn({ pointerId: 7 }));
+  assert.deepEqual(events, [["on", 64], ["off", 64]]);
+  // Counter-proof: a release of a pointer that never pressed a key does nothing.
+  (docListeners.pointerup ?? []).forEach((fn) => fn({ pointerId: 9 }));
+  assert.equal(events.length, 2);
+  keyboard.dispose();
+  assert.deepEqual(docListeners.pointerup, [], "dispose removes the document listener");
+});

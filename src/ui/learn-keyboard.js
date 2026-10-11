@@ -21,6 +21,7 @@ export const CORRECT_MS = 700;
  *   setPositionKeys(keys)          keys of the hand position, a quiet finger digit
  *   setLetters(Map midi -> text)   the computer key that plays each key
  *   setSounding(midis, hand)       keys lit while a phrase is listened to (no badge)
+ *   setHints(midis)                keys to look at, outlined with a dashed line (lesson zero: the groups of black keys)
  *   flashWrong(midi) / flashCorrect(midis)   transient states with a text cue in the live region
  *   fit({ width, height })         room in pixels
  * Pressing on a key (pointer or touch, one pointer per finger) sends noteOn and noteOff to the bus with
@@ -35,6 +36,7 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
   let positionKeys = [];
   let letters = new Map();
   let sounding = { midis: new Set(), hand: "R" };
+  let hints = new Set();
   let pressed = new Set();
   const wrong = new Map(); // midi -> timer
   const correct = new Map(); // midi -> timer
@@ -153,6 +155,7 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
       if (expected.has(midi)) classes.push("lk-expected", `lk-hand-${expected.get(midi).hand}`);
       else if (sounding.midis.has(midi)) classes.push("lk-sounding", `lk-hand-${sounding.hand}`);
       if (positionKeys.some((k) => k.midi === midi)) classes.push("lk-position");
+      if (hints.has(midi)) classes.push("lk-hint");
       if (pressed.has(midi)) classes.push("lk-pressed");
       if (wrong.has(midi)) classes.push("lk-wrong");
       if (correct.has(midi)) classes.push("lk-correct");
@@ -164,6 +167,11 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     const bottomOf = (g) => top + (g.black ? m.blackH : m.keyH);
     // On a black key the badge sits above the computer-key letter box, which takes the bottom of the key.
     const badgeY = (g) => (g.black ? bottomOf(g) - (m.letter + 6) - 8 - m.badge / 2 : top + m.blackH + m.badge / 2 + 4);
+    // A hint is a dashed outline (not color alone) around a key the learner should look at.
+    for (const midi of hints) {
+      const g = geom.get(midi);
+      if (g) parts.push(make("rect", { class: "lk-hint-outline", x: g.x + 1.5, y: top + 1.5, width: g.w - 3, height: (g.black ? m.blackH : m.keyH) - 3, rx: 3, fill: "none" }));
+    }
     for (const k of stepKeys) {
       const g = geom.get(k.midi);
       if (!g) continue;
@@ -234,6 +242,10 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     paint();
   };
   const offs = bus ? [bus.on("noteOn", syncPressed), bus.on("noteOff", syncPressed)] : [];
+  // The keyboard is redrawn and the page can shift under a finger (the card above it changes height), so
+  // the release may land on something that is not a key: listen on the document too or the key would stay down.
+  doc.addEventListener?.("pointerup", up);
+  doc.addEventListener?.("pointercancel", up);
 
   return {
     element: root,
@@ -271,6 +283,10 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
       sounding = { midis: new Set(midis), hand };
       paint();
     },
+    setHints(midis) {
+      hints = new Set(midis);
+      paint();
+    },
     flashWrong(midi) {
       flash(wrong, midi, WRONG_MS);
       say(i18n.t("common.tryAgain"));
@@ -287,6 +303,8 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     metrics: () => ({ ...current.m, whiteCount: current.lay.whites.length }),
     dispose() {
       offLang();
+      doc.removeEventListener?.("pointerup", up);
+      doc.removeEventListener?.("pointercancel", up);
       for (const off of offs) off();
       for (const id of [...wrong.values(), ...correct.values()]) timers.clearTimeout(id);
       wrong.clear();
