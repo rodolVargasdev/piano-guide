@@ -864,18 +864,33 @@ body {
 .learn-keyboard {
   position: relative;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
   margin-block: 0.5rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
 }
 
+/* A region wider than the screen scrolls sideways: the white keys keep their 36 px minimum. The margins are
+   auto so a narrower keyboard is centered and a wider one still starts at the left edge. */
 .lk-svg {
   display: block;
-  max-width: 100%;
+  flex: none;
+  margin-inline: auto;
+  max-width: none;
   height: auto;
   touch-action: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+.lk-scrolls .lk-svg {
+  touch-action: pan-x; /* a drag along the keyboard scrolls it; a tap still plays the key */
+}
+
+.lk-turn-hint {
+  margin: 0 0 0.25rem;
+  text-align: center;
 }
 
 .lk-svg text {
@@ -1206,7 +1221,8 @@ body[data-route="learn"] header .language-select {
 
 .learn-keyboard-slot {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .lz-posture {

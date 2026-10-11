@@ -59,6 +59,8 @@ export const STRINGS = {
   "key.major": { en: "{tonic} major", es: "{tonic} mayor" },
   "key.minor": { en: "{tonic} minor", es: "{tonic} menor" },
   "keyboard.label": { en: "Keyboard, {low} to {high}", es: "Teclado, de {low} a {high}" },
+  "keyboard.turnPhone": { en: "Turn your phone sideways for a wider keyboard.", es: "Gire el teléfono para un teclado más ancho." },
+  "keyboard.scrollHint": { en: "A key to press is off screen. Drag the keyboard sideways.", es: "Una tecla por presionar está fuera de la pantalla. Arrastre el teclado hacia un lado." },
 
   // step instructions
   "step.one": { en: "{hand}: {finger} on {note}.", es: "{hand}: {finger} en {note}." },

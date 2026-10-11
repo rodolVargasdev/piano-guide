@@ -23,14 +23,17 @@ export const CORRECT_MS = 700;
  *   setSounding(midis, hand)       keys lit while a phrase is listened to (no badge)
  *   setHints(midis)                keys to look at, outlined with a dashed line (lesson zero: the groups of black keys)
  *   flashWrong(midi) / flashCorrect(midis)   transient states with a text cue in the live region
- *   fit({ width, height })         room in pixels
+ *   fit({ width, height, portrait }) room in pixels; a region wider than the room scrolls sideways (the keys keep their
+ *                                  minimum width), centered on the keys to press, with a hint line under the keyboard
  * Pressing on a key (pointer or touch, one pointer per finger) sends noteOn and noteOff to the bus with
  * the source "screen"; any note held on the bus, from any source, shows as pressed.
  */
 export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.document, timers = { setTimeout: (f, ms) => globalThis.setTimeout(f, ms), clearTimeout: (id) => globalThis.clearTimeout(id) } }) {
   let region = { ...DEFAULT_REGION };
   let keyContext = null;
-  let room = { width: 0, height: Infinity };
+  let room = { width: 0, height: Infinity, portrait: false };
+  let overflowing = false;
+  let total = 0;
   let overrides = new Map(); // midi -> spelled pitch the song gives (E# in F# major)
   let stepKeys = [];
   let positionKeys = [];
@@ -56,7 +59,12 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
   live.setAttribute("aria-live", "polite");
   const svg = make("svg", { class: "lk-svg", role: "group", focusable: "false" });
   root.append(svg, live);
-  mount.append(root);
+  // The hint sits under the keyboard, outside the scrolling box, so it stays in view while the keys scroll.
+  const hint = doc.createElement("p");
+  hint.setAttribute("class", "lk-turn-hint meta");
+  hint.setAttribute("role", "status");
+  hint.hidden = true;
+  mount.append(root, hint);
 
   const keyEls = new Map(); // midi -> rect
   let geom = new Map(); // midi -> { cx, x, w, black }
@@ -87,7 +95,9 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     const width = room.width > 0 ? room.width : (mount.clientWidth ?? 0) > 0 ? mount.clientWidth : 600;
     const m = keyboardMetrics({ whiteCount: lay.whites.length, width, height: room.height });
     const lang = i18n.lang();
-    const total = lay.whites.length * m.keyW;
+    total = lay.whites.length * m.keyW;
+    overflowing = total > width;
+    root.setAttribute("class", overflowing ? "learn-keyboard lk-scrolls" : "learn-keyboard");
     const top = m.stripH;
     keyEls.clear();
     geom = new Map();
@@ -143,6 +153,31 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     svg.replaceChildren(defs, strip, whites, blacks, overlay);
     current = { lay, m, top };
     paint();
+    center();
+  }
+
+  // Keys to press that are off screen, or a phone held upright with a keyboard wider than the screen: one line.
+  function updateHint() {
+    const view = root.clientWidth ?? 0;
+    const left = root.scrollLeft ?? 0;
+    const off = overflowing && view > 0 && stepKeys.some((k) => geom.has(k.midi) && (geom.get(k.midi).x < left - 1 || geom.get(k.midi).x + geom.get(k.midi).w > left + view + 1));
+    hint.textContent = off ? i18n.t("keyboard.scrollHint") : overflowing && room.portrait ? i18n.t("keyboard.turnPhone") : "";
+    hint.hidden = hint.textContent === "";
+  }
+
+  // Scrolls so the keys to press are in the middle; when they are wider than the screen, the lowest one is put at the left edge.
+  function center() {
+    const view = root.clientWidth ?? 0;
+    const spots = stepKeys.map((k) => geom.get(k.midi)).filter(Boolean);
+    if (overflowing && view > 0 && spots.length > 0) {
+      const lo = Math.min(...spots.map((g) => g.x));
+      const hi = Math.max(...spots.map((g) => g.x + g.w));
+      const want = hi - lo <= view - 24 ? (lo + hi) / 2 - view / 2 : lo - 12;
+      root.scrollLeft = Math.max(0, Math.min(want, total - view));
+    } else if (!overflowing) {
+      root.scrollLeft = 0;
+    }
+    updateHint();
   }
 
   // Key classes and the overlay (outlines, badges, letters, marks), rebuilt on every state change.
@@ -165,8 +200,36 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     const together = new Set(stepKeys.map((k) => k.hand)).size > 1;
     const parts = [];
     const bottomOf = (g) => top + (g.black ? m.blackH : m.keyH);
+    const boxH = m.letter + 6;
+    const boxW = (label) => Math.max(boxH + 2, label.length * m.letter * 0.7 + 8);
     // On a black key the badge sits above the computer-key letter box, which takes the bottom of the key.
     const badgeY = (g) => (g.black ? bottomOf(g) - (m.letter + 6) - 8 - m.badge / 2 : top + m.blackH + m.badge / 2 + 4);
+    // The lower part of a white key holds the finger badge, the computer-key letter box and the names. When it is
+    // too short for the badge above the box, the pair goes side by side on a wide key; on a narrow key the box moves to
+    // the top of the key, between the black keys; if even that is too narrow the box yields to the badge (null).
+    const stacked = m.keyH - m.blackH - (8 + m.secondary + 4 + m.primary) >= m.badge + boxH + 16;
+    const freeTop = (g, midi, width) => {
+      let lo = g.x;
+      let hi = g.x + g.w;
+      const left = geom.get(midi - 1);
+      const right = geom.get(midi + 1);
+      if (left?.black) lo = Math.max(lo, left.x + left.w);
+      if (right?.black) hi = Math.min(hi, right.x);
+      return hi - lo >= width + 4 ? (lo + hi) / 2 : null;
+    };
+    const shared = new Map(); // midi -> { badgeDx, boxCx, boxY } | null (the box yields)
+    for (const k of stepKeys) {
+      const g = geom.get(k.midi);
+      const label = letters.get(k.midi);
+      if (!g || g.black || !label || stacked) continue;
+      const badgeW = together ? m.badge + 10 : m.badge;
+      const width = boxW(label);
+      if (g.w >= badgeW + width + 10) shared.set(k.midi, { badgeDx: -(width + 4) / 2, boxCx: g.cx + (badgeW + 4) / 2, boxY: badgeY(g) - boxH / 2 });
+      else {
+        const cx = freeTop(g, k.midi, width);
+        shared.set(k.midi, cx === null ? null : { badgeDx: 0, boxCx: cx, boxY: top + 4 });
+      }
+    }
     // A hint is a dashed outline (not color alone) around a key the learner should look at.
     for (const midi of hints) {
       const g = geom.get(midi);
@@ -179,16 +242,17 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
       const label = together ? `${i18n.t(`hand.letter.${k.hand}`)}${k.finger}` : String(k.finger);
       const w = together ? m.badge + 10 : m.badge;
       const cy = badgeY(g);
+      const bx = g.cx + (shared.get(k.midi)?.badgeDx ?? 0);
       // The outline: one line for the right hand, a double line for the left.
       parts.push(make("rect", { class: `lk-outline lk-hand-${k.hand}`, x: g.x + 1.5, y: top + 1.5, width: Math.max(0, g.w - 3), height: (g.black ? m.blackH : m.keyH) - 3, rx: 3, fill: "none" }));
       if (left) parts.push(make("rect", { class: `lk-outline lk-outline-inner lk-hand-${k.hand}`, x: g.x + 5, y: top + 5, width: Math.max(0, g.w - 10), height: (g.black ? m.blackH : m.keyH) - 10, rx: 2, fill: "none" }));
       parts.push(
         left
-          ? make("rect", { class: `lk-badge lk-badge-L`, x: g.cx - w / 2, y: cy - m.badge / 2, width: w, height: m.badge, rx: 5 })
+          ? make("rect", { class: `lk-badge lk-badge-L`, x: bx - w / 2, y: cy - m.badge / 2, width: w, height: m.badge, rx: 5 })
           : together
-            ? make("rect", { class: `lk-badge lk-badge-R`, x: g.cx - w / 2, y: cy - m.badge / 2, width: w, height: m.badge, rx: m.badge / 2 })
-            : make("circle", { class: `lk-badge lk-badge-R`, cx: g.cx, cy, r: m.badge / 2 }),
-        make("text", { class: "lk-finger", x: g.cx, y: cy + m.badgeFont * 0.36, "text-anchor": "middle", "font-size": together ? m.badgeFont - 3 : m.badgeFont }, label),
+            ? make("rect", { class: `lk-badge lk-badge-R`, x: bx - w / 2, y: cy - m.badge / 2, width: w, height: m.badge, rx: m.badge / 2 })
+            : make("circle", { class: `lk-badge lk-badge-R`, cx: bx, cy, r: m.badge / 2 }),
+        make("text", { class: "lk-finger", x: bx, y: cy + m.badgeFont * 0.36, "text-anchor": "middle", "font-size": together ? m.badgeFont - 3 : m.badgeFont }, label),
       );
     }
     for (const k of positionKeys) {
@@ -198,11 +262,12 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     }
     for (const [midi, label] of letters) {
       const g = geom.get(midi);
-      if (!g || !label) continue;
-      const boxH = m.letter + 6;
-      const boxW = Math.max(boxH + 2, label.length * m.letter * 0.7 + 8);
-      const y = g.black ? bottomOf(g) - boxH - 4 : top + m.keyH - (8 + m.secondary + 4 + m.primary) - boxH - 4;
-      parts.push(make("rect", { class: "lk-letter-box", x: g.cx - boxW / 2, y, width: boxW, height: boxH, rx: 4 }), make("text", { class: "lk-letter", x: g.cx, y: y + boxH - 5, "text-anchor": "middle", "font-size": m.letter }, label));
+      if (!g || !label || shared.get(midi) === null) continue;
+      const side = shared.get(midi);
+      const w = boxW(label);
+      const y = side ? side.boxY : g.black ? bottomOf(g) - boxH - 4 : top + m.keyH - (8 + m.secondary + 4 + m.primary) - boxH - 4;
+      const lx = side ? side.boxCx : g.cx;
+      parts.push(make("rect", { class: "lk-letter-box", x: lx - w / 2, y, width: w, height: boxH, rx: 4 }), make("text", { class: "lk-letter", x: lx, y: y + boxH - 5, "text-anchor": "middle", "font-size": m.letter }, label));
     }
     for (const midi of wrong.keys()) {
       const g = geom.get(midi);
@@ -242,6 +307,7 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     paint();
   };
   const offs = bus ? [bus.on("noteOn", syncPressed), bus.on("noteOff", syncPressed)] : [];
+  root.addEventListener("scroll", updateHint);
   // The keyboard is redrawn and the page can shift under a finger (the card above it changes height), so
   // the release may land on something that is not a key: listen on the document too or the key would stay down.
   doc.addEventListener?.("pointerup", up);
@@ -264,13 +330,16 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
     },
     /** Tells the keyboard how much room it has, in pixels, and redraws. */
     fit(next) {
-      room = { width: next.width ?? room.width, height: next.height ?? room.height };
+      room = { width: next.width ?? room.width, height: next.height ?? room.height, portrait: next.portrait ?? room.portrait };
       render();
     },
     setStepKeys(keys) {
       stepKeys = keys.map((k) => ({ midi: k.midi, finger: k.finger, hand: k.hand ?? "R" }));
       paint();
+      center();
     },
+    /** True when the region is wider than the room and the keyboard scrolls sideways. */
+    scrolls: () => overflowing,
     setPositionKeys(keys) {
       positionKeys = keys.map((k) => ({ midi: k.midi, finger: k.finger, hand: k.hand ?? "R" }));
       paint();
@@ -310,6 +379,7 @@ export function createLearnKeyboard({ mount, i18n, bus = null, doc = globalThis.
       wrong.clear();
       correct.clear();
       root.remove();
+      hint.remove();
     },
   };
 }

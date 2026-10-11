@@ -3,7 +3,7 @@
 import { isBlackKey } from "../core/keyboard-layout.js";
 import { noteName, transpose } from "../core/pitch.js";
 
-/** White keys never get narrower than this (learn-keyboard spec); fewer keys are shown instead. */
+/** White keys never get narrower than this (learn-keyboard spec): a wider region scrolls sideways instead of shrinking the keys. */
 export const MIN_WHITE_PX = 36;
 /** White keys never get wider than this: past it the keyboard stops growing and is centered. */
 export const MAX_WHITE_PX = 88;
@@ -47,10 +47,12 @@ const SIZES = {
 /**
  * keyboardMetrics({ whiteCount, width, height }) -> sizes in pixels for a keyboard of `whiteCount` white
  * keys that must fit `width` (and `height` when given). The SVG is drawn in these pixels, so a font size
- * here is the size on screen. `size` is "lg" (wide white keys), "md" or "sm" (phone).
+ * here is the size on screen. `size` is "lg" (wide white keys), "md" or "sm" (phone). A white key is never
+ * narrower than MIN_WHITE_PX: when the keys do not fit `width`, `total` is wider than `width` and the
+ * keyboard scrolls sideways.
  */
 export function keyboardMetrics({ whiteCount, width, height = Infinity }) {
-  const keyW = Math.max(1, Math.floor(Math.min(width / Math.max(1, whiteCount), MAX_WHITE_PX)));
+  const keyW = Math.max(MIN_WHITE_PX, Math.floor(Math.min(width / Math.max(1, whiteCount), MAX_WHITE_PX)));
   const size = keyW >= 72 ? "lg" : keyW >= 52 ? "md" : "sm";
   const s = SIZES[size];
   const stripH = 2 * s.strip + 8; // two lines: letter and solfege of each black key
@@ -60,5 +62,5 @@ export function keyboardMetrics({ whiteCount, width, height = Infinity }) {
   const namesBlock = 8 + s.secondary + 4 + s.primary;
   const slot = s.badge + (s.letter + 6) + 8;
   const blackH = Math.round(Math.max(0.42 * keyH, Math.min(BLACK_RATIO * keyH, keyH - namesBlock - slot)));
-  return { keyW, keyH, stripH, blackH, size, ...s };
+  return { keyW, keyH, stripH, blackH, size, total: keyW * Math.max(1, whiteCount), ...s };
 }

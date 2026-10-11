@@ -123,15 +123,17 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
         const w = win.innerWidth ?? 1024;
         const h = win.innerHeight ?? 768;
         const landscape = h <= 480 && w > h;
-        const avail = Math.max(280, Math.min(w - 32, 1168));
+        // The room is the slot the keyboard lives in (the page has a maximum width and a scrollbar), not the window.
+        const slot = keyboardMount.clientWidth ?? 0;
+        const avail = Math.max(280, Math.min(slot > 0 ? slot : w - 32, 1168));
         const minPx = w >= 1000 ? 72 : landscape ? 54 : 36;
-        return { avail, maxWhite: Math.min(15, Math.floor(avail / minPx)), h };
+        return { avail, maxWhite: Math.min(15, Math.floor(avail / minPx)), h, portrait: h > w };
       };
 
       // Lesson zero draws its own keyboard: no song, no key context, hints on the black keys.
       function paintZeroKeyboard() {
         const z = zeroKeyboard(state.zero);
-        const { avail, h } = sizes();
+        const { avail, h, portrait } = sizes();
         if (contextSig !== "zero") {
           contextSig = "zero";
           keyboard.setKeyContext(null);
@@ -139,7 +141,7 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
         }
         const kbTop = keyboardMount.getBoundingClientRect?.().top ?? 0;
         const below = (panel.element.offsetHeight ?? 0) + 16;
-        keyboard.fit({ width: avail, height: Math.max(140, h - kbTop - below) });
+        keyboard.fit({ width: avail, height: Math.max(140, h - kbTop - below), portrait });
         if (!region || region.low !== z.region.low || region.high !== z.region.high) {
           region = { low: z.region.low, high: z.region.high };
           keyboard.setRegion(region);
@@ -162,7 +164,7 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
         const pos = first && s.phase !== "start" ? (s.hand === "T" ? [...positionKeys(first.positions?.R, "R"), ...positionKeys(first.positions?.L, "L")] : positionKeys(first.position, s.hand)) : [];
         const phraseMidis = s.steps.flatMap((st) => st.keys.map((k) => k.midi));
         const stepKeys = step ? step.keys.map((k) => ({ midi: k.midi, finger: k.finger, hand: k.hand ?? s.hand })) : [];
-        const { avail, maxWhite, h } = sizes();
+        const { avail, maxWhite, h, portrait } = sizes();
         const next = learnRegion({ phraseMidis, positionMidis: pos.map((k) => k.midi), stepMidis: stepKeys.map((k) => k.midi), maxWhite });
         const sig = `${s.timeline.key.tonic}|${s.stage}|${s.hand}`;
         if (sig !== contextSig) {
@@ -172,7 +174,7 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
         }
         const kbTop = keyboardMount.getBoundingClientRect?.().top ?? 0;
         const below = (panel.element.offsetHeight ?? 0) + 16;
-        keyboard.fit({ width: avail, height: Math.max(140, h - kbTop - below) });
+        keyboard.fit({ width: avail, height: Math.max(140, h - kbTop - below), portrait });
         if (!region || region.low !== next.low || region.high !== next.high) {
           region = { low: next.low, high: next.high };
           keyboard.setRegion(region);
