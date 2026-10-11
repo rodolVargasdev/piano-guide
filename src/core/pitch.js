@@ -61,7 +61,8 @@ export function keyFifths(key) {
   return key.mode === "major" ? major : major - 3;
 }
 
-const MAJOR_STEPS = [0, 2, 4, 5, 7, 9, 11];
+/** Semitones above the tonic of the seven degrees of a major scale. */
+export const MAJOR_STEPS = [0, 2, 4, 5, 7, 9, 11];
 const MINOR_STEPS = [0, 2, 3, 5, 7, 8, 10];
 
 // Spelled scale of the key as [{ letter, alter }] indexed by pitch class (0..11).
@@ -110,4 +111,49 @@ export function transpose(pitch, semitones, key) {
   }
   const octave = (midi - NATURAL_PC[letter] - alter) / 12 - 1;
   return `${letter}${ALTER_TEXT[alter]}${octave}`;
+}
+
+const OCTAVE_MIN = -1;
+const OCTAVE_MAX = 9;
+
+/**
+ * "E", 1, 4 -> "E#4". Null when the letter is not A to G, the alteration is outside -2..2 (a double
+ * accidental is the most the pitch format spells), or the octave is outside -1..9.
+ */
+export function pitchFromParts(letter, alter, octave) {
+  if (!Object.hasOwn(NATURAL_PC, letter) || !Number.isInteger(alter) || !Object.hasOwn(ALTER_TEXT, alter) || !Number.isInteger(octave)) return null;
+  if (octave < OCTAVE_MIN || octave > OCTAVE_MAX) return null;
+  return `${letter}${ALTER_TEXT[alter]}${octave}`;
+}
+
+// Spells `midi` on `letter` in the octave numbered by that letter; null beyond a double accidental.
+function onLetter(letter, letterOctave, midi) {
+  return pitchFromParts(letter, midi - ((letterOctave + 1) * 12 + NATURAL_PC[letter]), letterOctave);
+}
+
+/**
+ * Moves the letter by `steps` (letter names, so D to B is -2) and the sound by `semitones`, keeping
+ * the letter arithmetic: transposeInterval("D5", -2, -4) is "Bb4". Unlike `transpose`, which spells
+ * by key, this keeps a chromatic tone on the letter its degree asks for. Null when the pitch is
+ * unparsable or the result needs more than a double accidental or leaves octaves -1..9.
+ */
+export function transposeInterval(pitch, steps, semitones) {
+  const p = asParsed(pitch);
+  if (!p || !Number.isInteger(steps) || !Number.isInteger(semitones)) return null;
+  const index = LETTERS.indexOf(p.letter) + steps;
+  return onLetter(LETTERS[((index % 7) + 7) % 7], p.octave + Math.floor(index / 7), p.midi + semitones);
+}
+
+/**
+ * Scale degree to spelled pitch in a major key: the letter follows the degree number, the
+ * accidental is the semitone distance from the major-scale tone (plus `alter`), and octave
+ * offset 0 puts the tonic in octave 4. spellDegree({ tonic: "E", mode: "major" }, 7, -1, 0) is "D5".
+ * Null for a degree outside 1..7, a key that is not a spelled major tonic, or an out-of-range result.
+ */
+export function spellDegree(key, degree, alter, octaveOffset) {
+  const tonic = key && key.mode === "major" && typeof key.tonic === "string" ? parsePitch(`${key.tonic}4`) : null;
+  if (!tonic || !Number.isInteger(degree) || degree < 1 || degree > 7 || !Number.isInteger(alter) || !Number.isInteger(octaveOffset)) return null;
+  const index = LETTERS.indexOf(tonic.letter) + degree - 1;
+  const midi = tonic.midi + 12 * octaveOffset + MAJOR_STEPS[degree - 1] + alter;
+  return onLetter(LETTERS[index % 7], 4 + octaveOffset + Math.floor(index / 7), midi);
 }
