@@ -11,6 +11,8 @@ docker run --rm -p 8790:8080 piano-guide
 
 Then open `http://localhost:8790/`. The build runs the test suite inside the image (`node --test`), so the image only exists if the tests pass. Port 8790 is a suggestion: pick any free port.
 
+To see the private songs in the container, mount the folder read-only (see "Private songs").
+
 The images used (exact tags and digests) and their vulnerability audit are listed in `docs/STACK_TECNOLOGICO.md`.
 
 ## Run without Docker (dev server)
@@ -22,6 +24,39 @@ PORT=8790 node tools/serve.mjs
 ```
 
 On PowerShell: `$env:PORT=8790; node tools/serve.mjs`. The default port is 8790. Check that the port is free first.
+
+## Learn mode
+
+Open a song and press **Learn**. The screen says one thing at a time: which finger goes on which key ("Right hand: thumb on E (Mi)."), with the key shaded on a close keyboard and the finger number on it. Press the key and the screen says "Correct" and gives the next step; press another key and it says "Try again" and keeps the shaded key. A phrase is a few steps; finish it and the next one opens. Progress (phrase, hand, key, language) is saved in the browser and "Continue" brings you back to it.
+
+- **Language**: the selector (English / Español) switches every text at once, also in the middle of a step.
+- **Key**: when a song offers it, a second key (for example "C major" for a song in E major) recomputes the note names and the fingers.
+- **Hand**: right or left hand, when the song has both.
+- **Private songs** have no Listen button: the app only tells you what to play. Your own key presses always sound.
+
+### Inputs
+
+All three work at the same time.
+
+| Input | How |
+|-------|-----|
+| On-screen keys | Click or tap the keys. Several fingers at once play several keys. Sliding off a key ends the note |
+| Computer keys | The home row plays white keys: `A S D F G H J K L ; '`. The row above plays the black keys between them: `W E R T Y U I O P [`. The map starts one white key below the current hand position and moves with it; the letters are drawn on the keys. Ctrl, Alt and Meta combinations, text fields and auto-repeat never play a note. The letters follow the physical keys (a Spanish keyboard shows its own letter on the `;` position in Chrome and Edge) |
+| MIDI piano | Chrome or Edge, a secure page (`localhost` counts). Press **Connect piano** and allow the permission; the chip shows the device name. The app does not add sound to MIDI notes by default (the piano already sounds); the setting "Sound from the app for MIDI" turns it on |
+
+Casio digital pianos: connect the USB TO HOST port to the computer with a USB cable, then press **Connect piano**. If the chip says "MIDI: no device", the piano may be exposing only USB audio; use the computer keys or tap the keys.
+
+### Private songs
+
+A song you must not publish goes in `songs-private/` (a folder next to `index.html`, ignored by git and by Docker). It joins the catalog on your machine with a "Private" chip and is silent in the app: the cursor and the falling bars move, nothing from the song sounds, and the play button says "Play (no sound)". Nothing in the repository, the image or GitHub Pages contains it.
+
+- Convert a Hooktheory capture: put it at `songs-private/sources/hooktheory-cancer.json` and run `node tools/convert-hooktheory.mjs` (writes `songs-private/cancer-private.json` and its index entry).
+- With Docker, mount the folder read-only: `docker run --rm -p 8790:8080 -v <path>/songs-private:/usr/share/nginx/html/songs-private:ro piano-guide`. Without the mount only the public songs appear and nothing is reported. The `sources/` folder is never served.
+- With the dev server, `NO_PRIVATE=1 node tools/serve.mjs` hides the whole folder, to see what GitHub Pages would show.
+
+### Usability check
+
+`docs/USABILITY_CHECK.md` is the protocol to test Learn mode with a person who has never played.
 
 ## Tests
 
@@ -54,6 +89,7 @@ The site uses hash routes, so it works on any static host and under a subpath wi
 | `#/` | Song catalog: a hero and one card per song from `songs/index.json` (no three.js and no player code is downloaded for it) |
 | `#/song/<id>` | Song player: 3D keyboard with falling notes, transport controls, position readout and BPM, and the grand-staff score under the keyboard. Add `?debug=1` to the page URL (or the hash) for the overlay (clock jitter, frame time, graphics tier and camera section) |
 | `#/song/<id>?level=<id>&names=<solfege or letters>&view=<both, scene or score>` | Same song with the level, note names and view preselected; the selector under the title changes them and rewrites the hash without a reload |
+| `#/learn/<id>?level=<id>` | Learn mode: the step-by-step teacher (see "Learn mode" above) |
 | anything else | "Page not found" with a link to the catalog |
 
 An id that is not in the index shows "Song not found". The browser back button always disposes the previous view first.
