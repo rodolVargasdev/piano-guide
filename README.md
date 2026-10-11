@@ -42,6 +42,7 @@ Levels and analysis, by example from `songs/cancer.json`:
 - `analysis` (optional, per level) is a list of `{ tick, endTick?, kind, title, text, roman?, function? }` with `kind` one of `harmony`, `voice-leading`, `ornament`, `rubato`, `dynamics`, `form`. It appears only when the Analysis toggle is on: roman numerals under the staff, a short callout per entry (keep `title` under about 18 characters) and the full text in the lesson card. A level with no `analysis` has no Analysis toggle.
 - `lesson` has one entry per level id; a level without one shows "No lesson for this level yet" and a validator warning.
 - `contentPolicy: "chords-only"` (Cancer) forbids `role: "melody"` and any `lyrics` string anywhere in the file; the arrangement is then described as a generic chord-based accompaniment.
+- A `tie: true` note and the note that continues it (same hand and pitch, starting where it ends) sound once for both lengths; the score draws both.
 
 ## Routes
 

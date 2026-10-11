@@ -174,3 +174,28 @@ test("counter-proof: a seek mid-note and a level switch while paused start nothi
   engine.setTimeline(resolveLevel(mutated(() => {}), "beginner"), { tick: 1000 });
   assert.equal(notes.length, paused, "nothing sounds while paused");
 });
+
+test("a tied pair is played as one note for both lengths, and without the tie flag as two notes", () => {
+  const tied = mutated((s) => {
+    s.levels.beginner.notes = [
+      { tick: 0, dur: 480, pitch: "C4", hand: "R", tie: true },
+      { tick: 480, dur: 480, pitch: "C4", hand: "R" },
+    ];
+  });
+  const a = rig({ timeline: resolveLevel(tied, "beginner") });
+  a.engine.play();
+  a.run(2);
+  assert.equal(a.notes.length, 1);
+  near(a.notes[0].dur, 960 / TPS);
+
+  const plain = mutated((s) => {
+    s.levels.beginner.notes = [
+      { tick: 0, dur: 480, pitch: "C4", hand: "R" },
+      { tick: 480, dur: 480, pitch: "C4", hand: "R" },
+    ];
+  });
+  const b = rig({ timeline: resolveLevel(plain, "beginner") });
+  b.engine.play();
+  b.run(2);
+  assert.equal(b.notes.length, 2, "counter-proof: the same notes without the flag are struck twice");
+});

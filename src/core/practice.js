@@ -86,9 +86,35 @@ export function nextRampBpm({ current, start, step, target }) {
 
 const isOn = (modes, hand, flag) => !modes?.[hand]?.[flag];
 
-/** Notes of hands that are not muted. */
+/**
+ * Tied notes sound once: a note with `tie: true` absorbs the following note of the same hand and
+ * pitch that starts where it ends (and so on along the chain), and the absorbed notes are dropped.
+ * Only the sounding list changes; the score still draws both notes. Input order is kept.
+ */
+export function mergeTies(notes) {
+  if (!notes.some((n) => n.tie === true)) return notes;
+  const starts = new Map(notes.filter((n) => n.midi !== null && n.midi !== undefined).map((n) => [`${n.hand}|${n.midi}|${n.tick}`, n]));
+  const absorbed = new Set();
+  const out = [];
+  for (const n of notes) {
+    if (absorbed.has(n)) continue;
+    let end = n.tick + n.dur;
+    let cur = n;
+    while (cur.tie === true) {
+      const next = starts.get(`${n.hand}|${n.midi}|${end}`);
+      if (!next || next === cur || absorbed.has(next)) break;
+      absorbed.add(next);
+      end += next.dur;
+      cur = next;
+    }
+    out.push(end === n.tick + n.dur ? n : { ...n, dur: end - n.tick });
+  }
+  return out;
+}
+
+/** Notes of hands that are not muted, with tied notes merged into one sounding note. */
 export function audibleNotes(notes, handModes) {
-  return notes.filter((n) => isOn(handModes, n.hand, "muted"));
+  return mergeTies(notes.filter((n) => isOn(handModes, n.hand, "muted")));
 }
 
 /** Notes of hands that are not hidden. */

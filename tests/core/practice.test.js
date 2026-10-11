@@ -13,6 +13,7 @@ import {
   normalizeRamp,
   nextRampBpm,
   audibleNotes,
+  mergeTies,
   visibleNotes,
 } from "../../src/core/practice.js";
 
@@ -158,4 +159,27 @@ test("both hands muted gives no audible notes but they stay visible; missing mod
   assert.equal(visibleNotes(NOTES, both).length, 2);
   assert.equal(audibleNotes(NOTES, undefined).length, 2);
   assert.equal(visibleNotes(NOTES, {}).length, 2);
+});
+
+const tn = (tick, dur, pitch, midi, extra = {}) => ({ tick, dur, hand: "R", pitch, midi, ...extra });
+
+test("mergeTies: a tied pair sounds as one note for the sum of both lengths and the score data is untouched", () => {
+  const notes = [tn(240, 720, "G5", 79, { tie: true }), tn(960, 240, "G5", 79), tn(1200, 240, "F5", 77)];
+  const merged = mergeTies(notes);
+  assert.deepEqual(merged.map((n) => [n.tick, n.dur, n.pitch]), [[240, 960, "G5"], [1200, 240, "F5"]]);
+  assert.equal(notes[0].dur, 720, "the input note is not mutated");
+  assert.equal(audibleNotes(notes, undefined).length, 2);
+});
+
+test("mergeTies follows a chain, and a tie flag with no continuation leaves the note alone", () => {
+  const chain = [tn(0, 240, "C5", 72, { tie: true }), tn(240, 240, "C5", 72, { tie: true }), tn(480, 240, "C5", 72)];
+  assert.deepEqual(mergeTies(chain).map((n) => [n.tick, n.dur]), [[0, 720]]);
+  const dangling = [tn(0, 240, "C5", 72, { tie: true }), tn(480, 240, "C5", 72)];
+  assert.equal(mergeTies(dangling).length, 2);
+});
+
+test("counter-proof: without the tie flag, or on another pitch or hand, nothing merges", () => {
+  assert.equal(mergeTies([tn(0, 240, "C5", 72), tn(240, 240, "C5", 72)]).length, 2, "no flag");
+  assert.equal(mergeTies([tn(0, 240, "C5", 72, { tie: true }), tn(240, 240, "D5", 74)]).length, 2, "other pitch");
+  assert.equal(mergeTies([tn(0, 240, "C5", 72, { tie: true }), { ...tn(240, 240, "C5", 72), hand: "L" }]).length, 2, "other hand");
 });
