@@ -42,7 +42,7 @@ The site uses hash routes, so it works on any static host and under a subpath wi
 | Hash | Shows |
 |------|-------|
 | `#/` | Song catalog (cards from `songs/index.json`) |
-| `#/song/<id>` | Song player: 3D keyboard with falling notes, transport controls, position readout and BPM; the score view arrives later. Add `?debug=1` to the page URL (or the hash) for the drift and frame-time overlay |
+| `#/song/<id>` | Song player: 3D keyboard with falling notes, transport controls, position readout and BPM, and the grand-staff score under the keyboard. Add `?debug=1` to the page URL (or the hash) for the drift and frame-time overlay |
 | `#/song/<id>?level=<id>&names=<solfege or letters>&view=<both, scene or score>` | Same song with the level, note names and view preselected |
 | anything else | "Page not found" with a link to the catalog |
 
@@ -83,3 +83,13 @@ The scheduler runs every 25 ms with a 120 ms look-ahead (1.5 s while the tab is 
 - Range: the keyboard fits the song (3 semitones of padding, snapped outward to C and B, at least 3 octaves); the camera frames it. With `?debug=1` a "Full 88" button shows all 88 keys and reframes; the regular control arrives with the practice panel.
 - No WebGL, or a failed three.js import: the scene slot shows "3D view unavailable on this device" and the transport and audio keep working.
 - One `WebGLRenderer` is shared by the whole page; leaving the player disposes the scene's own geometry, materials and textures.
+
+## Score
+
+`src/score/` draws the grand staff as SVG without a notation dependency: `layout.js` and `engraving.js` are pure (pitch placement, key signature, accidentals, stems, beams, rests, ties, tuplets, grace notes, ornament positions, the tick to x table), `draw.js` turns that into plain drawing descriptors, `glyphs.js` holds the hand-authored paths and `render.js` builds the SVG. The player calls `score.render(tick)` once per frame from the same loop as the scene.
+
+- One continuous system: the staff lines, clefs, key signature and time signature stay fixed, the measures scroll under a fixed red playhead, so a seek or a loop wrap lands in the same place as playing there.
+- Beginner (`notation: "labelled"`): larger noteheads colored by hand with the note name inside (solfege by default, letters with `names=letters`; a `label` field wins), a finger row above the treble staff and below the bass staff, and a chord row above the staff with the chord symbol only. Original (`notation: "engraved"`): empty noteheads, ornament signs, and optional roman numerals and analysis callouts.
+- A hidden hand is not drawn. Under `prefers-reduced-motion: reduce` the score steps once per beat instead of moving smoothly.
+- The SVG is `role="img"` with a title ("<song>, <level> score") and a description (key, meter, tempo, bars). Song text only ever reaches the page through `textContent`. Beyond 5000 nodes only the measures within 8 of the playhead stay mounted.
+- Known limits: no cross-staff notes, no multi-measure rests, and on a phone in landscape the score is small (the `view` parameter will give it the whole stage in a later PR).

@@ -1,7 +1,8 @@
 // Player view: validates the song on open, resolves a level, creates the engine and runs the ONE
 // requestAnimationFrame loop that reads engine.position() once per frame. The 3D scene loads
 // lazily (a failed import or no WebGL leaves a message and keeps everything else working); the
-// score is a no-op placeholder until its PR. dispose() tears everything down on route change.
+// SVG score is created right after the slot is in the page. dispose() tears everything down on
+// route change.
 
 import { el } from "./dom.js";
 import { loadCatalog } from "./catalog.js";
@@ -11,6 +12,7 @@ import { resolveLevel } from "../core/timeline.js";
 import { FULL_RANGE } from "../core/keyboard-layout.js";
 import { createAudio } from "../audio/context.js";
 import { createEngine } from "../audio/engine.js";
+import { createScore } from "../score/render.js";
 
 /** The requested level when the song has it, otherwise the song's default level. */
 export function pickLevel(song, requested) {
@@ -120,7 +122,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
       const debug = debugRequested(win.location.search, win.location.hash)
         ? createDebugOverlay({ onToggleRange: (full) => { scene.setRange(full ? FULL_RANGE : null); requestFrame(); } })
         : null;
-      const score = NOOP_VIEW;
+      let score = NOOP_VIEW;
       let scene = NOOP_VIEW;
       let raf = null;
       let closed = false;
@@ -141,8 +143,10 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
       const transport = createTransport({ engine, timeline, onChange: requestFrame });
       const key = `${song.key.tonic} ${song.key.mode}`;
       const sceneSlot = el("div", { class: "slot", "data-slot": "scene" }, el("p", { class: "meta", role: "status" }, "Loading keyboard view"));
+      const scoreSlot = el("div", { class: "slot", "data-slot": "score" });
       const onResize = () => {
         scene.resize();
+        score.resize();
         requestFrame();
       };
       root.replaceChildren(
@@ -160,13 +164,21 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
             "div",
             { class: "stage" },
             sceneSlot,
-            el("div", { class: "slot", "data-slot": "score" }, el("p", { class: "meta" }, "Score view not available yet")),
+            scoreSlot,
           ),
           transport.element,
           debug?.element,
         ),
       );
       win.addEventListener("resize", onResize);
+      // The slot must be in the page before the score measures it.
+      score = createScore(scoreSlot, { timeline, title: song.title, names: route.names });
+      const motion = win.matchMedia?.("(prefers-reduced-motion: reduce)");
+      const onMotion = () => score.setReducedMotion(motion.matches);
+      if (motion) {
+        onMotion();
+        motion.addEventListener("change", onMotion);
+      }
       requestFrame();
 
       // Lazy scene: the catalog never downloads three.js. Any failure keeps the rest of the player alive.
@@ -190,6 +202,8 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
         dispose() {
           closed = true;
           win.removeEventListener("resize", onResize);
+          motion?.removeEventListener("change", onMotion);
+          score.dispose();
           if (raf !== null) win.cancelAnimationFrame(raf);
           raf = null;
           scene.dispose(); // frees geometry, materials, textures and the renderer
