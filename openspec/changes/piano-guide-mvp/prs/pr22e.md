@@ -25,7 +25,7 @@
 - Screenshots read: `22-catalog-b-catalog-1440x900`, `22-catalog-b-catalog-844x390`, `22-catalog-reduced-motion-1440x900`. A first version put notes over the heading text; moved to the right half and dimmed on a narrow screen.
 - Motion: allowed, the notes move (tops differ 1.2 s apart); reduced motion emulated, `animation-name` is `none` and the notes stay where the stylesheet rests them (identical positions 1.2 s apart).
 - The catalog requests no three.js; no console error (the favicon 404 is gone).
-- Known limits: the cost of the catalog route (all modules and both song files are fetched) is measured in PR 22f; the hero text is English only like the rest of the UI; not checked on Safari or Firefox (`roundRect` and `inset` shorthand are in current versions of both, not verified here).
+- Known limits: the cost of the catalog route (all modules and both song files are fetched) is measured in PR 22f; the hero text is English only like the rest of the UI; not checked on Safari or Firefox (the `inset` shorthand and `repeating-linear-gradient` are old features, but this was not verified there).
 
 ## Rollback
 
