@@ -9,8 +9,8 @@ WORKDIR /app
 COPY package.json ./
 COPY src/ ./src/
 COPY tests/ ./tests/
-# Guards that read these files (CSP hash against the import map).
-COPY index.html nginx.conf ./
+# Guards that read these files (CSP hash against the import map, base images against the stack document).
+COPY index.html nginx.conf Dockerfile ./
 COPY songs/ ./songs/
 # Guard that pins the vendored three.js bytes and the hashes in the stack document.
 COPY assets/vendor/ ./assets/vendor/
