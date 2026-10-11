@@ -42,9 +42,9 @@ Delivery: a feature-branch-chain of ten branches, each of about 400 authored lin
 
 ## Tasks
 - [x] T1 Map the current code (learn mode, schema limits, tests that pin the Nocturne length) and fetch the full source again (same SHA-256). Proof: both SHA-256 matched; the tests that pinned the length were in tests/songs.test.js and tests/core/timeline.test.js and now measure `lengthTicks`.
-- [ ] T2 Original level, bars 5 to 34 (app bars 5 to 37), in slices, each pinned by the MIDI onset fixture. Done up to app bar 31.
-- [ ] T3 Beginner level for the same bars. Done up to app bar 31.
-- [ ] T4 Lesson, ornaments and analysis for the new sections; lengthTicks, sections and loops. Done up to app bar 31.
+- [x] T2 Original level, bars 5 to 34 (app bars 5 to 37), in slices, each pinned by the MIDI onset fixture.
+- [x] T3 Beginner level for the same bars.
+- [x] T4 Lesson, ornaments and analysis for the new sections; lengthTicks, sections and loops.
 - [ ] T5 Browser verification, README and STACK/content-sources update. Orchestrator pushes.
 
 ## Progress
@@ -58,4 +58,5 @@ Delivery: a feature-branch-chain of ten branches, each of about 400 authored lin
 - 2026-10-11: slice 6 on `feat/nocturne-complete-pr6-bars-21-24`: bars 21 to 24, both levels, with chords, analysis and lesson text. Authored lines (song file, licence note and stack row): +304 and -17.
 - 2026-10-11: slice 7 on `feat/nocturne-complete-pr7-bars-25-28`: bars 25 to 28, both levels, with chords, analysis and lesson text. Authored lines (song file, licence note and stack row): +353 and -23.
 - 2026-10-11: slice 8 on `feat/nocturne-complete-pr8-bars-29-31`: bars 29 to 31, both levels, with chords, analysis and lesson text. Authored lines (song file, licence note and stack row): +294 and -20.
+- 2026-10-11: slice 9 on `feat/nocturne-complete-pr9-cadenza-end`: the cadenza and the last printed bars (app bars 32 to 37) and the README, both levels, with chords, analysis and lesson text. Authored lines (song file, README, licence note and stack row): +315 and -24.
 
