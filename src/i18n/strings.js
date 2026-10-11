@@ -21,6 +21,8 @@ export const STRINGS = {
   "common.catalog": { en: "Catalog", es: "Catálogo" },
   "common.learn": { en: "Learn", es: "Aprender" },
   "common.playAlong": { en: "Play along", es: "Tocar junto a la canción" },
+  "common.play": { en: "Play", es: "Reproducir" },
+  "common.playNoSound": { en: "Play (no sound)", es: "Reproducir (sin sonido)" },
   "common.playAlongNoSound": { en: "Play along (no sound)", es: "Tocar junto a la canción (sin sonido)" },
   "common.practice": { en: "Practice exercises", es: "Ejercicios de práctica" },
   "common.private": { en: "Private", es: "Privada" },
@@ -54,6 +56,7 @@ export const STRINGS = {
   "note.B": { en: "Si", es: "Si" },
   "note.display": { en: "{letter} ({solfege})", es: "{solfege} ({letter})" },
   "key.major": { en: "{tonic} major", es: "{tonic} mayor" },
+  "key.minor": { en: "{tonic} minor", es: "{tonic} menor" },
   "keyboard.label": { en: "Keyboard, {low} to {high}", es: "Teclado, de {low} a {high}" },
 
   // step instructions
@@ -88,6 +91,20 @@ export const STRINGS = {
   "catalog.idUsed": { en: "id already used by a public song", es: "identificador ya usado por una canción pública" },
   "catalog.visibilityMismatch": { en: "index and file disagree on visibility", es: "el índice y el archivo no coinciden en la visibilidad" },
   "catalog.notPrivate": { en: "the file is not marked private", es: "el archivo no está marcado como privado" },
+  "catalog.publicIsPrivate": { en: "a public library file is marked private", es: "un archivo de la biblioteca pública está marcado como privado" },
+  "catalog.loading": { en: "Loading songs", es: "Cargando canciones" },
+  "catalog.loadError": { en: "Song list could not be loaded", es: "No se pudo cargar la lista de canciones" },
+  "catalog.empty": { en: "No songs yet", es: "Aún no hay canciones" },
+  "catalog.hero.title": { en: "Learn a song, one key at a time", es: "Aprenda una canción, una tecla a la vez" },
+  "catalog.hero.lead": { en: "Press Learn. The screen tells you which finger goes on which key.", es: "Pulse Aprender. La pantalla indica qué dedo va en cada tecla." },
+  "catalog.hero.start": { en: "Start with {title}", es: "Empezar con {title}" },
+  "catalog.badge": { en: "{songs} | {levels}", es: "{songs} | {levels}" },
+  "catalog.songs_one": { en: "{count} song", es: "{count} canción" },
+  "catalog.songs_other": { en: "{count} songs", es: "{count} canciones" },
+  "catalog.levels_one": { en: "{count} level", es: "{count} nivel" },
+  "catalog.levels_other": { en: "{count} levels", es: "{count} niveles" },
+  "level.beginner": { en: "beginner", es: "principiante" },
+  "level.original": { en: "original", es: "original" },
 
   // learn view
   "learn.tagline": { en: "Learn it phrase by phrase.", es: "Aprenda la canción frase por frase." },
