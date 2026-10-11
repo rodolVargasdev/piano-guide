@@ -284,51 +284,51 @@ Specs: song-catalog (public set), song-data-model (Cancer no longer named as shi
 
 Specs: music-theory-generators (scales, five-finger, key orders).
 
-- [ ] 19.1 Modify `src/theory/keys.js`: `keyOrder({ kind, direction, start, list, seed, count })` (fixed list, random with no early repeat and no self-follow, circle of fifths wrapping to C at 13, circle of fourths C F Bb Eb Ab Db F# B E A D G), `introOrder` C G D F A E B Bb Eb Ab Db F#. Test: `tests/theory/keys.test.js` additions (including a fixed list C F G for 5 steps).
-- [ ] 19.2 Create `src/theory/scales.js`: `majorScale(tonic, { octaves, hand })`, `fiveFinger(tonic, hand)`, `SCALE_FINGERING` table exactly as in the design (all 12 keys, start / cycle / top for both hands), descending reverses, spelling via `spellDegree` (F# major has E#). Test: `tests/theory/scales.test.js`: table checks for the sequences listed in the design (C RH 1 2 3 1 2 3 4 5; C LH 5 4 3 2 1 3 2 1; F RH 1 2 3 4 1 2 3 4; C RH two octaves 15 notes; C LH two octaves; B LH 4 3 2 1 4 3 2 1; Bb RH 2 1 2 3 1 2 3 4; F# LH 4 3 2 1 3 2 1 4), all 12 keys x valid fingers x stepwise, intro order equals the table order, five-finger G and D LH.
-- [ ] 19.3 Verification: `node --test tests/theory` and full run. Record the two flagged fingering uncertainties (Bb RH start, F# LH start) in the PR notes so the user can confirm them with a teacher.
+- [x] 19.1 Modify `src/theory/keys.js`: `keyOrder({ kind, direction, start, list, seed, count })` (fixed list, random with no early repeat and no self-follow, circle of fifths wrapping to C at 13, circle of fourths C F Bb Eb Ab Db F# B E A D G), `introOrder` C G D F A E B Bb Eb Ab Db F#. Test: `tests/theory/keys.test.js` additions (including a fixed list C F G for 5 steps).
+- [x] 19.2 Create `src/theory/scales.js`: `majorScale(tonic, { octaves, hand })`, `fiveFinger(tonic, hand)`, `SCALE_FINGERING` table exactly as in the design (all 12 keys, start / cycle / top for both hands), descending reverses, spelling via `spellDegree` (F# major has E#). Test: `tests/theory/scales.test.js`: table checks for the sequences listed in the design (C RH 1 2 3 1 2 3 4 5; C LH 5 4 3 2 1 3 2 1; F RH 1 2 3 4 1 2 3 4; C RH two octaves 15 notes; C LH two octaves; B LH 4 3 2 1 4 3 2 1; Bb RH 2 1 2 3 1 2 3 4; F# LH 4 3 2 1 3 2 1 4), all 12 keys x valid fingers x stepwise, intro order equals the table order, five-finger G and D LH.
+- [x] 19.3 Verification: `node --test tests/theory` and full run. Record the two flagged fingering uncertainties (Bb RH start, F# LH start) in the PR notes so the user can confirm them with a teacher.
 
 ## Phase 20: Triads, arpeggios, progressions (pr2c-triads-progressions, about 420 lines)
 
 Specs: music-theory-generators.
 
-- [ ] 20.1 Create `src/theory/triads.js`: `triad(tonic, quality, inversion, hand)` with the amended left-hand fingering (5-3-1 root and first inversion, 5-2-1 second inversion), `arpeggio` from the arpeggio table (standard table, not the five-finger assigner; Db, Eb, Ab, Bb left hand uses the assigner fallback and is marked "suggested fingering"), reverse for descending. Test: `tests/theory/triads.test.js`: RH and LH inversions, arpeggio notes and fingerings (C RH 1 2 3 5, LH 5 4 2 1, two-octave patterns), reverse, flagged rows carry the `suggested` flag.
-- [ ] 20.2 Create `src/theory/progressions.js` `progression(tonic, numerals)` with Viterbi voice leading (first chord root position, minimal total movement, ties to lower voicing). Test: `tests/theory/progressions.test.js`: C I-IV-V-I, common tone held, total movement <= all-root sequence for all 12 tonics x 3 progressions (I-IV-V-I, I-vi-IV-V, I-V-vi-IV), G vi = Em, Bb spelling.
-- [ ] 20.3 Verification: `node --test tests/theory` and full run.
+- [x] 20.1 Create `src/theory/triads.js`: `triad(tonic, quality, inversion, hand)` with the amended left-hand fingering (5-3-1 root and first inversion, 5-2-1 second inversion), `arpeggio` from the arpeggio table (standard table, not the five-finger assigner; Db, Eb, Ab, Bb left hand uses the assigner fallback and is marked "suggested fingering"), reverse for descending. Test: `tests/theory/triads.test.js`: RH and LH inversions, arpeggio notes and fingerings (C RH 1 2 3 5, LH 5 4 2 1, two-octave patterns), reverse, flagged rows carry the `suggested` flag.
+- [x] 20.2 Create `src/theory/progressions.js` `progression(tonic, numerals)` with Viterbi voice leading (first chord root position, minimal total movement, ties to lower voicing). Test: `tests/theory/progressions.test.js`: C I-IV-V-I, common tone held, total movement <= all-root sequence for all 12 tonics x 3 progressions (I-IV-V-I, I-vi-IV-V, I-V-vi-IV), G vi = Em, Bb spelling.
+- [x] 20.3 Verification: `node --test tests/theory` and full run.
 
 ## Phase 21: Intervals and ear-drill questions (pr3c-intervals-drills, about 300 lines)
 
 Specs: music-theory-generators (intervals), practice-exercises (ear drills data).
 
-- [ ] 21.1 Create `src/theory/intervals.js` (`INTERVALS` table m2 to P8, `intervalNotes(low, interval)`) and `src/theory/drills.js` (`intervalQuestion(seed, options)`, `chordQuestion(seed, options)` with seeded `mulberry32`, answer appears exactly once among options, notes in C3 to C6). Test: `tests/theory/intervals.test.js`, `tests/theory/drills.test.js`: same seed same question, answer once among options over 500 seeds, M3 notes, range C3 to C6.
-- [ ] 21.2 Verification: `node --test tests/theory`.
+- [x] 21.1 Create `src/theory/intervals.js` (`INTERVALS` table m2 to P8, `intervalNotes(low, interval)`) and `src/theory/drills.js` (`intervalQuestion(seed, options)`, `chordQuestion(seed, options)` with seeded `mulberry32`, answer appears exactly once among options, notes in C3 to C6). Test: `tests/theory/intervals.test.js`, `tests/theory/drills.test.js`: same seed same question, answer once among options over 500 seeds, M3 notes, range C3 to C6.
+- [x] 21.2 Verification: `node --test tests/theory`.
 
 ## Phase 22: Runner, metronome timeline, practice progress (pr4c-runner-progress, about 400 lines)
 
 Specs: practice-exercises (runner, tempo ramp, progress).
 
-- [ ] 22.1 Modify `src/core/timeline.js`: add `makeTimeline({ meter, bpm, bars })` returning the note-less `silent: false` timeline from the design. Test: `tests/core/timeline.test.js` (no notes, whole bars, `silent: false`, clock runs with the engine rig and schedules no note).
-- [ ] 22.2 Create `src/practice/runner.js`: converts a generated sequence into matcher steps, tracks `clean` (false after any wrong key), stages R, L then T for scales and arpeggios, `nextTempo(steps, current, clean) -> { bpm, top }` pure (A1: tempo is pacing only, "clean at tempo T" means no wrong key while the metronome was at T). Test: `tests/practice/runner.test.js` (clean tracking, stage order, ramp, top, unclean stays at the same tempo, tempo within 20 to 240).
-- [ ] 22.3 Create `src/practice/progress.js` (`readPracticeProgress`, `recordRun`, `recordRoutine` as a no-op when no block is done, `clearPracticeProgress`; key `piano-guide:practice:v1`; `cleanStreak` per exercise and key, `bestTempo`, `cleanRuns`, `lastPracticed`; `dayStreak` stays separate per A5). Test: `tests/practice/progress.test.js`: streak and best-tempo scenarios, unclean run resets `cleanStreak`, corrupt JSON reads empty, blocked storage swallowed, reset empties the summary.
-- [ ] 22.4 Verification: `node --test tests/practice tests/core/timeline.test.js` and full run.
+- [x] 22.1 Modify `src/core/timeline.js`: add `makeTimeline({ meter, bpm, bars })` returning the note-less `silent: false` timeline from the design. Test: `tests/core/timeline.test.js` (no notes, whole bars, `silent: false`, clock runs with the engine rig and schedules no note).
+- [x] 22.2 Create `src/practice/runner.js`: converts a generated sequence into matcher steps, tracks `clean` (false after any wrong key), stages R, L then T for scales and arpeggios, `nextTempo(steps, current, clean) -> { bpm, top }` pure (A1: tempo is pacing only, "clean at tempo T" means no wrong key while the metronome was at T). Test: `tests/practice/runner.test.js` (clean tracking, stage order, ramp, top, unclean stays at the same tempo, tempo within 20 to 240).
+- [x] 22.3 Create `src/practice/progress.js` (`readPracticeProgress`, `recordRun`, `recordRoutine` as a no-op when no block is done, `clearPracticeProgress`; key `piano-guide:practice:v1`; `cleanStreak` per exercise and key, `bestTempo`, `cleanRuns`, `lastPracticed`; `dayStreak` stays separate per A5). Test: `tests/practice/progress.test.js`: streak and best-tempo scenarios, unclean run resets `cleanStreak`, corrupt JSON reads empty, blocked storage swallowed, reset empties the summary.
+- [x] 22.4 Verification: `node --test tests/practice tests/core/timeline.test.js` and full run.
 
 ## Phase 23: Exercise catalog and bilingual doc cards (pr5c-exercise-catalog, about 400 lines)
 
 Specs: practice-exercises (catalog, doc cards), learner-language.
 
-- [ ] 23.1 Create `src/practice/catalog.js`: ids `five-finger`, `scale-major`, `triads`, `arpeggios`, `cadence-i-iv-v-i`, `progression-i-vi-iv-v`, `progression-i-v-vi-iv`, `ear-intervals`, `ear-chords`, `routine`, each with `group`, `generate(options)` calling the theory generators, `tempoSteps` (for example scales `[50, 60, 72, 88]`), doc-card string keys. Test: `tests/practice/catalog.test.js`: every id has all card keys, a failing fixture entry missing a card key is flagged (counter-proof), tempo steps within 20 to 240.
-- [ ] 23.2 Add `ex.<id>.{title,goal,why,how,good}`, `interval.*`, `quality.*`, `practice.*` (including `practice.notFound` "Exercise not found" / "Ejercicio no encontrado") keys to `src/i18n/strings.js`, with the card line "standard fingering; some books differ" for scales and "suggested fingering" for flagged arpeggios. Test: `tests/i18n` guards (completeness, placeholders, typography, voseo) over the real table.
-- [ ] 23.3 Verification: `node --test tests/practice tests/i18n`.
+- [x] 23.1 Create `src/practice/catalog.js`: ids `five-finger`, `scale-major`, `triads`, `arpeggios`, `cadence-i-iv-v-i`, `progression-i-vi-iv-v`, `progression-i-v-vi-iv`, `ear-intervals`, `ear-chords`, `routine`, each with `group`, `generate(options)` calling the theory generators, `tempoSteps` (for example scales `[50, 60, 72, 88]`), doc-card string keys. Test: `tests/practice/catalog.test.js`: every id has all card keys, a failing fixture entry missing a card key is flagged (counter-proof), tempo steps within 20 to 240.
+- [x] 23.2 Add `ex.<id>.{title,goal,why,how,good}`, `interval.*`, `quality.*`, `practice.*` (including `practice.notFound` "Exercise not found" / "Ejercicio no encontrado") keys to `src/i18n/strings.js`, with the card line "standard fingering; some books differ" for scales and "suggested fingering" for flagged arpeggios. Test: `tests/i18n` guards (completeness, placeholders, typography, voseo) over the real table.
+- [x] 23.3 Verification: `node --test tests/practice tests/i18n`.
 
 ## Phase 24: Practice view (pr6c-practice-view, about 450 lines)
 
 Specs: practice-exercises (view, repeat, metronome, ramp, key rotation, checking), learn-keyboard reuse.
 
-- [ ] 24.1 Create `src/ui/practice-view.js` for `#/practice` (grouped exercise list, each with a one-line goal) and `#/practice/<id>` (doc card with goal, why, how, what good looks like, tempo steps; "Start"; run with the learn keyboard showing the keys and fingers, metronome through `engine.setMetronome` on a `makeTimeline` timeline, tempo ramp with `nextTempo`, "Next key" using `keyOrder` (fixed, random, circle) announcing the key in one line, simple Correct / Try again feedback, progress summary with `cleanStreak` and best tempo, "Reset progress" with an inline "Reset? Yes / No" pair (no dialog)); unknown id renders `practice.notFound` plus a link to `#/practice` using text nodes only. Test: `tests/ui/practice-view.test.js` with fake DOM and injected engine/storage/bus: list, card, run to clean completion records the run, wrong key makes it unclean, next key reframes, unknown id message, reset empties the summary.
-- [ ] 24.2 Modify `src/ui/router.js` and `src/main.js` to lazy-load the `practice` view and `src/ui/catalog.js` to show the Practice link; modify `styles/app.css` with Practice styles for the three viewports. Test: `tests/ui/router.test.js`, `tests/ui/catalog.test.js` (Practice link present).
-- [ ] 24.3 Browser check on 8790: open Practice exercises, choose "Major scales", run C major right hand with the fingering shown on the keys using taps and the computer keyboard, watch the tempo step up after a clean run, change key with "Next key" (circle of fifths), reload and see streak and best tempo, open `#/practice/nope`. Read screenshots at the three viewports.
+- [x] 24.1 Create `src/ui/practice-view.js` for `#/practice` (grouped exercise list, each with a one-line goal) and `#/practice/<id>` (doc card with goal, why, how, what good looks like, tempo steps; "Start"; run with the learn keyboard showing the keys and fingers, metronome through `engine.setMetronome` on a `makeTimeline` timeline, tempo ramp with `nextTempo`, "Next key" using `keyOrder` (fixed, random, circle) announcing the key in one line, simple Correct / Try again feedback, progress summary with `cleanStreak` and best tempo, "Reset progress" with an inline "Reset? Yes / No" pair (no dialog)); unknown id renders `practice.notFound` plus a link to `#/practice` using text nodes only. Test: `tests/ui/practice-view.test.js` with fake DOM and injected engine/storage/bus: list, card, run to clean completion records the run, wrong key makes it unclean, next key reframes, unknown id message, reset empties the summary.
+- [x] 24.2 Modify `src/ui/router.js` and `src/main.js` to lazy-load the `practice` view and `src/ui/catalog.js` to show the Practice link; modify `styles/app.css` with Practice styles for the three viewports. Test: `tests/ui/router.test.js`, `tests/ui/catalog.test.js` (Practice link present).
+- [x] 24.3 Browser check on 8790: open Practice exercises, choose "Major scales", run C major right hand with the fingering shown on the keys using taps and the computer keyboard, watch the tempo step up after a clean run, change key with "Next key" (circle of fifths), reload and see streak and best tempo, open `#/practice/nope`. Read screenshots at the three viewports.
   Learner-level acceptance: a non-player opens "Major scales", reads in plain words why and how, sees the C scale keys shaded with finger numbers one at a time, and plays the scale ending on "Correct"; the next day the page still shows their streak and best tempo.
-- [ ] 24.4 Verification: `node --test` full.
+- [x] 24.4 Verification: `node --test` full.
 
 Split point: move key rotation and progress summary into pr7c if over budget.
 
@@ -336,28 +336,28 @@ Split point: move key rotation and progress summary into pr7c if over budget.
 
 Specs: practice-exercises (ear drills).
 
-- [ ] 25.1 Create `src/practice/ear.js`: session reducer over seeded questions (`drills.js`), options start at {M3, P5, P8} or {major, minor} and grow after 8 of 10 correct (order P4, m3, M6, M2, m6, m7, M7, TT, m2; then dim, aug), second wrong pick reveals the answer, "Listen again" free, count "7/10", play-back answers matched by pitch class for chords and by distance from the first pressed note for intervals (any octave counts). Test: `tests/practice/ear.test.js`: reveal on second wrong, count, option growth, play-back by pitch class and by interval, reproducible with a seed.
-- [ ] 25.2 Modify `src/ui/practice-view.js`: ear drill screen with Play / Listen again, answer buttons, play-back input through the bus, count, summary; playback through `engine.playNotes` only (generated notes). Test: `tests/ui/practice-view.test.js` additions; `tests/learn-guard.test.js` (from 7.3) still proves Learn modules do not import `playNotes`.
-- [ ] 25.3 Browser check on 8790: answer an interval question by button and by playing it back on the computer keyboard; second wrong shows the answer; options grow after 8 of 10. Screenshots read.
+- [x] 25.1 Create `src/practice/ear.js`: session reducer over seeded questions (`drills.js`), options start at {M3, P5, P8} or {major, minor} and grow after 8 of 10 correct (order P4, m3, M6, M2, m6, m7, M7, TT, m2; then dim, aug), second wrong pick reveals the answer, "Listen again" free, count "7/10", play-back answers matched by pitch class for chords and by distance from the first pressed note for intervals (any octave counts). Test: `tests/practice/ear.test.js`: reveal on second wrong, count, option growth, play-back by pitch class and by interval, reproducible with a seed.
+- [x] 25.2 Modify `src/ui/practice-view.js`: ear drill screen with Play / Listen again, answer buttons, play-back input through the bus, count, summary; playback through `engine.playNotes` only (generated notes). Test: `tests/ui/practice-view.test.js` additions; `tests/learn-guard.test.js` (from 7.3) still proves Learn modules do not import `playNotes`.
+- [x] 25.3 Browser check on 8790: answer an interval question by button and by playing it back on the computer keyboard; second wrong shows the answer; options grow after 8 of 10. Screenshots read.
   Learner-level acceptance: the learner presses Play, hears two notes, sees three big buttons ("Major third", "Perfect fifth", "Octave") with a plain description, picks one and is told right or wrong; nothing requires knowing theory words beforehand.
-- [ ] 25.4 Verification: `node --test` full.
+- [x] 25.4 Verification: `node --test` full.
 
 ## Phase 26: 10-minute routine and daily streak (pr8c-routine, about 400 lines)
 
 Specs: practice-exercises (routine, progress).
 
-- [ ] 26.1 Create `src/practice/routine.js`: `buildRoutine(progress, isoDate)` (warm-up five-finger in the key after `lastWarmupKey` on the circle of fifths, C first, 2 min; scale in the least recently practiced key following intro order, 3 min; chord drill alternating triads/inversions and I-IV-V-I by day parity, 3 min; ear drill alternating intervals and chords by day parity, 2 min; total 9 to 11; deterministic for the same progress and date) and `routineReducer(session, action)` with `DONE_BLOCK`, `SKIP_BLOCK`, `END` (skipping the last open block ends the routine). Day recording: at least one block done records the day (`dayStreak` +1 when `lastDate` was yesterday, unchanged when today, else 1); all skipped records nothing. Test: `tests/practice/routine.test.js`: first day, next day (G and a different warm-up), same day identical, 9 to 11 minutes, skip last block after three done records the day, everything skipped records nothing and streak unchanged, summary "N days in a row" with plural forms (`routine.daysInRow_one` "1 day in a row" / "1 día seguido"), `lastWarmupKey` and `scaleLastPracticed` updated only for done blocks.
-- [ ] 26.2 Modify `src/ui/practice-view.js` and `src/i18n/strings.js` (`routine.*`): "10-minute routine" entry, block-by-block run reusing the exercise runner and ear drill screens, "Skip block", end summary listing every block as done or skipped plus days in a row. Test: `tests/ui/practice-view.test.js` additions.
-- [ ] 26.3 Browser check on 8790: run the routine end to end (use skip for a block to prove it), reload and see the streak; change the system date forward one day (or inject the date in the dev console through the exposed `?today=` test hook if present, otherwise unit tests only and record that) and see a new key combination. Screenshots read.
+- [x] 26.1 Create `src/practice/routine.js`: `buildRoutine(progress, isoDate)` (warm-up five-finger in the key after `lastWarmupKey` on the circle of fifths, C first, 2 min; scale in the least recently practiced key following intro order, 3 min; chord drill alternating triads/inversions and I-IV-V-I by day parity, 3 min; ear drill alternating intervals and chords by day parity, 2 min; total 9 to 11; deterministic for the same progress and date) and `routineReducer(session, action)` with `DONE_BLOCK`, `SKIP_BLOCK`, `END` (skipping the last open block ends the routine). Day recording: at least one block done records the day (`dayStreak` +1 when `lastDate` was yesterday, unchanged when today, else 1); all skipped records nothing. Test: `tests/practice/routine.test.js`: first day, next day (G and a different warm-up), same day identical, 9 to 11 minutes, skip last block after three done records the day, everything skipped records nothing and streak unchanged, summary "N days in a row" with plural forms (`routine.daysInRow_one` "1 day in a row" / "1 día seguido"), `lastWarmupKey` and `scaleLastPracticed` updated only for done blocks.
+- [x] 26.2 Modify `src/ui/practice-view.js` and `src/i18n/strings.js` (`routine.*`): "10-minute routine" entry, block-by-block run reusing the exercise runner and ear drill screens, "Skip block", end summary listing every block as done or skipped plus days in a row. Test: `tests/ui/practice-view.test.js` additions.
+- [x] 26.3 Browser check on 8790: run the routine end to end (use skip for a block to prove it), reload and see the streak; change the system date forward one day (or inject the date in the dev console through the exposed `?today=` test hook if present, otherwise unit tests only and record that) and see a new key combination. Screenshots read.
   Learner-level acceptance: pressing "10-minute routine" gives a short, named list of four things to do today; the learner can finish them in order or skip one, and ends on a summary saying "1 day in a row".
-- [ ] 26.4 Verification: `node --test` full.
+- [x] 26.4 Verification: `node --test` full.
 
 ## Phase 27: Practice docs and usability T5 (pr9c-practice-docs, about 200 lines)
 
 Specs: practice-exercises, project docs rules.
 
-- [ ] 27.1 Modify `README.md`: Practice exercises section (the exercise list, doc cards, key rotation, routine, ear drills, local progress and Reset, flagged fingerings noted); modify `docs/USABILITY_CHECK.md` (T5 routine details, Practice-specific recording fields, thresholds). Test: extend `tests/docs-guard.test.js` (README mentions Practice exercises, T5 present, usability doc links remain valid).
-- [ ] 27.2 Verification: `node --test` full and `docker build -t piano-guide .`.
+- [x] 27.1 Modify `README.md`: Practice exercises section (the exercise list, doc cards, key rotation, routine, ear drills, local progress and Reset, flagged fingerings noted); modify `docs/USABILITY_CHECK.md` (T5 routine details, Practice-specific recording fields, thresholds). Test: extend `tests/docs-guard.test.js` (README mentions Practice exercises, T5 present, usability doc links remain valid).
+- [x] 27.2 Verification: `node --test` full and `docker build -t piano-guide .`.
 
 ## Phase 28: Final close-out, what only the user can verify (in pr9c-practice-docs or a final docs-only PR `pr10c-user-verification`)
 
@@ -485,3 +485,52 @@ Full suite on the tip: 1343 tests, 0 failures (1266 at the start of the batch). 
 - Still user-only and NOT verified: sound of Listen, the learner's key and the metronome, the Casio over MIDI, a real touch screen, the usability protocol with a person who has never played, and the piano sound (pr3b is not approved).
 - pr3b-sampled-piano (phase 15) is still pending approval and will be appended after pr6b.
 
+## Batch 5: Milestone C practice exercises (chain as built, local branches, nothing pushed)
+
+Same rule as before: each phase split at a coherent boundary, each branch on the previous one (descriptions in `openspec/changes/learn-mode/prs/`), no push and no PR. The first branch is based on `feat/learn-mode-pr6b-catalog-swap`; pr3b (the sampled piano) is still deferred and phase 28 (the user-only list) was not part of this batch. With this batch every task of Milestone C (19.1 to 27.2) is done.
+
+| Order | Branch | Tasks | Authored lines (excluding openspec docs) |
+|-------|--------|-------|-------------------------------------------|
+| 1 | `feat/learn-mode-pr0c-learn-polish` (base pr6b) | the two Learn fixes of the last walkthrough: a scrolling keyboard with the 36 px minimum, the badge never under the letter box | 277 |
+| 2 | `feat/learn-mode-pr1c-scales` | 19.1 to 19.3 | 340 |
+| 3 | `feat/learn-mode-pr2c-triads` | 20.1 | 240 |
+| 4 | `feat/learn-mode-pr2c2-progressions` | 20.2, 20.3 | 217 |
+| 5 | `feat/learn-mode-pr3c-intervals-drills` | 21.1, 21.2 | 219 |
+| 6 | `feat/learn-mode-pr4c-timeline-runner` | 22.1, 22.2 | 325 |
+| 7 | `feat/learn-mode-pr4c2-practice-progress` | 22.3, 22.4 | 335 |
+| 8 | `feat/learn-mode-pr5c-exercise-catalog` | 23.1 | 300 |
+| 9 | `feat/learn-mode-pr5c2-doc-cards` | 23.2, 23.3 (and the missing-key guard) | 232 |
+| 10 | `feat/learn-mode-pr6c-practice-list` | 24.2 (route, header and hero link), list and card half of 24.1 | 437 |
+| 11 | `feat/learn-mode-pr6c2-practice-session` | the session reducer of 24.1 | 441 (41 over the budget, `size:exception` recommended) |
+| 12 | `feat/learn-mode-pr6c3-practice-screen` | the screen model of 24.1 | 236 |
+| 13 | `feat/learn-mode-pr6c4-practice-inputs` | the shared inputs of 24.1 | 172 |
+| 14 | `feat/learn-mode-pr6c5-practice-run-page` | the exercise page of 24.1 | 696 (`size:exception` recommended) |
+| 15 | `feat/learn-mode-pr6c6-circle-of-fifths` | the circle of fifths picker | 138 |
+| 16 | `feat/learn-mode-pr6c7-practice-tempo-keys` | tempo, metronome, rotation, progress, Reset; 24.3, 24.4 | 602 (`size:exception` recommended) |
+| 17 | `feat/learn-mode-pr7c-ear-session` | 25.1 | 358 |
+| 18 | `feat/learn-mode-pr7c2-ear-screen` | the screen model of 25.2 | 201 |
+| 19 | `feat/learn-mode-pr7c3-ear-page` | the page of 25.2, 25.3, 25.4 | 482 |
+| 20 | `feat/learn-mode-pr8c-routine-session` | 26.1 | 302 |
+| 21 | `feat/learn-mode-pr8c2-routine-page` | 26.2 | 570 (`size:exception` recommended) |
+| 22 | `feat/learn-mode-pr8c3-today-card` | the Today card, 26.3, 26.4 | 292 |
+| 23 | `feat/learn-mode-pr9c-practice-docs` | 27.1, 27.2 | 63 |
+
+Full suite on every branch of the chain (checked branch by branch): 1343 tests at the base, 1653 at the tip, 0 failures. `docker build -t piano-guide .` passes (1653 tests in the image, 1631 pass, 22 skipped with their reasons); a container check shows the practice modules served, `/songs/cancer.json` and `/songs-private/index.json` 404, and no `songs-private` path in the image.
+
+### Decisions recorded in this batch
+
+- The keyboard scrolls sideways instead of shrinking (white keys keep 36 px) and centers on the keys to press; one hint line (turn the phone, or a key to press is off screen). The space is the slot of the keyboard, not the window.
+- Theory: minor material on Db, Ab and Eb is written C#, G#, D# (no Fb, Cb, Gb); the chord names of a progression are not renamed. Progression voicings are chosen by dynamic programming (never worse than all root positions), the first chord in root position.
+- A practice run is "clean" when no wrong key was pressed while the metronome was at its tempo; tempo is a pacing aid and nothing is timed (A1). "Again" keeps key and tempo, "Faster" applies the suggestion, "Next key" keeps the tempo. The default rotation is the circle of fifths; the fixed list of the spec is in the pure `keyOrder` and the screen lets the learner choose any one key.
+- A scale opens on the first key without a clean run in the order of introduction (C for a new learner, G after a clean C), with the next three marked on the circle; an order, never a lock.
+- Ear drills: first-try answers count in the score; a second wrong answer reveals; 8 of 10 right in a round of ten unlock the next choice (saved); a round is recorded as one clean or not clean run. The keyboard never shows the answer.
+- The routine: the chord block cycles three drills by the day (triads, the cadence, the I-V-vi-IV progression) instead of two by parity, so the progression appears; the day counts when at least one block was done; the scale key considers the routine's record and any scale run on its own page.
+- No `?today=` hook was added to the shipped page; the next-day check in the browser moves the saved dates back by one day, and the tests inject the date.
+
+### Findings recorded for the user
+
+- Browser walkthroughs found and fixed: keys shrinking to 14 px on a phone for hands far apart, the badge hidden by the letter box, a circle of fifths collapsing in a grid, a card fold pushing the keyboard out of reach on a phone, a second language selector on the routine page, the controls of a routine block out of reach in landscape.
+- Left as they are: on a phone in landscape the ear drill and the routine pages scroll a little to reach the whole keyboard; the computer keys cover eleven white keys, so a both-hands step with the hands more than that apart is played with taps or MIDI for the far hand.
+- Fingerings flagged as "Suggested fingering" for a teacher or a book to confirm (the user-only list, 28.1 item 5, which was not written in this batch): the right hand start of B-flat major, the left hand start of F-sharp major, the left hand arpeggios of D-flat, E-flat, A-flat and B-flat (the assigner gives 5 3 1 5), the left hand crossing finger of two-octave arpeggios, and the minor arpeggios of B, F-sharp and the flat keys.
+- Still user-only and NOT verified: any sound (Listen in Practice, the question of an ear drill, the learner's keys, the metronome click), the real Casio over MIDI, a real touch screen, the key legend on a non-US keyboard, the usability protocol (T5 is now available), and the piano sound (pr3b is not approved).
+- pr3b-sampled-piano (phase 15) is still pending approval and will be appended after pr9c when approved; phase 28 is still to do.
