@@ -50,7 +50,12 @@ function fakeEngine() {
     calls,
     startNote: (midi) => calls.push(["startNote", midi]),
     releaseNote: (midi) => calls.push(["releaseNote", midi]),
-    setTimeline: () => calls.push(["setTimeline"]),
+    setTimeline: (tl) => (calls.push(["setTimeline"]), (api.lastTimeline = tl)),
+    setBpm: (n) => calls.push(["setBpm", n]),
+    setMetronome: (cfg) => calls.push(["setMetronome", cfg.enabled]),
+    play: () => calls.push(["play"]),
+    stop: () => calls.push(["stop"]),
+    isRangePlaying: () => false,
     playRange: (r) => (calls.push(["playRange", r.startTick, r.endTick, r.hand]), (api.lastRange = r), new Promise((res) => (resolveRange = res))),
     stopRange: () => calls.push(["stopRange"]),
     position: () => ({ tick: 0 }),
@@ -456,4 +461,80 @@ test("stages: the hand selector marks no hand while both hands are being practic
   const second = await open({ song: privateSong(), storage });
   second.click("RESET");
   assert.equal(JSON.parse(storage.data["piano-guide:learn:v1"]).songs["example-song"], undefined);
+});
+
+// ---- metronome (pr2b3) ---------------------------------------------------------------------------------------------
+
+const names = (v) => v.engine.calls.map(([n]) => n);
+const toggle = (v) => all(v.root, (n) => n.tag === "button" && n.attrs["data-toggle"] === "metronome")[0];
+
+test("metronome: off by default and nothing starts; turned on, My turn runs a click at the slow tempo over a timeline with no notes", async () => {
+  const song = makeSong();
+  const v = await open({ song });
+  assert.equal(toggle(v).attrs["aria-pressed"], "false");
+  v.click("START");
+  v.click("MY_TURN");
+  assert.deepEqual(names(v).filter((n) => ["play", "setMetronome", "setBpm"].includes(n)), [], "no clock without the toggle");
+  toggle(v).click();
+  assert.equal(toggle(v).attrs["aria-pressed"], "true");
+  assert.deepEqual(v.engine.calls.filter(([n]) => ["setBpm", "setMetronome", "play"].includes(n)), [["setBpm", song.tempo.bpm / 2], ["setMetronome", true], ["play"]]);
+  assert.deepEqual(v.engine.lastTimeline.notes, [], "the clock never carries the song's notes");
+  assert.equal(v.engine.calls.some(([n]) => n === "playRange"), false);
+});
+
+test("metronome: the tempo follows the stage (slow, then the song tempo) and the click stops when My turn ends", async () => {
+  const song = makeSong();
+  const v = await open({ song });
+  toggle(v).click();
+  v.click("START");
+  v.click("MY_TURN");
+  for (const midi of [60, 62, 60, 64, 67]) v.press(midi); // right hand slow done
+  assert.equal(v.phase(), "stageComplete");
+  assert.equal(names(v).filter((n) => n === "stop").length, 1, "My turn ended: the click stops");
+  v.click("NEXT_STAGE");
+  v.click("MY_TURN");
+  v.press(48); // left hand slow done
+  v.click("NEXT_STAGE");
+  v.click("MY_TURN");
+  for (const midi of [48, 60, 62, 60, 64, 67]) v.press(midi); // together slow done
+  v.click("NEXT_STAGE");
+  v.click("MY_TURN");
+  const bpms = v.engine.calls.filter(([n]) => n === "setBpm").map(([, bpm]) => bpm);
+  assert.deepEqual(bpms, [song.tempo.bpm / 2, song.tempo.bpm / 2, song.tempo.bpm / 2, song.tempo.bpm], "slow for three stages, the song tempo for the full-tempo stage");
+});
+
+test("metronome: Listen again takes the clock over without stopping the phrase, and the click comes back after it", async () => {
+  const v = await open();
+  toggle(v).click();
+  v.click("START");
+  v.click("MY_TURN");
+  const plays = () => names(v).filter((n) => n === "play").length;
+  assert.equal(plays(), 1);
+  v.click("LISTEN_AGAIN");
+  assert.equal(v.phase(), "listening");
+  assert.equal(names(v).includes("stop"), false, "stopping would cancel the phrase that is about to play");
+  v.engine.finishRange("completed");
+  await later();
+  assert.equal(v.phase(), "yourTurn");
+  assert.equal(plays(), 2, "the click restarts when My turn comes back");
+});
+
+test("metronome: turning it off stops the click; a private song may click but never plays the song", async () => {
+  const v = await open({ song: privateSong() });
+  v.click("START");
+  assert.equal(names(v).includes("play"), false, "a private song with the metronome off starts nothing");
+  toggle(v).click();
+  assert.equal(names(v).includes("play"), true, "the user asked for the click");
+  assert.deepEqual(v.engine.lastTimeline.notes, []);
+  assert.equal(names(v).includes("playRange"), false);
+  toggle(v).click();
+  assert.equal(names(v).filter((n) => n === "stop").length, 1);
+  assert.equal(toggle(v).attrs["aria-pressed"], "false");
+});
+
+test("metronome: the toggle is in the top bar with its label in both languages and not among the lesson actions", async () => {
+  const v = await open({ lang: "es" });
+  assert.equal(textOfNode(toggle(v)), "Metrónomo");
+  assert.deepEqual(v.actions(), ["START", "LESSON_ZERO"], "the toggle is not a lesson action");
+  assert.match(toggle(v).attrs.title, /clic/);
 });

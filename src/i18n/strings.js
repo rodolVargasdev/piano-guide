@@ -131,6 +131,8 @@ export const STRINGS = {
 
   // stages: right hand, left hand, both hands, slow then full tempo, then the section and the whole song
   "learn.nextStage": { en: "Next stage", es: "Siguiente etapa" },
+  "learn.metronome": { en: "Metronome", es: "Metrónomo" },
+  "learn.metronomeTitle": { en: "A click at the speed of this stage while you play", es: "Un clic a la velocidad de esta etapa mientras toca" },
   "stage.R.slow": { en: "Right hand, slowly", es: "Mano derecha, despacio" },
   "stage.L.slow": { en: "Left hand, slowly", es: "Mano izquierda, despacio" },
   "stage.T.slow": { en: "Both hands, slowly", es: "Ambas manos, despacio" },

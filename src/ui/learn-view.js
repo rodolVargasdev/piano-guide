@@ -2,6 +2,7 @@
 // model decides what to say, and this file wires them to the keyboard, the three inputs, the audio engine
 // and storage, and runs the effects the reducer returns. dispose() releases every note and every listener.
 import { activeAt, resolveLevel } from "../core/timeline.js";
+import { ticksPerBar } from "../core/timing.js";
 import { textOf } from "../core/text.js";
 import { createAudio } from "../audio/context.js";
 import { createEngine } from "../audio/engine.js";
@@ -9,11 +10,12 @@ import { HOME_ROW, UPPER_ROW, attachComputerKeys, keyMapFor, legendFor } from ".
 import { createNoteBus } from "../input/bus.js";
 import { createLearnerSound } from "../input/learner-sound.js";
 import { createMidiInput } from "../input/midi.js";
-import { handHasNotes, initLesson, reduce } from "../learn/lesson.js";
+import { currentStage, handHasNotes, initLesson, reduce } from "../learn/lesson.js";
 import { positionKeys } from "../learn/position.js";
 import { zeroKeyboard } from "../learn/lesson-zero.js";
 import { clearSong, positionOf, readProgress, withLessonZero, withPosition, withTranspose, writeProgress } from "../learn/progress.js";
 import { learnRegion } from "../learn/region.js";
+import { stageBpm } from "../learn/stages.js";
 import { canLearn, loadCatalog } from "./catalog.js";
 import { el } from "./dom.js";
 import { createInputPanel } from "./input-panel.js";
@@ -227,14 +229,47 @@ export function learnView({ i18n, load = loadCatalog, makeEngine = defaultMakeEn
         const tonics = [song.key.tonic, ...(learnBlock().transposeTo ?? [])];
         if (tonics.length > 1) parts.push(el("div", { class: "seg learn-keys", role: "group", "aria-label": t("learn.key") }, tonics.map((tonic) => segment(t("key.major", { tonic }), state.keyTonic === tonic, () => dispatch({ type: "SET_KEY", tonic })))));
         if (levels.length > 1) parts.push(el("div", { class: "seg learn-levels", role: "group", "aria-label": t("learn.level") }, levels.map((id) => segment(textOf(song.levels[id].label, i18n.lang()), levelId === id, () => switchLevel(id)))));
-        parts.push(langSelect.element);
+        parts.push(segment(t("learn.metronome"), metronomeOn, toggleMetronome, { "data-toggle": "metronome", title: t("learn.metronomeTitle") }), langSelect.element);
         top.replaceChildren(...parts);
+      }
+
+      // ---- metronome: a click at the stage tempo while the learner plays (A1: it paces, nothing is measured) ------
+      // The click runs the engine clock over a copy of the timeline with NO notes, so the song itself is never
+      // scheduled (a private song can click too); Listen takes the clock over by loading the real timeline.
+      let metronomeOn = false;
+      let clickRunning = false;
+      let clickBpm = null;
+      function syncClick() {
+        const stage = currentStage(state);
+        if (metronomeOn && state.phase === "yourTurn" && stage && !disposed) {
+          const bpm = stageBpm(state.timeline, stage);
+          if (!clickRunning) {
+            engine.setTimeline?.({ ...state.timeline, notes: [], chords: [], pedal: [], analysis: [], lengthTicks: 1000 * ticksPerBar(state.timeline.meter) });
+            engine.setBpm?.(bpm);
+            engine.setMetronome?.({ enabled: true });
+            engine.play?.();
+            clickRunning = true;
+            clickBpm = bpm;
+          } else if (bpm !== clickBpm) {
+            engine.setBpm?.(bpm);
+            clickBpm = bpm;
+          }
+        } else if (clickRunning) {
+          clickRunning = false;
+          // Listen has taken the clock over (it halts the click itself); stopping now would cancel the phrase.
+          if (state.phase !== "listening" && !engine.isRangePlaying?.()) engine.stop?.();
+        }
+      }
+      function toggleMetronome() {
+        metronomeOn = !metronomeOn;
+        refresh();
       }
 
       function refresh() {
         paintTop();
         paintCard();
         paintKeyboard();
+        syncClick();
       }
 
       // ---- actions and effects ---------------------------------------------------------------------
