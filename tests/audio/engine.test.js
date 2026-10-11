@@ -140,3 +140,37 @@ test("a note whose note-off falls inside a pedal range is scheduled with the ped
   assert.ok(notes.slice(0, 4).every((n) => n.pedal === true), "chord 1 ends at 1920, inside the pedal");
   assert.ok(notes.slice(4).every((n) => n.pedal === false), "chord 2 ends at 3840, outside it");
 });
+
+test("a level switch while playing starts the notes of the new level that are already sounding, for their remaining length", () => {
+  const { engine, notes, run } = rig();
+  engine.play();
+  run(0.5);
+  const before = notes.length;
+  engine.setTimeline(resolveLevel(mutated(() => {}), "beginner"), { tick: 1000 });
+  assert.equal(notes.length, before + 4, "the chord that began at tick 0 is still sounding at tick 1000");
+  for (const n of notes.slice(before)) near(n.dur, (1920 - 1000) / TPS, 1e-9);
+  run(0.5);
+  assert.equal(notes.length, before + 4, "nothing is started twice");
+});
+
+test("the sustained notes of a level switch are cut at the loop end", () => {
+  const { engine, notes } = rig();
+  engine.setLoop({ startTick: 0, endTick: 1500 });
+  engine.play();
+  const before = notes.length;
+  engine.setTimeline(resolveLevel(mutated(() => {}), "beginner"), { tick: 1000 });
+  assert.equal(notes.length, before + 4);
+  for (const n of notes.slice(before)) near(n.dur, (1500 - 1000) / TPS, 1e-9);
+});
+
+test("counter-proof: a seek mid-note and a level switch while paused start nothing behind the position", () => {
+  const { engine, notes } = rig();
+  engine.play();
+  const before = notes.length;
+  engine.seek(1000);
+  assert.equal(notes.length, before, "seek keeps its rule: no note behind the new position");
+  engine.pause();
+  const paused = notes.length;
+  engine.setTimeline(resolveLevel(mutated(() => {}), "beginner"), { tick: 1000 });
+  assert.equal(notes.length, paused, "nothing sounds while paused");
+});

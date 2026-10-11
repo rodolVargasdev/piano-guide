@@ -66,7 +66,7 @@ An id that is not in the index shows "Song not found". The browser back button a
 
 | Method | What it does |
 |--------|--------------|
-| `setTimeline(timeline, { tick? })` | Loads a resolved level (`core/timeline`); keeps the position unless `tick` is given; the BPM defaults to the song's |
+| `setTimeline(timeline, { tick? })` | Loads a resolved level (`core/timeline`); keeps the position unless `tick` is given; the BPM defaults to the song's. While playing (a level switch), the notes of the new level that should already be sounding start at once for their remaining length, so a held chord does not stay silent until its next onset |
 | `play()` | Creates and resumes the audio context inside the call (call it from the Play click), optionally after a one-bar count-in |
 | `pause()` / `stop()` | Pause keeps the position; stop goes to 0 (the loop start when a loop is set) |
 | `seek(tick)` | Cancels pending voices and re-queues from the new tick in the same call |

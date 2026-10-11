@@ -113,8 +113,10 @@ export function createEngine({
   /**
    * Re-anchor at `songTick` right now: cancel what has not started, optionally fade what sounds,
    * and queue again from the new anchor in the same call (no stuck or doubled notes).
+   * With `catchUp` the notes that should already be sounding at `songTick` start now for the rest of
+   * their length (a level switch: the new level's held chord must not stay silent until its next onset).
    */
-  function retime(songTick, { releaseSounding = false } = {}) {
+  function retime(songTick, { releaseSounding = false, catchUp = false } = {}) {
     const now = audio.context.currentTime;
     synth.cancelPending(now, { releaseSounding });
     click.cancelPending(now);
@@ -122,8 +124,18 @@ export function createEngine({
     anchor = makeAnchor(now, origin, tps());
     scanned = origin;
     lastAbs = origin;
+    if (catchUp) sustain(now);
     timers.clear(timer);
     pump();
+  }
+
+  /** Start every audible note that began before `origin` and is still sounding, cut at the loop end. */
+  function sustain(now) {
+    for (const n of audible) {
+      const end = Math.min(n.tick + n.dur, loop ? loop.endTick : Infinity);
+      if (n.midi === null || n.tick >= origin || end <= origin) continue;
+      synth.playNote({ midi: n.midi, vel: n.vel ?? 0.7, when: now, dur: (end - origin) / anchor.tps, pedal: pedalAt(n.tick + n.dur) });
+    }
   }
 
   function halt() {
@@ -196,7 +208,7 @@ export function createEngine({
       grid = beatGrid(tl.meter, tl.pickupTicks, tl.tempo.beatUnit, 0, tl.lengthTicks).map((g) => ({ tick: g.tick, dur: 1, accent: g.accent }));
       audible = audibleNotes(tl.notes, handModes);
       heldTick = place(keep);
-      if (playing) retime(heldTick, { releaseSounding: true });
+      if (playing) retime(heldTick, { releaseSounding: true, catchUp: true });
     },
 
     /** Set the user BPM (clamped to 20-240) and return the clamped value. */
