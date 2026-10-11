@@ -27,10 +27,23 @@ export function debugRequested(search, hash) {
   return [search, fromHash].some((q) => new URLSearchParams(String(q ?? "")).get("debug") === "1");
 }
 
-/** Milliseconds of musical time between two drawn positions (about one frame period when healthy). */
-export function driftMs(prevSeconds, seconds) {
-  return Math.max(0, (seconds - prevSeconds) * 1000);
+/**
+ * Clock jitter of one frame, in milliseconds: how far the audio clock's advance since the previous
+ * frame is from the frame clock's advance (the requestAnimationFrame timestamps). Both clocks tick
+ * at the same rate, so a healthy page reads close to 0 whatever the frame period; what shows up is
+ * the audio clock's granularity and the scheduling noise between the two. It is NOT the offset
+ * between what is heard and what is seen: output latency and display latency are not visible to
+ * a page. Returns null for a step that is not plain playback (seek, loop wrap, first frame, a
+ * stall or a hidden tab).
+ */
+export function clockJitterMs(prevSeconds, seconds, prevTs, ts) {
+  const audio = (seconds - prevSeconds) * 1000;
+  const frame = ts - prevTs;
+  if (!(audio > 0) || !(frame > 0) || frame > CLOCK_STALL_MS) return null;
+  return Math.abs(audio - frame);
 }
+
+const CLOCK_STALL_MS = 250;
 
 const NOOP_VIEW = Object.freeze({ render() {}, dispose() {}, resize() {}, setRange() {}, setHandModes() {}, setTimeline() {}, highlightNotes() {}, setReducedMotion() {}, animating: () => false, qualityInfo: () => ({ tier: "n/a", auto: true }) });
 
@@ -61,8 +74,8 @@ function createDebugOverlay() {
     update(pos, ts, playing, quality) {
       const dt = prevTs === null ? 0 : ts - prevTs;
       if (playing) {
-        worst = Math.max(worst, driftMs(prevSeconds, pos.seconds));
         if (prevTs !== null) {
+          worst = Math.max(worst, clockJitterMs(prevSeconds, pos.seconds, prevTs, ts) ?? 0);
           dts.push(dt);
           if (dts.length > FRAME_WINDOW) dts.shift();
         }
@@ -72,7 +85,7 @@ function createDebugOverlay() {
       frames += 1;
       if (frames % 10 === 0 || !playing) {
         const { avg, p95 } = frameStats(dts);
-        label.textContent = `drift max ${worst.toFixed(1)} ms | frame avg ${avg.toFixed(1)} p95 ${p95.toFixed(1)} ms | tier ${quality.tier}${quality.tier === "n/a" ? "" : quality.auto ? " (auto)" : " (manual)"} | camera section ${quality.section ?? "n/a"}${quality.tween ? " moving" : ""}`;
+        label.textContent = `clock jitter max ${worst.toFixed(1)} ms | frame avg ${avg.toFixed(1)} p95 ${p95.toFixed(1)} ms | tier ${quality.tier}${quality.tier === "n/a" ? "" : quality.auto ? " (auto)" : " (manual)"} | camera section ${quality.section ?? "n/a"}${quality.tween ? " moving" : ""}`;
         worst = 0;
       }
     },

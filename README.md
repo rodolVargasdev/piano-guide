@@ -52,7 +52,7 @@ The site uses hash routes, so it works on any static host and under a subpath wi
 | Hash | Shows |
 |------|-------|
 | `#/` | Song catalog (cards from `songs/index.json`) |
-| `#/song/<id>` | Song player: 3D keyboard with falling notes, transport controls, position readout and BPM, and the grand-staff score under the keyboard. Add `?debug=1` to the page URL (or the hash) for the drift and frame-time overlay |
+| `#/song/<id>` | Song player: 3D keyboard with falling notes, transport controls, position readout and BPM, and the grand-staff score under the keyboard. Add `?debug=1` to the page URL (or the hash) for the overlay (clock jitter, frame time, graphics tier and camera section) |
 | `#/song/<id>?level=<id>&names=<solfege or letters>&view=<both, scene or score>` | Same song with the level, note names and view preselected; the selector under the title changes them and rewrites the hash without a reload |
 | anything else | "Page not found" with a link to the catalog |
 

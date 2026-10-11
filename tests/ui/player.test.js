@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pickLevel, debugRequested, driftMs } from "../../src/ui/player.js";
+import { pickLevel, debugRequested, clockJitterMs } from "../../src/ui/player.js";
 
 const song = { defaultLevel: "beginner", levels: { beginner: {}, original: {} } };
 
@@ -30,10 +30,24 @@ test("counter-proof: debugRequested is false without the parameter or with anoth
   assert.equal(debugRequested(undefined, undefined), false);
 });
 
-test("driftMs is the musical time between two drawn positions and never negative", () => {
-  assert.equal(driftMs(1, 1.0167).toFixed(1), "16.7");
-  assert.equal(driftMs(2, 1), 0, "a backward seek is not drift");
-  assert.equal(driftMs(0, 0), 0);
+test("clockJitterMs is the gap between the audio advance and the frame advance, so a healthy step reads near zero at any frame rate", () => {
+  assert.equal(clockJitterMs(1, 1.0167, 1000, 1016.7).toFixed(2), "0.00", "60 Hz, both clocks agree");
+  assert.equal(clockJitterMs(1, 1.0083, 1000, 1008.3).toFixed(2), "0.00", "120 Hz, both clocks agree: no floor of one frame period");
+  assert.equal(clockJitterMs(1, 1.0217, 1000, 1016.7).toFixed(1), "5.0", "the audio clock advanced 5 ms more than the frame clock");
+  assert.equal(clockJitterMs(1, 1.0117, 1000, 1016.7).toFixed(1), "5.0", "and 5 ms less is the same size of error");
+});
+
+test("counter-proof: the old metric read one frame period on a healthy page; this one does not", () => {
+  const oldDrift = (a, b) => Math.max(0, (b - a) * 1000);
+  assert.ok(oldDrift(1, 1.0167) > 16, "the step between two frames is a floor of about 16.7 ms");
+  assert.ok(clockJitterMs(1, 1.0167, 1000, 1016.7) < 0.01, "the new metric is 0 for the same frames");
+});
+
+test("clockJitterMs ignores steps that are not plain playback: seek, loop wrap, no advance, a stall", () => {
+  assert.equal(clockJitterMs(5, 1, 1000, 1016), null, "a backward jump (loop wrap or seek)");
+  assert.equal(clockJitterMs(1, 1, 1000, 1016), null, "the audio clock did not advance (paused)");
+  assert.equal(clockJitterMs(1, 1.0167, 1016, 1000), null, "a frame clock that did not advance");
+  assert.equal(clockJitterMs(1, 11, 1000, 11000), null, "a ten second frame (hidden tab)");
 });
 
 test("frameStats gives the average and the 95th percentile of the frame window", async () => {

@@ -518,7 +518,7 @@ TDD mode: `strict_tdd: false` (`openspec/config.yaml`); tests land with each cor
 | Draw calls | under 20 (keys 2, note field 1, glow 1, markers pooled, floor 1) |
 | Frame time desktop, High tier | average under 12 ms, p95 under 16.7 ms |
 | Frame time phone landscape (844 x 390) | p95 under 33 ms on Low or Minimum |
-| Audio/visual drift | under 20 ms (`?debug=1` overlay) |
+| Clock jitter | under 20 ms (`?debug=1` overlay): per frame, the gap between the audio clock's advance and the frame clock's advance, the largest over each 10-frame window. Measured 8.5 to 9 ms on 2026-10-10 (RTX 3050, Chrome, 20 s of each song). It is NOT the offset between what is heard and what is seen: output and display latency are invisible to a page, so no figure is claimed for them. The first definition (the step between two drawn positions) could not read below one frame period, 16.7 ms, and was replaced in PR 22f. |
 | Scheduler | 25 ms timer, 120 ms look-ahead visible, 1.5 s hidden; no gaps at loop seams |
 | Level switch while playing | gap under 250 ms |
 | Per-frame allocations in render paths | zero |
@@ -531,7 +531,7 @@ TDD mode: `strict_tdd: false` (`openspec/config.yaml`); tests land with each cor
 3. Docker (primary): `docker build -t piano-guide .`, then `docker run --rm -p 8790:8080 piano-guide` after the same port check; `curl -I http://localhost:8790/src/main.js` returns `application/javascript`.
 4. Browser at `http://localhost:8790/`:
    - Catalog lists both songs with key and BPM; no three.js request on the catalog; a locally renamed song file shows an "Unavailable" card; a broken `index.json` shows the error panel.
-   - Cancer Beginner at 72 then 50 BPM: falling notes, keys, cursor and audio agree; drift under 20 ms; typing 500 shows 240.
+   - Cancer Beginner at 72 then 50 BPM: falling notes, keys, cursor and audio agree; clock jitter under 20 ms; typing 500 shows 240.
    - Pause/resume, stop, seek mid-note (no stuck notes), end of song returns to 0.
    - Slow mode, metronome accent, count-in, loop by section with a clean seam, inverted A-B gets swapped, ramp steps per pass and stops at target, ramp without loop says "Needs a loop", Hold freezes it.
    - Hands: mute left (silent, visible), hide right (gone from scene and score), both muted with metronome only.
