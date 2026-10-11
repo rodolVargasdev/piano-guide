@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "example-song",
+  "title": "Example Song",
+  "composer": "Traditional",
+  "key": { "tonic": "C", "mode": "major" },
+  "meter": { "num": 4, "den": 4 },
+  "pickupTicks": 0,
+  "tempo": { "bpm": 72, "beatUnit": "quarter" },
+  "lengthTicks": 3840,
+  "sections": [{ "id": "a", "name": "Verse", "startTick": 0, "endTick": 3840 }],
+  "chords": [
+    { "tick": 0, "dur": 1920, "symbol": "C", "roman": "I", "function": "tonic" },
+    { "tick": 1920, "dur": 1920, "symbol": "G7", "roman": "V7", "function": "dominant" }
+  ],
+  "levels": {
+    "beginner": {
+      "label": "Beginner",
+      "description": "Root in the left hand, triad in the right hand.",
+      "notation": "labelled",
+      "strictBars": true,
+      "notes": [
+        { "tick": 0, "dur": 1920, "pitch": "C3", "hand": "L", "finger": 5, "role": "bass" },
+        { "tick": 0, "dur": 1920, "pitch": "C4", "hand": "R", "finger": 1, "role": "accompaniment" },
+        { "tick": 0, "dur": 1920, "pitch": "E4", "hand": "R", "finger": 3, "role": "accompaniment" },
+        { "tick": 0, "dur": 1920, "pitch": "G4", "hand": "R", "finger": 5, "role": "accompaniment" },
+        { "tick": 1920, "dur": 1920, "pitch": "G2", "hand": "L", "finger": 5, "role": "bass" },
+        { "tick": 1920, "dur": 1920, "pitch": "B3", "hand": "R", "finger": 1, "role": "accompaniment" },
+        { "tick": 1920, "dur": 1920, "pitch": "F4", "hand": "R", "finger": 3, "role": "accompaniment" },
+        { "tick": 1920, "dur": 1920, "pitch": "G4", "hand": "R", "finger": 5, "role": "accompaniment" }
+      ]
+    }
+  },
+  "defaultLevel": "beginner",
+  "lesson": {
+    "beginner": {
+      "summary": "Two chords, one hand position per hand.",
+      "chordsUsed": ["C", "G7"],
+      "handPositions": [{ "tick": 0, "hand": "R", "anchor": "C4", "text": "Thumb on Do (C4)." }],
+      "posture": "Sit centered on middle C, forearms level with the keys.",
+      "practicePlan": ["Hands separately at 60 percent.", "Hands together, then raise the tempo."]
+    }
+  },
+  "sources": [
+    { "url": "https://example.org/source", "what": "Chord progression", "accessed": "2026-10-10", "kind": "reference" }
+  ],
+  "confidence": [{ "scope": "chords", "level": "high", "note": "Illustrative data." }]
+}
