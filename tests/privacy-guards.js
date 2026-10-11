@@ -50,3 +50,24 @@ export function dockerfilePrivateCopies(text) {
 export function nginxHidesSources(text) {
   return /location\s+\^~\s+\/songs-private\/sources\/\s*\{\s*return\s+404;\s*\}/.test(text);
 }
+
+/**
+ * Title-level markers of the private song: its title and its artist. Never a note, a chord or a lyric:
+ * the guard only has to know the NAME of what must not appear in the public library.
+ */
+export const PRIVATE_SONG_MARKERS = [/cancer/i, /my chemical romance/i];
+
+/**
+ * The id, title, composer and file values of a public song or index (at any depth) that carry a marker of
+ * the private song. Must be empty for every file under songs/.
+ */
+export function publicDataNamingPrivateSong(node, out = []) {
+  if (Array.isArray(node)) node.forEach((x) => publicDataNamingPrivateSong(x, out));
+  else if (node && typeof node === "object") {
+    for (const [key, value] of Object.entries(node)) {
+      if (["id", "title", "composer", "file"].includes(key) && typeof value === "string" && PRIVATE_SONG_MARKERS.some((m) => m.test(value))) out.push(`${key}: ${value}`);
+      else publicDataNamingPrivateSong(value, out);
+    }
+  }
+  return out;
+}

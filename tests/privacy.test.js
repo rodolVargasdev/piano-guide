@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { declaresPrivate, dockerfilePrivateCopies, dockerignoresPrivateFolder, ignoresPrivateFolder, nginxHidesSources, privatePathsIn, privateRefsInIndex, trackedPaths } from "./privacy-guards.js";
+import { declaresPrivate, dockerfilePrivateCopies, dockerignoresPrivateFolder, ignoresPrivateFolder, nginxHidesSources, privatePathsIn, privateRefsInIndex, publicDataNamingPrivateSong, trackedPaths } from "./privacy-guards.js";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const read = (rel) => readFileSync(join(repoRoot, rel), "utf8");
@@ -87,4 +87,17 @@ test("nginx answers 404 for the private sources folder, and the guard notices wh
   assert.equal(nginxHidesSources(read("nginx.conf")), true);
   assert.equal(nginxHidesSources("location ^~ /songs-private/ { expires -1; }"), false);
   assert.equal(nginxHidesSources("location ^~ /songs-private/sources/ { expires -1; }"), false);
+});
+
+test("no public song file and no public index entry names the private song (title-level markers only)", () => {
+  const found = [];
+  for (const file of [...songFiles, "index.json"]) found.push(...publicDataNamingPrivateSong(JSON.parse(read(`songs/${file}`))).map((f) => `${file} ${f}`));
+  assert.deepEqual(found, []);
+  assert.ok(songFiles.length >= 2, "the guard really reads the public songs");
+});
+
+test("counter-proof: a public song or index entry carrying the private title, the artist or a file name of it is found", () => {
+  assert.deepEqual(publicDataNamingPrivateSong({ id: "x", title: "Cancer", composer: "Someone" }), ["title: Cancer"]);
+  assert.deepEqual(publicDataNamingPrivateSong({ songs: [{ id: "cancer-2", file: "cancer-2.json", title: "T", composer: "My Chemical Romance" }] }), ["id: cancer-2", "file: cancer-2.json", "composer: My Chemical Romance"]);
+  assert.deepEqual(publicDataNamingPrivateSong({ id: "ode-to-joy", title: "Ode to Joy", composer: "Ludwig van Beethoven", lesson: { beginner: { summary: "plain text that says cancer is not scanned" } } }), [], "only the name fields count, the guard is title-level");
 });
