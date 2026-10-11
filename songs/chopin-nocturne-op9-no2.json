@@ -12,7 +12,20 @@
   "sections": [
     {"id":"opening","name":"Opening phrase","startTick":0,"endTick":11760}
   ],
-  "chords": [],
+  "chords": [
+    {"tick":240,"dur":720,"symbol":"Eb","roman":"I","function":"tonic"},
+    {"tick":960,"dur":720,"symbol":"Bdim7/Eb","roman":"vii°7/vi","function":"diminished color over the tonic pedal"},
+    {"tick":1680,"dur":720,"symbol":"Eb","roman":"I","function":"tonic"},
+    {"tick":2400,"dur":720,"symbol":"Eb/D","roman":"I4/2","function":"tonic with the bass passing down"},
+    {"tick":3120,"dur":1440,"symbol":"C7","roman":"V7/ii","function":"secondary dominant"},
+    {"tick":5280,"dur":720,"symbol":"Fm","roman":"ii","function":"subdominant"},
+    {"tick":6000,"dur":720,"symbol":"Bb7","roman":"V7","function":"dominant"},
+    {"tick":6720,"dur":720,"symbol":"G7/B","roman":"V6/5/vi","function":"secondary dominant"},
+    {"tick":7440,"dur":720,"symbol":"Cm","roman":"vi","function":"tonic substitute"},
+    {"tick":8160,"dur":720,"symbol":"Adim7","roman":"vii°7/V","function":"leading-tone chord of the dominant"},
+    {"tick":8880,"dur":1440,"symbol":"Bb7","roman":"V7","function":"dominant"},
+    {"tick":10320,"dur":1440,"symbol":"Eb","roman":"I","function":"tonic"}
+  ],
   "levels": {
     "beginner": {
       "label": "Beginner",
@@ -282,11 +295,179 @@
         {"startTick":8880,"endTick":9600},
         {"startTick":9600,"endTick":10320},
         {"startTick":10320,"endTick":11760}
+      ],
+      "analysis": [
+        {"tick":240,"kind":"harmony","title":"Tonic","text":"E-flat major is the home chord. The bass sits on its root, Eb2, and the left hand then plays two chords above it, Bb3 Eb4 G4 in the second, while the right hand sings G over it.","roman":"I","function":"tonic"},
+        {"tick":960,"kind":"harmony","title":"Diminished","text":"On beat 2 the bass stays on Eb3 while the left hand plays Ab, D and Cb (the note B natural, written C flat in the source) and the melody passes through F. Together B, D, F and Ab form a diminished seventh chord: a dark color laid over the E-flat pedal. The pedal note never moves, so the tonic is colored, not left.","roman":"vii°7/vi","function":"diminished color over the tonic pedal"},
+        {"tick":2400,"endTick":3840,"kind":"voice-leading","title":"Bass down","text":"The bass walks down by step: Eb2 on beat 3, D2 on beat 4 and C2 at the start of bar 2. The chord above does not change on beat 4, so the D in the bass is the major seventh of E-flat, and it lands on C under the next chord.","roman":"I4/2","function":"tonic with the bass passing down"},
+        {"tick":3120,"kind":"harmony","title":"V7/ii","text":"C, E, G and Bb make a C7 chord, the dominant of F. F minor is the ii chord of E-flat and arrives on beat 4 of this bar. The E natural is the note outside the key, and the melody leaps G5, C5, C6 above it.","roman":"V7/ii","function":"secondary dominant"},
+        {"tick":3600,"kind":"ornament","title":"Turn","text":"The sign over the C5 in bar 2 is a chromatic turn: D natural above and B flat below. The printed fingering 1 2 1 2 1 fits five notes, C D C Bb C. Play it quickly inside the eighth note and land on C so the leap to C6 stays in time."},
+        {"tick":4320,"kind":"dynamics","title":"Cresc.","text":"The hairpin that opens under the C5 reaches its peak on the C6, and the melody then settles over G5, Bb5, Ab5 and G5 while the left hand moves to F minor. Let the sound grow into the C6 and relax after it."},
+        {"tick":6000,"kind":"harmony","title":"Dominant","text":"Bb, D, F and Ab are the dominant seventh of E-flat, with Bb2 in the bass. The melody rests on F, a chord tone, and the music is leaning toward a close.","roman":"V7","function":"dominant"},
+        {"tick":6720,"kind":"harmony","title":"To vi","text":"G, B, D and F with B in the bass are a G7 chord in first inversion. It pushes up by a half step to C minor (vi) on the next beat: the bass moves B to C.","roman":"V6/5/vi","function":"secondary dominant"},
+        {"tick":8160,"kind":"harmony","title":"Dim. 7th","text":"A, C, Eb and Gb are a diminished seventh chord. Its bass A resolves up a half step to Bb, the root of the dominant seventh in bar 4.","roman":"vii°7/V","function":"leading-tone chord of the dominant"},
+        {"tick":8880,"endTick":10320,"kind":"voice-leading","title":"Suspension","text":"Bar 4 opens marked f. On beat 1 the left hand holds Eb above Bb (a fourth, with Ab on top); on beat 2 the Eb steps down to D, the third of Bb7. The suspended note resolves and the cadence arrives on beat 3.","roman":"V7","function":"dominant"},
+        {"tick":9600,"endTick":10320,"kind":"ornament","title":"Fioritura","text":"The small notes Bb5, Ab5, G5, Ab5, then C5 and D5, are a fioritura written out: a flourish around the main notes Bb5 and Eb5. Play them lightly and evenly, as decoration of the line, not as new melody."},
+        {"tick":10320,"kind":"harmony","title":"Cadence","text":"The dominant seventh resolves to E-flat on beat 3 of bar 4: Bb7 to Eb, with the bass Bb1 moving to Eb2. It closes the opening phrase.","roman":"I","function":"tonic"},
+        {"tick":11040,"kind":"rubato","title":"Rubato","text":"The source marks Andante and espress. dolce for these bars and no rubato (poco rubato appears much later, around bar 26). Treat the quarter rest and the pickup Bb at the end of bar 4 as a breath: take a little time before it, keep the left hand steady, and return to the beat in bar 5."}
       ]
     }
   },
   "defaultLevel": "original",
-  "lesson": {},
+  "lesson": {
+    "beginner": {
+      "summary": "This level plays the opening of Chopin's Nocturne in E-flat major, Op. 9 No. 2: a pickup and four bars. The right hand sings the melody and the left hand rocks underneath in 12/8, which you feel as four big beats per bar: count one, two, three, four, not twelve. It is a simplified version of the transcribed bars, so read the Arrangement note to see what was left out.",
+      "chordsUsed": [
+        "Eb",
+        "Bdim7/Eb",
+        "Eb/D",
+        "C7",
+        "Fm",
+        "Bb7",
+        "G7/B",
+        "Cm",
+        "Adim7"
+      ],
+      "handPositions": [
+        {
+          "tick": 0,
+          "hand": "R",
+          "anchor": "Bb4",
+          "text": "Pickup: the thumb (1) on Bb4, the B flat. Play it softly and lead into the first big note."
+        },
+        {
+          "tick": 240,
+          "hand": "R",
+          "anchor": "G5",
+          "text": "Bar 1: the little finger (5) on G5, held for two beats. The melody then walks down G, F, E-flat with fingers 4, 3 and 2, and ends on Bb4 with the thumb (1) as the pickup to the next bar."
+        },
+        {
+          "tick": 240,
+          "hand": "L",
+          "anchor": "Eb2",
+          "text": "Left hand: the little finger (5) on the low E-flat (Eb2), then jump up and hold the chord Bb3 Eb4 G4 with fingers 5, 2 and 1. This low note then chord happens once on each of the four beats."
+        },
+        {
+          "tick": 3120,
+          "hand": "R",
+          "anchor": "G5",
+          "text": "Bar 2: G5 with the little finger (5), the thumb (1) on C5, then a leap of an octave to C6 with the little finger (5). The turn sign is left out here."
+        },
+        {
+          "tick": 3120,
+          "hand": "L",
+          "anchor": "C2",
+          "text": "Bar 2 starts on the low C (C2): the bass walks down E-flat, D, C across the barline."
+        },
+        {
+          "tick": 8880,
+          "hand": "R",
+          "anchor": "Bb4",
+          "text": "Bar 4: Bb4 (1), a wide jump to D6 (5) and C6 (4), then Bb5 (3), down to D5 (1) and Eb5 (2). Rest for one beat, then the pickup Bb4 (1) into the next bar."
+        },
+        {
+          "tick": 8880,
+          "hand": "L",
+          "anchor": "Bb2",
+          "text": "Bar 4: the bass plays B flat for two beats (Bb2, then Bb1) and E-flat for the last two (Eb2, Eb3) as the phrase comes home."
+        }
+      ],
+      "posture": "Sit centered, back straight but relaxed, forearms level with the keys. The left hand travels from the low bass notes to chords near the middle of the keyboard on every beat, so let the arm swing from the elbow and keep the wrist loose instead of stretching the fingers.",
+      "practicePlan": [
+        "Start with the right hand alone (press Mute left): the pickup and bar 1, then one bar at a time, reading the finger numbers above the notes.",
+        "Then the left hand alone (press Mute right) with Metronome on. In 12/8 the metronome clicks once per big beat, four times per bar. Practice the jump from the low note to the chord by itself until it lands without looking.",
+        "Put the hands together with Slow on. Use Set A here and Set B here (or Loop a section) to loop the pickup and bar 1 until it feels easy.",
+        "Move on bar by bar, then raise the tempo with Ramp toward the printed 44 beats per minute."
+      ],
+      "arrangementNote": "This level is a simplified version of the transcribed bars, not a printed edition: the tied G is one long note, the turn sign of bar 2 is left out, the fast run of bar 4 is cut to the notes Bb5, D5 and Eb5, and the left hand plays the bass note and then the last chord of each beat held. The left-hand fingers and three right-hand fingers are editorial; the other right-hand fingers are the printed ones. Switch to Original for the full texture.",
+      "interpretation": {
+        "rubato": "Keep the beat steady while you learn the notes. Once they are secure, let the melody breathe a little at the end of each bar and give the rest in bar 4 a moment, but keep the left hand even.",
+        "dynamics": "Start softly and sing the melody: the score says espress. dolce, sweetly and with expression. Keep the left hand quieter than the right."
+      }
+    },
+    "original": {
+      "summary": "The Original level is the pickup and bars 1 to 4 of Chopin's Nocturne Op. 9 No. 2 as printed in the Mutopia Project edition of the 1881 Schirmer score: the full left-hand texture of a bass note and two chords on each of the four beats, the right-hand melody with its turn and its written-out run, and the pedal. Turn on Analysis to read the harmony.",
+      "chordsUsed": [
+        "Eb",
+        "Bdim7/Eb",
+        "Eb/D",
+        "C7",
+        "Fm",
+        "Bb7",
+        "G7/B",
+        "Cm",
+        "Adim7"
+      ],
+      "handPositions": [
+        {
+          "tick": 240,
+          "hand": "R",
+          "anchor": "G5",
+          "text": "Bar 1: the little finger (5) on G5, tied to the next eighth with the finger changing from 5 to 4. The melody descends G, F, E-flat with fingers 4, 3 and 2."
+        },
+        {
+          "tick": 240,
+          "hand": "L",
+          "anchor": "Eb2",
+          "text": "Left hand, each beat: a low bass note, then two chords. Beat 1 is Eb2, then G3 Eb4, then Bb3 Eb4 G4. Pedal down on the bass note and up at the end of the beat."
+        },
+        {
+          "tick": 960,
+          "hand": "L",
+          "anchor": "Eb3",
+          "text": "Beat 2 keeps an E-flat in the bass (Eb3) while the chords become Ab3 D4 and then Cb4 D4 Ab4, the B natural spelled C flat in the source: the diminished color."
+        },
+        {
+          "tick": 3120,
+          "hand": "L",
+          "anchor": "C2",
+          "text": "Bar 2 starts on C2 and the chords gain an E natural: C, E, G and Bb."
+        },
+        {
+          "tick": 3600,
+          "hand": "R",
+          "anchor": "C5",
+          "text": "The turn in bar 2 on C5, with the printed fingering 1 2 1 2 1 and the thumb on C, then the little finger (5) on C6."
+        },
+        {
+          "tick": 8880,
+          "hand": "L",
+          "anchor": "Bb2",
+          "text": "Bar 4: the bass Bb2, then the chords F3 Eb4 and Bb3 Eb4 Ab4 on beat 1, resolving to F3 D4 and Bb3 Ab4 on beat 2."
+        },
+        {
+          "tick": 9600,
+          "hand": "R",
+          "anchor": "Bb5",
+          "text": "The written-out run: Bb5 (3), Ab5, G5, Ab5 (4), then C5 and D5 into the dotted Eb5. Light and even."
+        }
+      ],
+      "posture": "Sit as in the Beginner lesson, centered and relaxed. The left hand covers a wide range on every beat and the pedal changes with each bass note, so keep the forearm loose and the heel of the foot on the floor.",
+      "practicePlan": [
+        "Read the left hand alone first (press Mute right): bass note, chord, chord on every beat, without the pedal.",
+        "Add the pedal as printed: down with the bass note, up at the end of the beat, except beats 3 and 4 of bar 4, which share one pedal.",
+        "Play the right hand alone (press Mute left) and add the turn of bar 2 and the run of bar 4 slowly, with Slow on and a loop on that bar.",
+        "Put the hands together at Slow, then raise the tempo with Ramp toward 44 beats per minute. Switch on Analysis to read the harmony as you play."
+      ],
+      "arrangementNote": "Transcribed by hand from the Mutopia Project LilyPond source (Mutopia-2014/12/18-1590, typeset by Renato Biolcati Rinaldi from the 1881 G. Schirmer edition, licensed CC BY-SA 3.0): the pickup and bars 1 to 4 only. The right-hand fingers are the printed ones; the source has no left-hand fingering. The turn is a sign: its notes are not written in the source.",
+      "interpretation": {
+        "rubato": "The source marks Andante and espress. dolce and no rubato in these bars. Keep the left hand steady in its rocking beat and let the melody breathe: a little time on the long G of bar 1 and on the rest before the pickup at the end of bar 4.",
+        "dynamics": "Begin softly and sing the melody. The hairpin of bar 2 grows into the C6 and bar 4 opens marked f. Keep the left hand below the melody throughout and release the pedal cleanly at each beat."
+      },
+      "ornaments": [
+        {
+          "tick": 3600,
+          "name": "Chromatic turn",
+          "text": "The sign over C5 is a chromatic turn: D natural above and B flat below. Played with the printed fingering 1 2 1 2 1 it reads C D C Bb C, quickly inside the eighth note, landing on C before the leap to C6."
+        },
+        {
+          "tick": 9600,
+          "name": "Fioritura",
+          "text": "The small notes Bb5, Ab5, G5, Ab5, C5 and D5 are a written-out flourish around the main notes Bb5 and Eb5. Play them lightly and evenly, with the dotted Eb5 as the goal."
+        }
+      ]
+    }
+  },
   "sources": [
     {
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1590",
@@ -339,6 +520,11 @@
       "scope": "beginner",
       "level": "low",
       "note": "Editorial simplification of the transcribed bars: the tied G is one note, the turn sign is dropped, the sixteenth figure of bar 4 is cut to Bb5 and D5, and the left hand keeps the bass eighth and the last chord of each beat held for two eighths. It is not a printed edition."
+    },
+    {
+      "scope": "analysis",
+      "level": "medium",
+      "note": "The roman numerals and notes about the harmony are read from the transcribed notes and checked by tests against the left-hand notes; no published analysis was consulted. The five-note realization of the turn (C D C Bb C) is the reading that fits the printed fingering and accidentals, not a written-out ornament."
     },
     {
       "scope": "structure",

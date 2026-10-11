@@ -4,6 +4,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { validateIndex, validateSong } from "../src/core/schema.js";
 import { parseChord } from "../src/core/chords.js";
 import { parsePitch } from "../src/core/pitch.js";
+import { barBeatOf } from "../src/core/timing.js";
 
 const read = (rel) => JSON.parse(readFileSync(new URL(`../songs/${rel}`, import.meta.url), "utf8"));
 const index = read("index.json");
@@ -287,10 +288,9 @@ function onsetsOf(notes, hand) {
   return [...byTick].sort((a, b) => a[0] - b[0]).map(([t, m]) => `${t}:${m.sort((a, b) => a - b).join("+")}`).join(" ");
 }
 
-test("Chopin validates, is transcribed and strict,", () => {
+test("Chopin validates, is transcribed and strict", () => {
   const r = validateSong(chopin);
   assert.deepEqual(r.errors, []);
-  assert.deepEqual(r.warnings.map((w) => w.path), ["lesson.beginner", "lesson.original"]);
   assert.equal(chopin.levels.original.transcribed, true);
   assert.equal(chopin.levels.original.strictBars, true);
   assert.equal(chopin.levels.original.notation, "engraved");
@@ -471,4 +471,147 @@ test("the Beginner pedal is the Original pedal and the confidence entry calls th
   const c = chopin.confidence.find((x) => x.scope === "beginner");
   assert.equal(c.level, "low");
   assert.match(c.note, /Editorial simplification/);
+});
+
+
+// ---- Chopin analysis and lessons: every claim is tied to the data ----
+const chopinChords = chopin.chords;
+const chopinAnalysis = chopin.levels.original.analysis;
+const lessonB = chopin.lesson.beginner;
+const lessonO = chopin.lesson.original;
+const chordAtC = (tick) => chopinChords.find((c) => tick >= c.tick && tick < c.tick + c.dur);
+const levelNotes = (id) => chopin.levels[id].notes;
+const leftAt = (tick, role) => chopinNotes.filter((n) => n.hand === "L" && !n.rest && n.tick === tick && (role === undefined || n.role === role)).map((n) => n.pitch);
+const bassMidi = (tick) => midiOf(leftAt(tick, "bass")[0]);
+const playsAtLevel = (id, tick, hand, pitch) => levelNotes(id).some((n) => n.tick === tick && n.hand === hand && n.pitch === pitch);
+
+test("Chopin now has both lessons, so it validates with no warning at all", () => {
+  const r = validateSong(chopin);
+  assert.deepEqual(r.errors, []);
+  assert.deepEqual(r.warnings, []);
+});
+
+test("the chord track parses, is sorted without overlap, and both lessons list exactly its symbols", () => {
+  const symbols = [...new Set(chopinChords.map((c) => c.symbol))].sort();
+  for (const s of symbols) assert.notEqual(parseChord(s), null, s);
+  assert.deepEqual([...lessonB.chordsUsed].sort(), symbols);
+  assert.deepEqual([...lessonO.chordsUsed].sort(), symbols);
+  chopinChords.forEach((c, i) => i > 0 && assert.ok(c.tick >= chopinChords[i - 1].tick + chopinChords[i - 1].dur, `chord ${i} overlaps`));
+});
+
+test("every left-hand note of each chord span is a tone of that chord and the bass is its bass, except the suspension of bar 4", () => {
+  for (const c of chopinChords) {
+    const chord = parseChord(c.symbol);
+    const tones = new Set(chord.names.map((x) => pitchClass(`${x}4`)));
+    const inside = chopinNotes.filter((n) => n.hand === "L" && !n.rest && n.tick >= c.tick && n.tick < c.tick + c.dur);
+    const bass = inside.filter((n) => n.role === "bass");
+    for (const n of bass) {
+      const expected = pitchClass(`${chord.bass ?? chord.root}4`);
+      if (n.tick === c.tick || chord.bass === undefined) assert.equal(pitchClass(n.pitch), expected, `${c.symbol} bass at ${n.tick}`);
+    }
+    if (c.tick === 8880) continue; // the 4-3 suspension is checked on its own below
+    for (const n of inside.filter((x) => x.role === "accompaniment")) assert.ok(tones.has(pitchClass(n.pitch)), `${c.symbol}: ${n.pitch} at ${n.tick}`);
+  }
+});
+
+test("counter-proof: a foreign note in the left hand is found by the same check", () => {
+  const chord = parseChord("Fm");
+  const tones = new Set(chord.names.map((x) => pitchClass(`${x}4`)));
+  assert.equal(tones.has(pitchClass("A4")), false, "A natural is not in F minor");
+  assert.equal(tones.has(pitchClass("Ab4")), true);
+});
+
+test("analysis exists on Original only, covers harmony, voice-leading, ornament, dynamics and rubato, is sorted and stays inside the song", () => {
+  assert.equal(chopin.levels.beginner.analysis, undefined);
+  assert.deepEqual([...new Set(chopinAnalysis.map((a) => a.kind))].sort(), ["dynamics", "harmony", "ornament", "rubato", "voice-leading"]);
+  chopinAnalysis.forEach((a, i) => {
+    assert.ok(a.tick >= 0 && (a.endTick ?? a.tick) <= chopin.lengthTicks, a.title);
+    assert.ok(a.title.length <= 11, `${a.title}: callout titles stay short in 12/8`);
+    if (i > 0) assert.ok(a.tick > chopinAnalysis[i - 1].tick, `${a.title} is out of order`);
+  });
+});
+
+test("analysis roman numerals and functions agree with the chord track where an entry sits on a chord", () => {
+  const withRoman = chopinAnalysis.filter((a) => a.roman);
+  assert.ok(withRoman.length >= 8);
+  for (const a of withRoman) {
+    const c = chordAtC(a.tick);
+    assert.equal(c.tick, a.tick, `${a.title} sits on a chord change`);
+    assert.equal(a.roman, c.roman, a.title);
+    assert.equal(a.function, c.function, a.title);
+  }
+  assert.notEqual({ ...withRoman[0], roman: "V" }.roman, chordAtC(withRoman[0].tick).roman, "counter-proof: a wrong numeral differs");
+});
+
+test("bar 1 beat 2 is a diminished seventh over the Eb pedal, as the entry says (read from the source data)", () => {
+  const entry = chopinAnalysis.find((a) => a.tick === barStart(1) + 720);
+  assert.equal(entry.kind, "harmony");
+  assert.match(entry.text, /diminished seventh/);
+  assert.match(entry.text, /B natural, written C flat/);
+  const beat2 = barStart(1) + 720;
+  assert.deepEqual(leftAt(beat2, "bass"), ["Eb3"]);
+  assert.deepEqual([...new Set(leftAt(beat2 + 240).concat(leftAt(beat2 + 480)))].sort(), ["Ab3", "Ab4", "Cb4", "D4"]);
+  const chordPcs = [11, 2, 5, 8]; // B D F Ab
+  assert.deepEqual(chordPcs.map((pc, i) => (chordPcs[(i + 1) % 4] - pc + 12) % 12), [3, 3, 3, 3], "every step of B D F Ab is a minor third");
+  assert.ok(chopinNotes.some((n) => n.hand === "R" && n.pitch === "F5" && n.tick === beat2 + 240), "the F comes from the melody");
+});
+
+test("the voice-leading claims are true of the notes: bass steps, half-step resolutions and the 4-3 suspension", () => {
+  assert.deepEqual([barStart(1) + 1440, barStart(1) + 2160, barStart(2)].map(bassMidi), [39, 38, 36], "Eb2 D2 C2");
+  assert.equal(bassMidi(barStart(3) + 720 + 720) - bassMidi(barStart(3) + 720), 1, "B2 up to C3 (G7/B to Cm)");
+  assert.equal(bassMidi(barStart(4)) - bassMidi(barStart(3) + 2160), 1, "A2 up to Bb2 (the diminished seventh to Bb7)");
+  assert.equal(bassMidi(barStart(4) + 720 * 2) - bassMidi(barStart(4) + 720), 5, "Bb1 up to Eb2 is a fourth");
+  const beat1 = [barStart(4), barStart(4) + 240, barStart(4) + 480].flatMap((t) => leftAt(t, "accompaniment"));
+  const beat2 = [barStart(4) + 720 + 240, barStart(4) + 720 + 480].flatMap((t) => leftAt(t, "accompaniment"));
+  assert.ok(beat1.includes("Eb4") && !beat1.includes("D4"), "beat 1 holds the Eb and no D");
+  assert.ok(beat2.includes("D4") && !beat2.includes("Eb4"), "beat 2 has the D where the Eb was");
+  assert.equal(midiOf("Eb4") - midiOf("D4"), 1);
+});
+
+test("the secondary dominant of bar 2 is a C7 with an E natural resolving through to F minor", () => {
+  const e = chopinAnalysis.find((a) => a.tick === barStart(2));
+  assert.equal(e.roman, "V7/ii");
+  assert.ok(leftAt(barStart(2) + 240).includes("E4"));
+  assert.equal(chordAtC(barStart(2)).symbol, "C7");
+  assert.equal(chordAtC(barStart(2) + 3 * 720).symbol, "Fm", "F minor arrives on beat 4");
+});
+
+test("ornament entries sit on the right bar and note: the turn on the C5 of bar 2, the run of sixteenths in bar 4", () => {
+  const barOfTick = (t) => barBeatOf(t, chopin.meter, chopin.pickupTicks, chopin.tempo.beatUnit).bar;
+  const turn = chopinAnalysis.find((a) => a.title === "Turn");
+  assert.equal(barOfTick(turn.tick), 2);
+  assert.equal(chopinNotes.find((n) => n.tick === turn.tick && n.hand === "R").ornament, "turn");
+  const run = chopinAnalysis.find((a) => a.title === "Fioritura");
+  assert.equal(barOfTick(run.tick), 4);
+  const small = chopinNotes.filter((n) => n.hand === "R" && !n.rest && n.tick >= run.tick && n.tick < run.endTick && n.dur === 120);
+  assert.deepEqual(small.map((n) => n.pitch), ["Bb5", "Ab5", "G5", "Ab5", "C5", "D5"]);
+  assert.deepEqual(lessonO.ornaments.map((o) => [barOfTick(o.tick), o.name]), [[2, "Chromatic turn"], [4, "Fioritura"]]);
+  assert.equal(lessonB.ornaments, undefined, "Beginner has no ornaments to explain");
+});
+
+test("every hand position of both lessons names a note its level really plays at that tick with that hand", () => {
+  for (const [id, l] of [["beginner", lessonB], ["original", lessonO]]) {
+    assert.ok(l.handPositions.length >= 6, id);
+    for (const h of l.handPositions) assert.ok(playsAtLevel(id, h.tick, h.hand, h.anchor), `${id} ${h.hand} ${h.anchor} at ${h.tick}`);
+  }
+  assert.equal(playsAtLevel("beginner", 240, "R", "G4"), false, "counter-proof: a note the level does not play");
+});
+
+test("the Beginner lesson teaches four big beats, explains each simplification and the practice tools", () => {
+  assert.match(lessonB.summary, /E-flat major/);
+  assert.match(lessonB.summary, /four big beats/);
+  assert.match(lessonB.summary, /one, two, three, four/);
+  for (const re of [/tied G is one long note/, /turn sign of bar 2 is left out/, /fast run of bar 4 is cut/, /bass note and then the last chord of each beat/, /editorial/]) assert.match(lessonB.arrangementNote, re);
+  const plan = lessonB.practicePlan.join(" ");
+  for (const re of [/Mute left/, /Mute right/, /Metronome/, /four times per bar/, /Slow/, /Set A here/, /Loop a section/, /Ramp/]) assert.match(plan, re);
+  assert.match(lessonB.handPositions.map((h) => h.text).join(" "), /jump/);
+  assert.ok(lessonB.interpretation.rubato.length > 20 && lessonB.interpretation.dynamics.length > 20);
+});
+
+test("the Original lesson carries the attribution, the pedal and the interpretation guidance", () => {
+  for (const re of [/Mutopia-2014\/12\/18-1590/, /Renato Biolcati Rinaldi/, /CC BY-SA 3\.0/, /1881 G\. Schirmer/, /pickup and bars 1 to 4 only/]) assert.match(lessonO.arrangementNote, re);
+  assert.match(lessonO.practicePlan.join(" "), /pedal/i);
+  assert.match(lessonO.interpretation.rubato, /espress\. dolce/);
+  assert.match(lessonO.interpretation.dynamics, /hairpin of bar 2/);
+  assert.match(lessonO.interpretation.dynamics, /marked f/);
 });

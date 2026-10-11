@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { fakeDoc, all } from "../score/fake-dom.js";
 
 const doc = fakeDoc();
@@ -181,4 +182,34 @@ test("changing level or disposing clears an active chord outline", () => {
   buttons(root).find((b) => textOf(b) === "E").click();
   card.dispose();
   assert.deepEqual(calls.at(-1), []);
+});
+
+const chopin = JSON.parse(readFileSync(new URL("../../songs/chopin-nocturne-op9-no2.json", import.meta.url), "utf8"));
+
+test("the real Nocturne card: Original shows ornaments with their bar, rubato and dynamics, analysis on request, and the Mutopia source link with its license", () => {
+  const card = createLessonCard({ song: chopin });
+  card.setLevel("original", { analysis: true });
+  const root = card.element;
+  assert.deepEqual(heads(root), ["Overview", "Chords", "Hands", "How to sit", "Practice plan", "Arrangement", "Interpretation", "Ornaments", "Analysis", "Sources", "Confidence"]);
+  const text = textOf(root);
+  assert.match(text, /Bar 2, Chromatic turn: The sign over C5/);
+  assert.match(text, /Bar 4, Fioritura: The small notes/);
+  assert.match(text, /Rubato: The source marks Andante/);
+  assert.match(text, /Dynamics: Begin softly/);
+  assert.match(text, /Bar 1, Diminished \(vii°7\/vi, diminished color over the tonic pedal\)/);
+  const hrefs = all(root, (n) => n.tag === "a").map((a) => a.attrs.href);
+  assert.ok(hrefs.includes("https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1590"));
+  assert.match(text, /Licensed under Creative Commons Attribution-ShareAlike 3\.0/);
+  assert.match(text, /Lower confidence, beginner:/);
+});
+
+test("the real Nocturne card: Beginner has no ornaments or analysis, and counter-proof: a card without lesson ornaments has no such section", () => {
+  const card = createLessonCard({ song: chopin });
+  card.setLevel("beginner", { analysis: true });
+  assert.deepEqual(heads(card.element), ["Overview", "Chords", "Hands", "How to sit", "Practice plan", "Arrangement", "Interpretation", "Sources", "Confidence"]);
+  const stripped = structuredClone(chopin);
+  delete stripped.lesson.original.ornaments;
+  const plain = createLessonCard({ song: stripped });
+  plain.setLevel("original");
+  assert.ok(!heads(plain.element).includes("Ornaments"));
 });
