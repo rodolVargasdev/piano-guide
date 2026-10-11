@@ -1,6 +1,7 @@
 // Player view: validates the song on open, resolves a level, creates the engine and runs the ONE
-// requestAnimationFrame loop that reads engine.position() once per frame. The score and the 3D
-// scene are no-op placeholders until their PRs; dispose() tears everything down on route change.
+// requestAnimationFrame loop that reads engine.position() once per frame. The 3D scene loads
+// lazily (a failed import or no WebGL leaves a message and keeps everything else working); the
+// score is a no-op placeholder until its PR. dispose() tears everything down on route change.
 
 import { el } from "./dom.js";
 import { loadCatalog } from "./catalog.js";
@@ -54,11 +55,15 @@ function createDebugOverlay() {
   };
 }
 
+const SCENE_UNAVAILABLE = "3D view unavailable on this device";
+const defaultLoadScene = () => import("../scene/index.js");
+
 /**
- * playerView({ load, makeEngine, win }) returns a router view (route, root) => { dispose() }.
- * The dependencies are injectable so the view can run against fakes.
+ * playerView({ load, makeEngine, win, loadScene }) returns a router view (route, root) => { dispose() }.
+ * The dependencies are injectable so the view can run against fakes. `loadScene` resolves to the
+ * scene module ({ createScene }); a rejection leaves the message and the null scene.
  */
-export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine, win = window } = {}) {
+export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine, win = window, loadScene = defaultLoadScene } = {}) {
   return (route, root) => {
     let disposed = false;
     let session = null;
@@ -87,7 +92,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
 
       const debug = debugRequested(win.location.search, win.location.hash) ? createDebugOverlay() : null;
       const score = NOOP_VIEW;
-      const scene = NOOP_VIEW;
+      let scene = NOOP_VIEW;
       let raf = null;
       let closed = false;
 
@@ -96,7 +101,7 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
         const pos = engine.position(); // the only read of the audio clock per frame
         transport.update(pos);
         score.render(pos.tick);
-        scene.render(pos.tick);
+        scene.render(pos.tick, engine.isPlaying());
         debug?.update(pos, ts, engine.isPlaying());
         if (engine.isPlaying()) requestFrame();
       }
@@ -106,6 +111,11 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
 
       const transport = createTransport({ engine, timeline, onChange: requestFrame });
       const key = `${song.key.tonic} ${song.key.mode}`;
+      const sceneSlot = el("div", { class: "slot", "data-slot": "scene" }, el("p", { class: "meta", role: "status" }, "Loading keyboard view"));
+      const onResize = () => {
+        scene.resize();
+        requestFrame();
+      };
       root.replaceChildren(
         el(
           "section",
@@ -120,20 +130,40 @@ export function playerView({ load = loadCatalog, makeEngine = defaultMakeEngine,
           el(
             "div",
             { class: "stage" },
-            el("div", { class: "slot", "data-slot": "scene" }, el("p", { class: "meta" }, "Keyboard view not available yet")),
+            sceneSlot,
             el("div", { class: "slot", "data-slot": "score" }, el("p", { class: "meta" }, "Score view not available yet")),
           ),
           transport.element,
           debug?.element,
         ),
       );
+      win.addEventListener("resize", onResize);
       requestFrame();
+
+      // Lazy scene: the catalog never downloads three.js. Any failure keeps the rest of the player alive.
+      (async () => {
+        try {
+          const { createScene } = await loadScene();
+          const created = await createScene(sceneSlot, { timeline });
+          if (closed) {
+            created.dispose();
+            return;
+          }
+          scene = created;
+        } catch {
+          if (closed) return;
+          sceneSlot.replaceChildren(el("p", { class: "meta", role: "status" }, SCENE_UNAVAILABLE));
+        }
+        requestFrame();
+      })();
 
       return {
         dispose() {
           closed = true;
+          win.removeEventListener("resize", onResize);
           if (raf !== null) win.cancelAnimationFrame(raf);
           raf = null;
+          scene.dispose(); // frees geometry, materials, textures and the renderer
           transport.dispose();
           engine.dispose(); // stops audio, releases voices and suspends the context
         },

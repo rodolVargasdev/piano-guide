@@ -270,6 +270,20 @@ a:focus-visible {
   background: var(--panel);
 }
 
+/* The 3D scene: the canvas fills the slot; its pixel size is set by the scene, never inline. */
+.slot[data-slot="scene"] {
+  height: clamp(16rem, 52vh, 34rem);
+  overflow: hidden;
+  border-style: solid;
+  background: #0b0d12;
+}
+
+.scene-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .debug {
   position: fixed;
   right: 0.5rem;
@@ -306,12 +320,21 @@ a:focus-visible {
     font-size: 0.8125rem;
   }
 
+  main {
+    padding-block: 0.25rem;
+  }
+
   .stage {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 3fr 2fr;
     gap: 0.5rem;
   }
 
   .slot {
     min-height: 3.5rem;
+  }
+
+  /* Phone landscape: the keyboard keeps a fixed 9rem band so the transport stays on screen. */
+  .slot[data-slot="scene"] {
+    height: 9rem;
   }
 }
